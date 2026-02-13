@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["front/public/src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

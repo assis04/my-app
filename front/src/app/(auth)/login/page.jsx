@@ -15,7 +15,7 @@ export default function Home() {
 
     try {
       // Tenta conectar ao backend na porta 3001
-      const response = await fetch('http://localhost:3000/auth/login', {
+      const response = await fetch('http://localhost:3001/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ export default function Home() {
 
     } catch (err) {
       console.error('Erro na requisição:', err);
-      setError('Não foi possível conectar ao servidor (Verifique se o backend está a rodar na porta 3000).');
+      setError('Não foi possível conectar ao servidor (Verifique se o backend está a rodar na porta 3001).');
     }
   };
 

@@ -3,9 +3,8 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import authRoutes from "../../backend/src/routes/authRoutes.js"; 
-import roleRoutes from "../../backend/src/routes/roleRoutes.js";
-
+import authRoutes from "./src/routes/authRoutes.js"; 
+import roleRoutes from "./src/routes/roleRoutes.js";
 
 // Validação de variáveis de ambiente (Fail Fast)
 if (!process.env.JWT_SECRET) {
@@ -19,7 +18,6 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN || ["http://localhost:3001", "http://localhost:3000"] }));
 app.use(express.json());
-
 
 // Rate Limiting Global
 const limiter = rateLimit({
@@ -39,7 +37,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
