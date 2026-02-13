@@ -3,8 +3,8 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import authRoutes from "./src/routes/authRoutes.js"; 
-import roleRoutes from "./src/routes/roleRoutes.js";
+import authRoutes from "../../backend/src/routes/authRoutes.js"; 
+import roleRoutes from "../../backend/src/routes/roleRoutes.js";
 
 
 // Validação de variáveis de ambiente (Fail Fast)
