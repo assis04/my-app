@@ -78,7 +78,7 @@ export default function Register() {
                 id="nome" 
                 name="nome" 
                 required 
-                className="border p-3 rounded text-black w-full"
+                className="border p-3 rounded text-white w-full"
                 placeholder="Seu nome completo"
                 value={formData.nome}
                 onChange={handleChange}
@@ -92,7 +92,7 @@ export default function Register() {
                 id="email" 
                 name="email" 
                 required 
-                className="border p-3 rounded text-black w-full"
+                className="border p-3 rounded text-white w-full"
                 placeholder="exemplo@email.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -106,7 +106,7 @@ export default function Register() {
                 id="password" 
                 name="password" 
                 required 
-                className="border p-3 rounded text-black w-full"
+                className="border p-3 rounded text-white w-full"
                 placeholder="Mínimo 8 caracteres (maiúscula, minúscula, número, caractere especial)"
                 value={formData.password}
                 onChange={handleChange}
@@ -122,7 +122,7 @@ export default function Register() {
                 type="number" 
                 id="role_id" 
                 name="role_id" 
-                className="border p-3 rounded text-black w-full"
+                className="border p-3 rounded text-white w-full"
                 placeholder="ID do role (ex: 1)"
                 value={formData.role_id}
                 onChange={handleChange}

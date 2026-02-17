@@ -1,4 +1,5 @@
-// src/app/layout.js
+import './globals.css';
+
 export const metadata = {
   title: 'Meu CRM',
   description: 'Sistema de gestão',

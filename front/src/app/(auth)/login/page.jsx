@@ -46,8 +46,8 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center py-10 px-4 bg-white dark:bg-black sm:items-center">
-        
-        <h1 className="text-3xl font-bold mb-6 text-black dark:text-white">Login</h1>
+        <h1 className="text-4xl font-bold mb-6 text-black dark:text-white">AMBISISTEM</h1>
+        <h2 className="text-3xl font-bold mb-6 text-black dark:text-white">Login</h2>
         
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 w-full max-w-md">
@@ -63,7 +63,7 @@ export default function Home() {
                 id="email" 
                 name="email" 
                 required 
-                className="border p-3 rounded text-black w-full"
+                className="border p-3 rounded text-white w-full"
                 placeholder="exemplo@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -77,7 +77,7 @@ export default function Home() {
                 id="password" 
                 name="password" 
                 required 
-                className="border p-3 rounded text-black w-full"
+                className="border p-3 rounded text-white w-full"
                 placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
