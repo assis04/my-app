@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  nome        String   @unique
+  descricao   String?
+  permissions String[] @default([]) // Array de strings para guardar os módulos permitidos
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  password  String
+  roleId    Int?     @map("role_id")
+  role      Role?    @relation(fields: [roleId], references: [id])
+  filialId  Int?     @map("filial_id")
+  filial    Filial?  @relation(fields: [filialId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ativo     Boolean  @default(true)
+
+  // Audit Log: Who created this user?
+  createdById  Int?    @map("created_by_id")
+  createdBy    User?   @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers User[]  @relation("UserCreator")
+
+  // Equipes: um user pode liderar OU ser membro de uma equipe
+  equipeId        Int?     @map("equipe_id")
+  equipe          Equipe?  @relation("EquipeMembros", fields: [equipeId], references: [id])
+  equipeLiderada  Equipe[] @relation("EquipeLider")
+
+  // ERP Specific: A user (Vendedor) might be responsible for many clients
+  clients     Client[]
+  salesQueues SalesQueue[]
+
+  @@map("users")
+}
+
+model Filial {
+  id          Int          @id @default(autoincrement())
+  nome        String       @unique
+  endereco    String?
+  users       User[]
+  clients     Client[]
+  equipes     Equipe[]
+  salesQueues SalesQueue[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("filiais")
+}
+
+model Equipe {
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique
+  descricao String?
+  ativo     Boolean  @default(true)
+
+  // Líder da equipe (um usuário)
+  liderId   Int?     @map("lider_id")
+  lider     User?    @relation("EquipeLider", fields: [liderId], references: [id])
+
+  // Filial da equipe
+  filialId  Int?     @map("filial_id")
+  filial    Filial?  @relation(fields: [filialId], references: [id])
+
+  // Membros da equipe
+  membros   User[]   @relation("EquipeMembros")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("equipes")
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String?  @unique
+  telefone  String?
+  endereco  String?
+  cpf_cnpj  String?  @unique @map("cpf_cnpj")
+  
+  // Relationship with the user who created/manages the client
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  // Relationship with filial (branch)
+  filialId  Int?     @map("filial_id")
+  filial    Filial?  @relation(fields: [filialId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clients")
+}
+
+model SalesQueue {
+  filialId       Int       @map("branch_id")
+  filial         Filial    @relation(fields: [filialId], references: [id])
+  userId         Int       @map("user_id")
+  user           User      @relation(fields: [userId], references: [id])
+  isAvailable    Boolean   @default(true) @map("is_available")
+  lastAssignedAt DateTime? @map("last_assigned_at")
+  attendCount30d Int       @default(0) @map("attend_count_30d")
+
+  @@id([filialId, userId]) // Composite Key
+  @@map("branch_sales_queues")
+}

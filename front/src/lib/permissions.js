@@ -1,0 +1,228 @@
+/**
+ * RBAC - Permissions Master Library (Ambisistem ERP)
+ * 
+ * Format: resource:action:scope
+ * Special: '*' = full access (ADM only)
+ * 
+ * Scopes: 'own' | 'branch' | 'all'
+ */
+
+export const PERMISSIONS = {
+  // ── RH ─────────────────────────────────────────────
+  RH_USERS_READ:    'rh:usuarios:read',
+  RH_USERS_CREATE:  'rh:usuarios:create',
+  RH_USERS_UPDATE:  'rh:usuarios:update',
+  RH_USERS_DELETE:  'rh:usuarios:delete',
+  RH_PERFIS_READ:   'rh:perfis:read',
+  RH_PERFIS_CREATE: 'rh:perfis:create',
+  RH_PERFIS_UPDATE: 'rh:perfis:update',
+  RH_EQUIPES_READ:  'rh:equipes:read',
+  RH_EQUIPES_MANAGE:'rh:equipes:manage',
+
+  // ── CRM ─────────────────────────────────────────────
+  LEADS_READ_ALL:    'leads:read:all',
+  LEADS_READ_BRANCH: 'leads:read:branch',
+  LEADS_READ_OWN:    'leads:read:own',
+  LEADS_CREATE_ALL:  'leads:create:all',
+  LEADS_CREATE_BRANCH:'leads:create:branch',
+  LEADS_CREATE_OWN:  'leads:create:own',
+  LEADS_UPDATE_ALL:  'leads:update:all',
+  LEADS_UPDATE_BRANCH:'leads:update:branch',
+  LEADS_UPDATE_OWN:  'leads:update:own',
+  LEADS_DELETE_ALL:  'leads:delete:all',
+  LEADS_DELETE_BRANCH:'leads:delete:branch',
+  LEADS_DELETE_OWN:  'leads:delete:own',
+
+  // ── Kanban ───────────────────────────────────────────
+  KANBAN_READ_ALL:    'kanban:read:all',
+  KANBAN_READ_BRANCH: 'kanban:read:branch',
+  KANBAN_READ_OWN:    'kanban:read:own',
+  KANBAN_EDIT_ALL:    'kanban:update:all',
+  KANBAN_EDIT_BRANCH: 'kanban:update:branch',
+  KANBAN_EDIT_OWN:    'kanban:update:own',
+
+  // ── Tarefas ────────────────────────────────────────
+  TASKS_MANAGE_ALL:    'tasks:manage:all',
+  TASKS_MANAGE_BRANCH: 'tasks:manage:branch',
+  TASKS_MANAGE_OWN:    'tasks:manage:own',
+
+  // ── Dashboard / Relatórios ─────────────────────────
+  REPORTS_READ_ALL:    'reports:read:all',
+  REPORTS_READ_BRANCH: 'reports:read:branch',
+  REPORTS_READ_OWN:    'reports:read:own',
+
+  // ── Agenda ─────────────────────────────────────────
+  AGENDA_FULL: 'agenda:manage:all',
+
+  // ── Notificações ───────────────────────────────────
+  NOTIFICATIONS_SEND:    'notifications:send:all',
+  NOTIFICATIONS_RECEIVE: 'notifications:receive:all',
+
+  // ── Configurações ─────────────────────────────────
+  CONFIG_MANAGE: 'config:manage:all',
+};
+
+/**
+ * Permissões padrão por perfil — usadas como seed e referência no frontend.
+ * ADM usa '*' (curinga) = acesso total a tudo.
+ */
+export const ROLE_DEFAULT_PERMISSIONS = {
+  ADM: ['*'],
+  RH: [
+    PERMISSIONS.RH_USERS_READ,
+    PERMISSIONS.RH_USERS_CREATE,
+    PERMISSIONS.RH_USERS_UPDATE,
+    PERMISSIONS.RH_USERS_DELETE,
+    PERMISSIONS.RH_PERFIS_READ,
+    PERMISSIONS.RH_PERFIS_CREATE,
+    PERMISSIONS.RH_PERFIS_UPDATE,
+    PERMISSIONS.RH_EQUIPES_READ,
+    PERMISSIONS.RH_EQUIPES_MANAGE,
+    PERMISSIONS.NOTIFICATIONS_SEND,
+    PERMISSIONS.NOTIFICATIONS_RECEIVE,
+    PERMISSIONS.AGENDA_FULL,
+  ],
+  GERENTE: [
+    PERMISSIONS.LEADS_READ_BRANCH,
+    PERMISSIONS.LEADS_CREATE_BRANCH,
+    PERMISSIONS.LEADS_UPDATE_BRANCH,
+    PERMISSIONS.LEADS_DELETE_BRANCH,
+    PERMISSIONS.KANBAN_READ_BRANCH,
+    PERMISSIONS.KANBAN_EDIT_BRANCH,
+    PERMISSIONS.TASKS_MANAGE_BRANCH,
+    PERMISSIONS.REPORTS_READ_BRANCH,
+    PERMISSIONS.NOTIFICATIONS_SEND,
+    PERMISSIONS.NOTIFICATIONS_RECEIVE,
+    PERMISSIONS.AGENDA_FULL,
+  ],
+  VENDEDOR: [
+    PERMISSIONS.LEADS_READ_OWN,
+    PERMISSIONS.LEADS_CREATE_OWN,
+    PERMISSIONS.LEADS_UPDATE_OWN,
+    PERMISSIONS.LEADS_DELETE_OWN,
+    PERMISSIONS.KANBAN_READ_OWN,
+    PERMISSIONS.KANBAN_EDIT_OWN,
+    PERMISSIONS.TASKS_MANAGE_OWN,
+    PERMISSIONS.REPORTS_READ_OWN,
+    PERMISSIONS.NOTIFICATIONS_SEND,
+    PERMISSIONS.NOTIFICATIONS_RECEIVE,
+    PERMISSIONS.AGENDA_FULL,
+  ],
+  SDR: [
+    PERMISSIONS.LEADS_READ_ALL,
+    PERMISSIONS.LEADS_CREATE_ALL,
+    PERMISSIONS.LEADS_UPDATE_ALL,
+    PERMISSIONS.KANBAN_READ_ALL,
+    PERMISSIONS.KANBAN_EDIT_ALL,
+    PERMISSIONS.TASKS_MANAGE_OWN,
+    PERMISSIONS.NOTIFICATIONS_SEND,
+    PERMISSIONS.NOTIFICATIONS_RECEIVE,
+    PERMISSIONS.AGENDA_FULL,
+  ],
+  CAPTACAO: [
+    PERMISSIONS.LEADS_READ_ALL,
+    PERMISSIONS.TASKS_MANAGE_OWN,
+    PERMISSIONS.NOTIFICATIONS_SEND,
+    PERMISSIONS.NOTIFICATIONS_RECEIVE,
+    PERMISSIONS.AGENDA_FULL,
+  ],
+};
+
+/**
+ * Módulos visíveis no Modal de Criação de Perfil, com label e key.
+ */
+export const SYSTEM_MODULES = [
+  {
+    category: "RH",
+    color: "text-fuchsia-400",
+    borderColor: "border-fuchsia-500/20",
+    bgColor: "bg-fuchsia-500/5",
+    modules: [
+      { key: PERMISSIONS.RH_USERS_READ,    label: "Usuários - Visualizar" },
+      { key: PERMISSIONS.RH_USERS_CREATE,  label: "Usuários - Criar" },
+      { key: PERMISSIONS.RH_USERS_UPDATE,  label: "Usuários - Editar" },
+      { key: PERMISSIONS.RH_USERS_DELETE,  label: "Usuários - Remover" },
+      { key: PERMISSIONS.RH_PERFIS_READ,   label: "Perfis - Visualizar" },
+      { key: PERMISSIONS.RH_PERFIS_CREATE, label: "Perfis - Criar" },
+      { key: PERMISSIONS.RH_PERFIS_UPDATE, label: "Perfis - Editar" },
+      { key: PERMISSIONS.RH_EQUIPES_READ,  label: "Equipes - Visualizar" },
+      { key: PERMISSIONS.RH_EQUIPES_MANAGE,label: "Equipes - Gerenciar" },
+    ]
+  },
+  {
+    category: "CRM - Leads",
+    color: "text-emerald-400",
+    borderColor: "border-emerald-500/20",
+    bgColor: "bg-emerald-500/5",
+    modules: [
+      { key: PERMISSIONS.LEADS_READ_ALL,    label: "Todos os Leads - Ver" },
+      { key: PERMISSIONS.LEADS_READ_BRANCH, label: "Leads da Filial - Ver" },
+      { key: PERMISSIONS.LEADS_READ_OWN,    label: "Leads Próprios - Ver" },
+      { key: PERMISSIONS.LEADS_CREATE_ALL,  label: "Crear Leads (Todas Filiais)" },
+      { key: PERMISSIONS.LEADS_CREATE_BRANCH,label:"Criar Leads (Filial)" },
+      { key: PERMISSIONS.LEADS_CREATE_OWN,  label: "Criar Leads (Próprios)" },
+      { key: PERMISSIONS.LEADS_UPDATE_ALL,  label: "Editar Todos os Leads" },
+      { key: PERMISSIONS.LEADS_UPDATE_BRANCH,label:"Editar Leads da Filial" },
+      { key: PERMISSIONS.LEADS_UPDATE_OWN,  label: "Editar Leads Próprios" },
+      { key: PERMISSIONS.LEADS_DELETE_ALL,  label: "Excluir Todos os Leads" },
+      { key: PERMISSIONS.LEADS_DELETE_BRANCH,label:"Excluir Leads da Filial" },
+      { key: PERMISSIONS.LEADS_DELETE_OWN,  label: "Excluir Leads Próprios" },
+    ]
+  },
+  {
+    category: "Kanban",
+    color: "text-sky-400",
+    borderColor: "border-sky-500/20",
+    bgColor: "bg-sky-500/5",
+    modules: [
+      { key: PERMISSIONS.KANBAN_READ_ALL,    label: "Ver todos os Kanbans" },
+      { key: PERMISSIONS.KANBAN_READ_BRANCH, label: "Ver Kanban da Filial" },
+      { key: PERMISSIONS.KANBAN_READ_OWN,    label: "Ver Kanban Próprio" },
+      { key: PERMISSIONS.KANBAN_EDIT_ALL,    label: "Editar todos os Kanbans" },
+      { key: PERMISSIONS.KANBAN_EDIT_BRANCH, label: "Editar Kanban da Filial" },
+      { key: PERMISSIONS.KANBAN_EDIT_OWN,    label: "Editar Kanban Próprio" },
+    ]
+  },
+  {
+    category: "Tarefas",
+    color: "text-amber-400",
+    borderColor: "border-amber-500/20",
+    bgColor: "bg-amber-500/5",
+    modules: [
+      { key: PERMISSIONS.TASKS_MANAGE_ALL,    label: "Gerenciar Todas as Tarefas" },
+      { key: PERMISSIONS.TASKS_MANAGE_BRANCH, label: "Gerenciar Tarefas da Filial" },
+      { key: PERMISSIONS.TASKS_MANAGE_OWN,    label: "Gerenciar Tarefas Próprias" },
+    ]
+  },
+  {
+    category: "Relatórios",
+    color: "text-violet-400",
+    borderColor: "border-violet-500/20",
+    bgColor: "bg-violet-500/5",
+    modules: [
+      { key: PERMISSIONS.REPORTS_READ_ALL,    label: "Ver Relatórios de Todas as Filiais" },
+      { key: PERMISSIONS.REPORTS_READ_BRANCH, label: "Ver Relatórios da Filial" },
+      { key: PERMISSIONS.REPORTS_READ_OWN,    label: "Ver Relatórios Pessoais" },
+    ]
+  },
+  {
+    category: "Comunicação & Agenda",
+    color: "text-rose-400",
+    borderColor: "border-rose-500/20",
+    bgColor: "bg-rose-500/5",
+    modules: [
+      { key: PERMISSIONS.AGENDA_FULL,            label: "Agenda Google - Acesso Total" },
+      { key: PERMISSIONS.NOTIFICATIONS_SEND,     label: "Notificações - Enviar" },
+      { key: PERMISSIONS.NOTIFICATIONS_RECEIVE,  label: "Notificações - Receber" },
+    ]
+  },
+  {
+    category: "Configurações",
+    color: "text-zinc-400",
+    borderColor: "border-zinc-500/20",
+    bgColor: "bg-zinc-500/5",
+    modules: [
+      { key: PERMISSIONS.CONFIG_MANAGE, label: "Configurações do Sistema" },
+    ]
+  },
+];

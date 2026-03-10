@@ -2,67 +2,49 @@
 import bcrypt from "bcryptjs";
 // import da lib de token jwt
 import jwt from "jsonwebtoken";
-//import das class de buscar email no banco e de criar usuario
-import { findUserByEmail, createUser } from "../services/userService.js";
+import { findUserByEmail } from "../services/userService.js";
+import { loginSchema } from "../validators/authValidator.js";
 
+const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      roleId: user.roleId || user.role_id, // Incluído para corrigir erro no Controller
+      role: user.role_nome || "user",
+      permissions: user.role?.permissions || [], // 🔐 Permissões RBAC inclusas no token
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      refresh: true,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { accessToken, refreshToken };
+};
 
 export class AuthController {
-  static async register(req, res) {
+  static async login(req, res) {
     try {
-      const { nome, email, password, role_id } = req.body || {};
-
-      if (!nome || !email || !password || !role_id) {
-        return res.status(400).json({ message: "Dados obrigatórios faltando" });
-      }
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-      if (!emailRegex.test(normalizedEmail)) {
-        return res.status(400).json({ error: "Email inválido!" });
-      }
-
-      const userExists = await findUserByEmail(normalizedEmail);
-      if (userExists) {
-        return res.status(400).json({ message: "Email já cadastrado" });
-      }
-
-      const passwordRules = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-      if (!passwordRules.test(password)) {
-        return res.status(400).json({
-          error:
-            "Password must be >=8 chars, include uppercase, lowercase, number and special char",
+      const result = loginSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const firstErrorMessage = result.error.errors[0]?.message || "Dados inválidos";
+        return res.status(400).json({ 
+          message: firstErrorMessage, 
+          errors: result.error.errors.map(err => ({ field: err.path[0], message: err.message })) 
         });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const user = await createUser(
-        nome.trim(),
-        normalizedEmail,
-        hashedPassword,
-        role_id, // Envia o ID numérico
-      );
-
-      return res
-        .status(201)
-        .json({ message: "Usuário criado com sucesso", user });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  }
-
-  static async login(req, res) {
-    try {
-      const { email, password } = req.body || {};
-
-      if (!email || !password) {
-        return res
-          .status(400)
-          .json({ message: "Corpo da requisição inválido ou vazio." });
-      }
-
+      const { email, password } = result.data;
       const normalizedEmail = email.toLowerCase().trim();
 
       const user = await findUserByEmail(normalizedEmail);
@@ -75,42 +57,85 @@ export class AuthController {
         return res.status(401).json({ message: "Email ou senha inválidos" });
       }
 
-      const token = jwt.sign(
-        {
-          id: user.id,
-          email: user.email,
-          role: user.role_nome || "user", // Usa o nome que veio do JOIN
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" },
-      );
+      const { accessToken, refreshToken } = generateTokens(user);
 
-      const tokenRefresh = jwt.sign(
-        {
-          id: user.id,
-          email: user.email,
-          role: user.role_nome || "user",
-          refresh: true
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" },
-      );
-      
-
+      // Envia o refresh token num cookie HttpOnly
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
       return res.json({
-        token,
+        token: accessToken,
         user: {
           id: user.id,
           nome: user.nome,
           email: user.email,
-          role: user.role_nome, // Envia o texto (ex: 'admin') para o front controlar o menu
-          roleId: user.role_id, // Envia o ID caso precises
+          role: user.role_nome,
         },
       });
     } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Erro interno do servidor" });
+      console.error("ERRO NO LOGIN:", err);
+      return res.status(500).json({ message: "Erro interno do servidor ao realizar login." });
+    }
+  }
+
+  static async refresh(req, res) {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token não encontrado" });
+    }
+
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+      const user = await findUserByEmail(decoded.email);
+
+      if (!user) {
+        return res.status(401).json({ message: "Usuário não encontrado" });
+      }
+
+      const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.json({ token: accessToken });
+    } catch (err) {
+      return res.status(401).json({ message: "Refresh token inválido ou expirado" });
+    }
+  }
+
+  static async logout(req, res) {
+    res.clearCookie("refreshToken");
+    return res.json({ message: "Logout realizado com sucesso" });
+  }
+
+  static async me(req, res) {
+    try {
+      const email = req.user?.email;
+      if (!email) return res.status(401).json({ message: "Não autorizado" });
+
+      const user = await findUserByEmail(email);
+      if (!user) return res.status(404).json({ message: "Usuário não encontrado" });
+
+      return res.json({
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        role: user.role_nome,
+        roleId: user.role_id,
+        permissions: user.role?.permissions || []
+      });
+    } catch (err) {
+      console.error("ERRO EM /auth/me:", err);
+      return res.status(500).json({ message: "Erro interno ao buscar sessão." });
     }
   }
 }
