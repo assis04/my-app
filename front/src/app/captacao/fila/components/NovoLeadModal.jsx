@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, UserPlus, AlertTriangle } from 'lucide-react';
+import { Loader2, UserPlus, AlertTriangle, ChevronDown } from 'lucide-react';
 
 export default function NovoLeadModal({ 
   initialPhone = '', 
   agentId = null, 
   agentName = '', 
   branchId = null,
+  branchName = '',
+  sellers = [],   // lista de vendedores da fila para o dropdown
   onClose, 
   onSave 
 }) {
@@ -16,16 +18,26 @@ export default function NovoLeadModal({
     telefone: initialPhone,
   });
 
+  const [selectedAgentId, setSelectedAgentId] = useState(agentId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Derive the selected agent name from the sellers list or fallback
+  const selectedAgent = sellers.find(s => s.id === selectedAgentId);
+  const displayAgentName = selectedAgent?.nome || agentName || 'Não definido';
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setError('');
     
     if (!formData.telefone) { 
       setError('O telefone é obrigatório.'); 
       return; 
+    }
+
+    if (!selectedAgentId) {
+      setError('Selecione um responsável para o lead.');
+      return;
     }
     
     setLoading(true);
@@ -35,7 +47,7 @@ export default function NovoLeadModal({
         nome: formData.nome,
         telefone: formData.telefone,
         branch_id: branchId,
-        assigned_user_id: agentId
+        assigned_user_id: selectedAgentId
       });
       onClose();
     } catch (err) {
@@ -55,7 +67,7 @@ export default function NovoLeadModal({
             <div className="w-9 h-9 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
               <UserPlus size={18} className="text-[#0ea5e9]" />
             </div>
-            Passar Lead Visualmente
+            Novo Lead Manual
           </h2>
           <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors hover:bg-zinc-800 p-1.5 rounded-full cursor-pointer text-xl leading-none">&times;</button>
         </div>
@@ -68,18 +80,8 @@ export default function NovoLeadModal({
             </div>
           )}
 
-          <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4 flex flex-col gap-1 mb-2 text-sm text-zinc-300">
-            <div className="flex justify-between border-b border-zinc-700/50 pb-2 mb-2">
-              <span className="text-zinc-500">Destino:</span>
-              <span className="font-semibold text-emerald-400">{agentName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">Filial Origem:</span>
-              <span className="font-medium text-zinc-200">#{branchId}</span>
-            </div>
-          </div>
-
           <div className="space-y-4">
+            {/* Telefone */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-zinc-400">Telefone *</label>
               <input
@@ -92,6 +94,7 @@ export default function NovoLeadModal({
               />
             </div>
             
+            {/* Nome do Lead */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-zinc-400">Nome do Lead (Opcional)</label>
               <input
@@ -102,7 +105,46 @@ export default function NovoLeadModal({
                 onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
               />
             </div>
+
+            {/* Responsável (Seller dropdown) */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-zinc-400">Responsável *</label>
+              <div className="relative">
+                <select
+                  value={selectedAgentId || ''}
+                  onChange={(e) => setSelectedAgentId(Number(e.target.value))}
+                  className="appearance-none w-full bg-[#242424] text-white p-3 pr-10 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9]/50 transition-all text-sm cursor-pointer"
+                >
+                  <option value="" disabled className="bg-zinc-800 text-zinc-500">Selecione um vendedor...</option>
+                  {sellers.map(seller => (
+                    <option 
+                      key={seller.id} 
+                      value={seller.id}
+                      disabled={!seller.isAvailable}
+                      className="bg-zinc-800 text-zinc-200"
+                    >
+                      {seller.nome} {!seller.isAvailable ? '(Off)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+              </div>
+            </div>
           </div>
+
+          {/* Info card showing the selected agent */}
+          {selectedAgentId && (
+            <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4 flex flex-col gap-1 text-sm text-zinc-300">
+              <div className="flex justify-between border-b border-zinc-700/50 pb-2 mb-2">
+                <span className="text-zinc-500">Destino:</span>
+                <span className="font-semibold text-emerald-400">{displayAgentName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Filial:</span>
+                <span className="font-medium text-zinc-200">{branchName || `#${branchId}`}</span>
+              </div>
+            </div>
+          )}
         </form>
 
         {/* Footer */}
