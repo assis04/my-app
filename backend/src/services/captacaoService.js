@@ -12,7 +12,24 @@ export async function getQueueRanking(branchId) {
     throw new AppError('ID de filial inválido.', 400);
   }
 
+  // AUTO-ENROLLMENT: Insere vendedores ativos da filial que ainda não estão na fila
+  // Somente usuários com cargo "Vendedor"
+  await prisma.$queryRaw`
+    INSERT INTO branch_sales_queues (branch_id, user_id, is_available, attend_count_30d)
+    SELECT ${branchIdNum}, u.id, true, 0
+    FROM users u
+    JOIN roles r ON r.id = u.role_id
+    WHERE u.filial_id = ${branchIdNum}
+      AND u.ativo = true
+      AND LOWER(r.nome) = 'vendedor'
+      AND NOT EXISTS (
+        SELECT 1 FROM branch_sales_queues sq
+        WHERE sq.branch_id = ${branchIdNum} AND sq.user_id = u.id
+      )
+  `;
+
   // Executa o algoritmo SQL fornecido para rankear os vendedores da filial
+  // Somente usuários com cargo "Vendedor"
   const queueStatus = await prisma.$queryRaw`
     SELECT 
       sq.user_id as "id",
@@ -25,11 +42,16 @@ export async function getQueueRanking(branchId) {
         ORDER BY 
           sq.last_assigned_at ASC NULLS FIRST,
           sq.attend_count_30d ASC,
-          sq.is_available DESC
+          sq.is_available DESC,
+          u.id ASC
       ) as "position"
     FROM branch_sales_queues sq
     JOIN users u ON u.id = sq.user_id
-    WHERE sq.branch_id = ${branchIdNum} AND u.filial_id = ${branchIdNum} AND u.ativo = true
+    JOIN roles r ON r.id = u.role_id
+    WHERE sq.branch_id = ${branchIdNum} 
+      AND u.filial_id = ${branchIdNum} 
+      AND u.ativo = true
+      AND LOWER(r.nome) = 'vendedor'
     ORDER BY "position" ASC;
   `;
 
@@ -65,7 +87,8 @@ export async function assignLeadQuick(branchId, leadData, creatorUserId) {
         AND u.ativo = true
       ORDER BY 
           sq.last_assigned_at ASC NULLS FIRST,
-          sq.attend_count_30d ASC
+          sq.attend_count_30d ASC,
+          u.id ASC
       LIMIT 1
       FOR UPDATE SKIP LOCKED;
     `;
@@ -139,7 +162,8 @@ export async function assignLeadManual(branchId, leadData, assignedUserId) {
         AND u.ativo = true
       ORDER BY 
           sq.last_assigned_at ASC NULLS FIRST,
-          sq.attend_count_30d ASC
+          sq.attend_count_30d ASC,
+          u.id ASC
       LIMIT 1
       FOR UPDATE SKIP LOCKED;
     `;
