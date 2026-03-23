@@ -36,7 +36,7 @@ export function useSalesQueue(branchId) {
     fetchData();
 
     // Inicia conexão websocket
-    const socket = io('http://localhost:3001', {
+    const socket = io('http://localhost:3002', {
       withCredentials: true
     });
 
@@ -55,12 +55,21 @@ export function useSalesQueue(branchId) {
       socket.emit('leave_branch', branchId);
       socket.disconnect();
     };
-  }, [branchId]); // Removido fetchData para evitar loop infinito das renderizações do react
+  }, [branchId, fetchData]);
 
   // Ação: Adicionar lead rápido
   const handleCreateLead = async (leadData) => {
     try {
-      await createQuickLead(branchId, leadData);
+      // Se for FormData (contém arquivo), não podemos dar spread
+      const payload = leadData instanceof FormData 
+        ? leadData 
+        : { branch_id: branchId, ...leadData };
+        
+      if (leadData instanceof FormData && !leadData.has('branch_id')) {
+        leadData.append('branch_id', branchId);
+      }
+
+      await createQuickLead(branchId, payload);
       // O WebSocket fará o fetchData rodar automaticamente para todos
       return true;
     } catch (err) {
@@ -72,7 +81,15 @@ export function useSalesQueue(branchId) {
   // Ação: Adicionar lead manual para um vendedor específico
   const handleCreateManualLead = async (leadData) => {
     try {
-      await createManualLead({ branch_id: branchId, ...leadData });
+      const payload = leadData instanceof FormData 
+        ? leadData 
+        : { branch_id: branchId, ...leadData };
+
+      if (leadData instanceof FormData && !leadData.has('branch_id')) {
+        leadData.append('branch_id', branchId);
+      }
+
+      await createManualLead(payload);
       return true;
     } catch (err) {
       setError(err.message || 'Erro ao criar lead manual.');
@@ -80,18 +97,19 @@ export function useSalesQueue(branchId) {
     }
   };
 
-  // Ação: Alterar status do próprio vendedor logado
-  const handleToggleMyStatus = async (isAvailable) => {
+  // Ação: Alterar status de um vendedor (o próprio ou outro, se tiver permissão)
+  const handleToggleAgentStatus = async (targetUserId, isAvailable) => {
     try {
       // Usamos optimistic UI update
       setQueue(prev => prev.map(q => 
-        q.id === user?.id ? { ...q, isAvailable } : q
+        q.id === targetUserId ? { ...q, isAvailable } : q
       ));
-      await toggleAvailability(branchId, isAvailable);
+      await toggleAvailability(branchId, isAvailable, targetUserId);
     } catch (err) {
-      setError(err.message || 'Erro ao alterar status.');
+      const msg = typeof err === 'string' ? err : err.message || 'Erro ao alterar status.';
+      setError(msg);
       fetchData(); // rollback in case of error
-      throw err;
+      throw new Error(msg); // Lança como Error object para o componente poder ler .message
     }
   };
 
@@ -103,7 +121,8 @@ export function useSalesQueue(branchId) {
     refetch: fetchData,
     handleCreateLead,
     handleCreateManualLead,
-    handleToggleMyStatus,
+    handleToggleMyStatus: (isAvailable) => handleToggleAgentStatus(user?.id, isAvailable),
+    handleToggleAgentStatus,
     myCurrentStatus: queue.find(q => q.id === user?.id)?.isAvailable ?? false
   };
 }

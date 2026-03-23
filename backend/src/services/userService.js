@@ -126,6 +126,26 @@ export async function updateUser(id, data, invokerUser) {
     data: updateData
   });
 
+  // SYNC: Quando filial ou cargo muda, limpa registros antigos da fila da vez
+  const filialChanged = filialId !== undefined && Number(filialId) !== userToUpdate.filialId;
+  const roleChanged = roleId !== undefined && Number(roleId) !== userToUpdate.roleId;
+
+  if (filialChanged || roleChanged) {
+    // Remove TODOS os registros do usuário na fila (de qualquer filial)
+    await prisma.salesQueue.deleteMany({
+      where: { userId: Number(id) }
+    });
+    console.log(`[SYNC] Cleaned queue entries for user ${id} (filial changed: ${filialChanged}, role changed: ${roleChanged})`);
+  }
+
+  // SYNC: Se o usuário foi desativado, remove da fila também
+  if (ativo === false) {
+    await prisma.salesQueue.deleteMany({
+      where: { userId: Number(id) }
+    });
+    console.log(`[SYNC] User ${id} deactivated, removed from queue.`);
+  }
+
   return updatedUser;
 }
 
@@ -143,6 +163,11 @@ export async function deleteUser(id, invokerUser) {
   if (userToDelete.role?.nome === 'ADM' && invokerRoleObj?.nome !== 'ADM') {
     throw new AppError('Acesso Negado: Apenas Administradores podem excluir um ADM.', 403);
   }
+
+  // Limpa registros da fila antes de deletar
+  await prisma.salesQueue.deleteMany({
+    where: { userId: Number(id) }
+  });
 
   await prisma.user.delete({ where: { id: Number(id) } });
 }

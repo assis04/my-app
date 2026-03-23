@@ -22,6 +22,7 @@ export default function FiliaisPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [modalData, setModalData] = useState(null); // null = fechado, {} = novo, filial = edição
+  const [viewTeamData, setViewTeamData] = useState(null); // filial para ver equipe
 
   useEffect(() => {
     if (!authLoading && user && !ALLOWED_ROLES.includes(user.role)) {
@@ -47,6 +48,15 @@ export default function FiliaisPage() {
       loadFiliais();
     }
   }, [authLoading, user, loadFiliais]);
+
+  const handleViewTeam = async (id) => {
+    try {
+      const data = await api(`/filiais/${id}`);
+      setViewTeamData(data);
+    } catch (err) {
+      alert('Erro ao carregar equipe da filial.');
+    }
+  };
 
   const handleDelete = async (id, nome) => {
     if (!confirm(`Tem certeza que deseja remover a filial "${nome}"?\n\nIsso só é possível se não houver usuários ou equipes vinculados.`)) return;
@@ -179,12 +189,12 @@ export default function FiliaisPage() {
               <table className="w-full text-left text-sm text-zinc-400 border-collapse">
                 <thead className="border-b border-zinc-800 text-zinc-100">
                   <tr>
-                    <th className="pb-4 font-semibold px-2">Nome</th>
-                    <th className="pb-4 font-semibold px-2">Endereço</th>
-                    <th className="pb-4 font-semibold px-2 text-center">Usuários</th>
-                    <th className="pb-4 font-semibold px-2 text-center">Equipes</th>
-                    <th className="pb-4 font-semibold px-2">Criação</th>
-                    {isAdmin && <th className="pb-4 font-semibold px-2 text-center">Ações</th>}
+                    <th className="pb-4 font-semibold px-2 text-base">Filial</th>
+                    <th className="pb-4 font-semibold px-2 text-base">Gerente</th>
+                    <th className="pb-4 font-semibold px-2 text-base text-center">Usuários</th>
+                    <th className="pb-4 font-semibold px-2 text-base text-center">Equipes</th>
+                    <th className="pb-4 font-semibold px-2 text-base">Criação</th>
+                    <th className="pb-4 font-semibold px-2 text-base text-center">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,17 +205,22 @@ export default function FiliaisPage() {
                           <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                             <Building2 size={14} className="text-amber-400" />
                           </div>
-                          <span className="font-medium text-zinc-200">{f.nome}</span>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-zinc-100 text-[15px]">{f.nome}</span>
+                            <span className="text-[11px] text-zinc-500 truncate max-w-[180px]">{f.endereco || 'Sem endereço'}</span>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-4 px-2 max-w-[200px] truncate" title={f.endereco}>
-                        {f.endereco ? (
-                          <span className="flex items-center gap-1.5 text-zinc-400">
-                            <MapPin size={12} className="shrink-0 text-zinc-600" />
-                            {f.endereco}
-                          </span>
+                      <td className="py-4 px-2">
+                        {f.manager ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] text-amber-400 font-bold">
+                              {f.manager.nome.charAt(0)}
+                            </div>
+                            <span className="text-zinc-300 font-medium">{f.manager.nome}</span>
+                          </div>
                         ) : (
-                          <span className="text-zinc-600 italic text-xs">Não informado</span>
+                          <span className="text-zinc-600 text-xs italic">Não atribuído</span>
                         )}
                       </td>
                       <td className="py-4 px-2 text-center">
@@ -221,22 +236,30 @@ export default function FiliaisPage() {
                       <td className="py-4 px-2 text-xs text-zinc-500">
                         {new Date(f.createdAt).toLocaleDateString('pt-BR')}
                       </td>
-                      {isAdmin && (
-                        <td className="py-4 px-2">
-                          <div className="flex justify-center gap-2">
-                            <button
-                              onClick={() => setModalData(f)}
-                              className="text-zinc-500 hover:text-amber-400 transition-colors p-1.5 hover:bg-zinc-800 rounded-lg" title="Editar">
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(f.id, f.nome)}
-                              className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 hover:bg-zinc-800 rounded-lg" title="Remover">
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                      <td className="py-4 px-2">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleViewTeam(f.id)}
+                            className="bg-zinc-800/50 text-zinc-400 hover:text-sky-400 hover:bg-sky-500/10 border border-zinc-700 hover:border-sky-500/30 px-3 py-1.5 rounded-lg transition-all text-[11px] font-bold uppercase tracking-wider flex items-center gap-2"
+                          >
+                            <Users size={12} /> Equipe
+                          </button>
+                          {isAdmin && (
+                            <>
+                              <button
+                                onClick={() => setModalData(f)}
+                                className="text-zinc-500 hover:text-amber-400 transition-colors p-1.5 hover:bg-zinc-800 rounded-lg" title="Editar">
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(f.id, f.nome)}
+                                className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 hover:bg-zinc-800 rounded-lg" title="Remover">
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -252,6 +275,52 @@ export default function FiliaisPage() {
           onClose={() => setModalData(null)}
           onRefresh={loadFiliais}
         />
+      )}
+
+      {/* Modal de Visualizar Equipe */}
+      {viewTeamData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1a1a] border border-zinc-800 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="flex justify-between items-center p-6 border-b border-zinc-800 shrink-0">
+              <h2 className="text-xl font-bold flex items-center gap-3 text-zinc-100">
+                <div className="w-9 h-9 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
+                  <Users size={18} className="text-sky-400" />
+                </div>
+                Equipe: {viewTeamData.nome}
+              </h2>
+              <button onClick={() => setViewTeamData(null)} className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-1.5 rounded-full cursor-pointer text-xl leading-none transition-colors">&times;</button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {viewTeamData.users?.length === 0 ? (
+                <p className="text-center text-zinc-500 py-10 italic">Nenhum usuário vinculado a esta filial.</p>
+              ) : (
+                viewTeamData.users.map(u => (
+                  <div key={u.id} className="bg-[#242424] border border-zinc-700/50 p-3.5 rounded-xl flex items-center justify-between group hover:border-[#0ea5e9]/30 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-sm font-bold text-zinc-400 group-hover:text-[#0ea5e9] transition-colors">
+                        {u.nome.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-zinc-100">{u.nome}</p>
+                        <p className="text-xs text-zinc-500">{u.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <div className="p-6 border-t border-zinc-800 flex justify-end shrink-0">
+              <button 
+                onClick={() => setViewTeamData(null)}
+                className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-all text-sm font-medium"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

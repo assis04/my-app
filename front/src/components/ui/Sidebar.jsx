@@ -28,10 +28,22 @@ export function Sidebar() {
             Overview
           </Link>
 
-          <Link href="#" className="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/50 rounded-full transition-colors font-medium">
-            <Brain size={20} />
-            CRM
-          </Link>
+          <div className="flex flex-col mb-1 mt-1">
+            <Link href="/crm/solicitacao-orcamento" className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname.startsWith('/crm') ? 'bg-gradient-to-r from-[#d946ef] to-[#c026d3] text-white shadow-lg shadow-fuchsia-900/20' : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/50'}`}>
+              <Brain size={20} className={pathname.startsWith('/crm') ? 'text-white' : ''} />
+              CRM {pathname.startsWith('/crm') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
+            </Link>
+            
+            {/* Submenu do CRM */}
+            {pathname.startsWith('/crm') && (
+              <div className="pl-12 flex flex-col gap-2 mt-2 border-l border-zinc-800 ml-6 py-1">
+                <Link href="/crm/solicitacao-orcamento" className={`text-sm ${pathname === '/crm/solicitacao-orcamento' ? 'text-[#e81cff] font-medium flex items-center gap-2' : 'text-zinc-500 hover:text-zinc-300 transition-colors'}`}>
+                  {pathname === '/crm/solicitacao-orcamento' && <span className="w-1.5 h-1.5 rounded-full bg-[#e81cff]"></span>}
+                  Solicitação de Orçamento
+                </Link>
+              </div>
+            )}
+          </div>
 
           <PermissionGate permissions={['captacao:leads:read', 'captacao:leads:create', 'ADM', 'Administrador']}>
             <div className="flex flex-col mb-1 mt-1">

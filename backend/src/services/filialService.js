@@ -2,18 +2,26 @@ import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 
 export async function listFiliais() {
-  return await prisma.filial.findMany({
-    orderBy: { nome: 'asc' },
-    include: {
-      _count: { select: { users: true, equipes: true } },
-    },
-  });
+  console.log('[DEBUG] listFiliais called with manager include');
+  try {
+    return await prisma.filial.findMany({
+      orderBy: { nome: 'asc' },
+      include: {
+        manager: { select: { id: true, nome: true } },
+        _count: { select: { users: true, equipes: true } },
+      },
+    });
+  } catch (err) {
+    console.error('[ERROR] listFiliais Prisma error:', err.message);
+    throw err;
+  }
 }
 
 export async function getFilial(id) {
   const filial = await prisma.filial.findUnique({
     where: { id: Number(id) },
     include: {
+      manager: { select: { id: true, nome: true } },
       users: { select: { id: true, nome: true, email: true } },
       equipes: { select: { id: true, nome: true } },
       _count: { select: { users: true, equipes: true } },
@@ -25,12 +33,16 @@ export async function getFilial(id) {
 }
 
 export async function createFilial(data) {
-  const { nome, endereco } = data;
+  const { nome, endereco, managerId } = data;
   if (!nome) throw new AppError('O nome da filial é obrigatório.', 400);
 
   try {
     const filial = await prisma.filial.create({
-      data: { nome: nome.trim(), endereco: endereco?.trim() || null },
+      data: { 
+        nome: nome.trim(), 
+        endereco: endereco?.trim() || null,
+        managerId: managerId ? parseInt(managerId, 10) : null
+      },
     });
     return filial;
   } catch (error) {
@@ -42,14 +54,15 @@ export async function createFilial(data) {
 }
 
 export async function updateFilial(id, data) {
-  const { nome, endereco } = data;
+  const { nome, endereco, managerId } = data;
 
   try {
     const filial = await prisma.filial.update({
       where: { id: Number(id) },
       data: {
         nome: nome?.trim(),
-        endereco: endereco?.trim() ?? null,
+        endereco: endereco?.trim() ?? undefined,
+        managerId: managerId !== undefined ? (managerId ? parseInt(managerId, 10) : null) : undefined
       },
     });
     return filial;

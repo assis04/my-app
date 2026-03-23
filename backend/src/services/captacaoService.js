@@ -13,10 +13,9 @@ export async function getQueueRanking(branchId) {
   }
 
   // AUTO-ENROLLMENT: Insere vendedores ativos da filial que ainda não estão na fila
-  // Somente usuários com cargo "Vendedor"
   await prisma.$queryRaw`
-    INSERT INTO branch_sales_queues (branch_id, user_id, is_available, attend_count_30d)
-    SELECT ${branchIdNum}, u.id, true, 0
+    INSERT INTO branch_sales_queues (branch_id, user_id, is_available, attend_count_30d, position)
+    SELECT ${branchIdNum}, u.id, true, 0, (SELECT COALESCE(MAX(position), 0) + 1 FROM branch_sales_queues WHERE branch_id = ${branchIdNum})
     FROM users u
     JOIN roles r ON r.id = u.role_id
     WHERE u.filial_id = ${branchIdNum}
@@ -28,8 +27,6 @@ export async function getQueueRanking(branchId) {
       )
   `;
 
-  // Executa o algoritmo SQL fornecido para rankear os vendedores da filial
-  // Somente usuários com cargo "Vendedor"
   const queueStatus = await prisma.$queryRaw`
     SELECT 
       sq.user_id as "id",
@@ -37,14 +34,7 @@ export async function getQueueRanking(branchId) {
       sq.is_available as "isAvailable",
       sq.last_assigned_at as "lastAssignedAt",
       sq.attend_count_30d as "attendCount30d",
-      ROW_NUMBER() OVER (
-        PARTITION BY sq.branch_id 
-        ORDER BY 
-          sq.last_assigned_at ASC NULLS FIRST,
-          sq.attend_count_30d ASC,
-          sq.is_available DESC,
-          u.id ASC
-      ) as "position"
+      sq.position
     FROM branch_sales_queues sq
     JOIN users u ON u.id = sq.user_id
     JOIN roles r ON r.id = u.role_id
@@ -52,15 +42,58 @@ export async function getQueueRanking(branchId) {
       AND u.filial_id = ${branchIdNum} 
       AND u.ativo = true
       AND LOWER(r.nome) = 'vendedor'
-    ORDER BY "position" ASC;
+    ORDER BY sq.position ASC;
   `;
 
-  // Converter BigInt para Number (Problema do Prisma RawQueries + JSON.stringify)
   return queueStatus.map(item => ({
     ...item,
-    position: typeof item.position === 'bigint' ? Number(item.position) : item.position,
-    attendCount30d: typeof item.attendCount30d === 'bigint' ? Number(item.attendCount30d) : item.attendCount30d
+    position: Number(item.position),
+    attendCount30d: Number(item.attendCount30d)
   }));
+}
+
+/**
+ * Normaliza as posições da fila para evitar buracos (1, 2, 3...).
+ */
+async function recalculatePositions(branchIdNum, tx = prisma) {
+  const queue = await tx.salesQueue.findMany({
+    where: { filialId: branchIdNum },
+    orderBy: { position: 'asc' }
+  });
+
+  for (let i = 0; i < queue.length; i++) {
+    await tx.salesQueue.update({
+      where: { filialId_userId: { filialId: branchIdNum, userId: queue[i].userId } },
+      data: { position: i + 1 }
+    });
+  }
+}
+
+/**
+ * Valida o formato e a unicidade do telefone do lead.
+ */
+async function validateLeadPhone(telefone, tx = prisma) {
+  if (!telefone) {
+    throw new AppError('O telefone é obrigatório.', 400);
+  }
+
+  // Remove caracteres não numéricos para validação
+  const digits = telefone.replace(/\D/g, '');
+  
+  if (digits.length < 10 || digits.length > 11) {
+    throw new AppError('O telefone deve ter entre 10 e 11 dígitos (incluindo DDD).', 400);
+  }
+
+  // Verifica se já existe um cliente/lead com este telefone
+  const existingClient = await tx.client.findFirst({
+    where: { telefone: digits }
+  });
+
+  if (existingClient) {
+    throw new AppError(`O telefone ${telefone} já está cadastrado no sistema para o lead/cliente "${existingClient.nome}".`, 400);
+  }
+
+  return digits;
 }
 
 /**
@@ -73,50 +106,80 @@ export async function assignLeadQuick(branchId, leadData, creatorUserId) {
     throw new AppError('ID de filial inválido.', 400);
   }
 
-  // Transaction for Atomicity: Prevent Race Conditions when 2 leads arrive exactly at same time
   return await prisma.$transaction(async (tx) => {
-    // 1. Obter a fila travada (FOR UPDATE SKIP LOCKED se fosse postgres direto, mas Prisma $queryRaw pode usar)
-    // Para simplificar no Prisma, pegamos o top 1 disponivel:
-    const topVendedorQuery = await tx.$queryRaw`
-      SELECT sq.user_id
-      FROM branch_sales_queues sq
-      JOIN users u ON u.id = sq.user_id
-      WHERE sq.branch_id = ${branchIdNum} 
-        AND sq.is_available = true 
-        AND u.filial_id = ${branchIdNum}
-        AND u.ativo = true
-      ORDER BY 
-          sq.last_assigned_at ASC NULLS FIRST,
-          sq.attend_count_30d ASC,
-          u.id ASC
-      LIMIT 1
-      FOR UPDATE SKIP LOCKED;
-    `;
+    // 1. Pega o primeiro disponível por posição
+    const availableSellers = await tx.salesQueue.findMany({
+      where: { filialId: branchIdNum, isAvailable: true },
+      orderBy: { position: 'asc' },
+      take: 1
+    });
 
-    if (!topVendedorQuery || topVendedorQuery.length === 0) {
+    if (availableSellers.length === 0) {
       throw new AppError('Nenhum vendedor disponível nesta filial no momento.', 400);
     }
 
-    const assignedUserId = topVendedorQuery[0].user_id;
+    const assignedUserId = availableSellers[0].userId;
 
-    // 2. Atualizar as estatísticas do vendedor que recebeu o lead
-    await tx.$queryRaw`
-      UPDATE branch_sales_queues
-      SET 
-        last_assigned_at = NOW(),
-        attend_count_30d = attend_count_30d + 1
-      WHERE branch_id = ${branchIdNum} AND user_id = ${assignedUserId}
-    `;
+    // 2. Busca a fila completa para identificar quem é o atual primeiro lugar
+    const fullQueue = await tx.salesQueue.findMany({
+      where: { filialId: branchIdNum },
+      orderBy: { position: 'asc' }
+    });
 
-    // 3. Criar o Lead (Reutilizando a tabela Client por enquanto, caso o lead vire cleinte, senao precisariamos de nova tabela. 
-    // Criaremos apenas usando os dados mínimos)
-    // Conforme o escopo, salvamos na tabela Client.
+    const firstInQueue = fullQueue[0];
+    const maxPos = fullQueue.length > 0 ? Math.max(...fullQueue.map(q => q.position)) : 0;
+
+    // 3. Aplica a rotação:
+    // Se o atendente NÃO for o primeiro, o primeiro perde a vez e vai pro fim.
+    // O atendente sempre vai para o fim absoluto.
+    if (firstInQueue && assignedUserId !== firstInQueue.userId) {
+      // Primeiro lugar perde a vez
+      await tx.salesQueue.update({
+        where: { filialId_userId: { filialId: branchIdNum, userId: firstInQueue.userId } },
+        data: { position: maxPos + 1 }
+      });
+      // Atendente vai para o fim absoluto
+      await tx.salesQueue.update({
+        where: { filialId_userId: { filialId: branchIdNum, userId: assignedUserId } },
+        data: { 
+          position: maxPos + 2,
+          lastAssignedAt: new Date(),
+          attendCount30d: { increment: 1 }
+        }
+      });
+    } else {
+      // Atendente já era o primeiro, apenas move para o fim
+      await tx.salesQueue.update({
+        where: { filialId_userId: { filialId: branchIdNum, userId: assignedUserId } },
+        data: { 
+          position: maxPos + 1,
+          lastAssignedAt: new Date(),
+          attendCount30d: { increment: 1 }
+        }
+      });
+    }
+
+    // 4. Normaliza as posições
+    await recalculatePositions(branchIdNum, tx);
+
+    // 5. Validar telefone e criar lead
+    const validPhone = await validateLeadPhone(leadData.telefone, tx);
     const novoLead = await tx.client.create({
       data: {
         nome: leadData.nome || 'Lead Rápido',
-        telefone: leadData.telefone,
+        telefone: validPhone,
         filialId: branchIdNum,
-        userId: assignedUserId, // O vendedor que foi sorteado na fila
+        userId: assignedUserId,
+        etapa: leadData.etapa || 'Novo',
+        status: leadData.status || 'Ativo',
+        tipoImovel: leadData.tipoImovel,
+        statusImovel: leadData.statusImovel,
+        plantaPath: leadData.plantaPath,
+        gerenteId: leadData.gerenteId ? parseInt(leadData.gerenteId, 10) : null,
+        pedidosContratos: leadData.pedidosContratos,
+        canal: leadData.canal,
+        origem: leadData.origem,
+        parceria: leadData.parceria,
       }
     });
 
@@ -128,7 +191,7 @@ export async function assignLeadQuick(branchId, leadData, creatorUserId) {
     return {
       leadId: novoLead.id,
       assignedUserId,
-      vendedorNome: vendedorData.nome
+      vendedorNome: vendedorData?.nome
     };
   });
 }
@@ -151,57 +214,75 @@ export async function assignLeadManual(branchId, leadData, assignedUserId) {
   }
 
   return await prisma.$transaction(async (tx) => {
-    // 1. Descobrir quem é o primeiro da fila atualmente
-    const firstInQueueQuery = await tx.$queryRaw`
-      SELECT sq.user_id
-      FROM branch_sales_queues sq
-      JOIN users u ON u.id = sq.user_id
-      WHERE sq.branch_id = ${branchIdNum} 
-        AND sq.is_available = true 
-        AND u.filial_id = ${branchIdNum}
-        AND u.ativo = true
-      ORDER BY 
-          sq.last_assigned_at ASC NULLS FIRST,
-          sq.attend_count_30d ASC,
-          u.id ASC
-      LIMIT 1
-      FOR UPDATE SKIP LOCKED;
-    `;
+    // 1. Pega os dados do vendedor e do atual primeiro da fila
+    const actor = await tx.salesQueue.findUnique({
+      where: { filialId_userId: { filialId: branchIdNum, userId: userIdNum } }
+    });
 
-    const firstUserId = firstInQueueQuery.length > 0 ? firstInQueueQuery[0].user_id : null;
-    const isFirstInQueue = firstUserId === userIdNum;
-
-    if (isFirstInQueue) {
-      // Caso normal: o lead vai para o primeiro da fila.
-      // Atualiza os stats dele (vai pro fim da fila).
-      await tx.$queryRaw`
-        UPDATE branch_sales_queues
-        SET 
-          last_assigned_at = NOW(),
-          attend_count_30d = attend_count_30d + 1
-        WHERE branch_id = ${branchIdNum} AND user_id = ${userIdNum}
-      `;
-    } else {
-      // O lead vai para alguém que NÃO é o primeiro.
-      // O primeiro da fila PERDE A VEZ (last_assigned_at = NOW, vai pro fim).
-      // O vendedor escolhido NÃO tem sua posição alterada.
-      if (firstUserId) {
-        await tx.$queryRaw`
-          UPDATE branch_sales_queues
-          SET 
-            last_assigned_at = NOW()
-          WHERE branch_id = ${branchIdNum} AND user_id = ${firstUserId}
-        `;
-      }
+    if (!actor) {
+      throw new AppError('Vendedor não encontrado na fila.', 404);
     }
 
-    // 2. Criar o Lead vinculando ao vendedor específico
+    const actorPosition = actor.position;
+
+    // 2. Busca a fila completa para identificar o atual primeiro lugar
+    const fullQueue = await tx.salesQueue.findMany({
+      where: { filialId: branchIdNum },
+      orderBy: { position: 'asc' }
+    });
+
+    const firstInQueue = fullQueue[0];
+    const maxPos = fullQueue.length > 0 ? Math.max(...fullQueue.map(q => q.position)) : 0;
+
+    // 3. Aplica a rotação baseada na ação (furo de fila na vida real)
+    if (firstInQueue && userIdNum !== firstInQueue.userId) {
+      // O primeiro lugar perde a vez (vai pro fim)
+      await tx.salesQueue.update({
+        where: { filialId_userId: { filialId: branchIdNum, userId: firstInQueue.userId } },
+        data: { position: maxPos + 1 }
+      });
+      // O atendente vai para o fim absoluto
+      await tx.salesQueue.update({
+        where: { filialId_userId: { filialId: branchIdNum, userId: userIdNum } },
+        data: { 
+          position: maxPos + 2,
+          lastAssignedAt: new Date(),
+          attendCount30d: { increment: 1 }
+        }
+      });
+    } else {
+      // Atendente era o primeiro, apenas move pro fim
+      await tx.salesQueue.update({
+        where: { filialId_userId: { filialId: branchIdNum, userId: userIdNum } },
+        data: { 
+          position: maxPos + 1,
+          lastAssignedAt: new Date(),
+          attendCount30d: { increment: 1 }
+        }
+      });
+    }
+
+    // 4. Normaliza as posições
+    await recalculatePositions(branchIdNum, tx);
+
+    // 5. Validar telefone e criar Lead
+    const validPhone = await validateLeadPhone(leadData.telefone, tx);
     const novoLead = await tx.client.create({
       data: {
         nome: leadData.nome || leadData.telefone || 'Lead Manual',
-        telefone: leadData.telefone,
+        telefone: validPhone,
         filialId: branchIdNum,
         userId: userIdNum,
+        etapa: leadData.etapa || 'Novo',
+        status: leadData.status || 'Ativo',
+        tipoImovel: leadData.tipoImovel,
+        statusImovel: leadData.statusImovel,
+        plantaPath: leadData.plantaPath,
+        gerenteId: leadData.gerenteId ? parseInt(leadData.gerenteId, 10) : null,
+        pedidosContratos: leadData.pedidosContratos,
+        canal: leadData.canal,
+        origem: leadData.origem,
+        parceria: leadData.parceria,
       }
     });
 
@@ -260,6 +341,9 @@ export async function getLeadHistory(branchId) {
     take: 30,
     include: {
       user: {
+        select: { id: true, nome: true }
+      },
+      gerente: {
         select: { id: true, nome: true }
       }
     }
