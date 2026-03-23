@@ -1,7 +1,9 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const api = async (endpoint, { body, ...customConfig } = {}) => {
-  const headers = { 'Content-Type': 'application/json' };
+  const isFormData = typeof window !== 'undefined' && body instanceof FormData;
+  
+  const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
   
   // Inclui cookies nas requisições (importante para o refresh token)
   const config = {
@@ -15,7 +17,7 @@ export const api = async (endpoint, { body, ...customConfig } = {}) => {
   };
 
   if (body) {
-    config.body = JSON.stringify(body);
+    config.body = isFormData ? body : JSON.stringify(body);
   }
 
   // Se houver um token no localStorage, adiciona no header

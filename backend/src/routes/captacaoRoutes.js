@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../config/authMiddleware.js';
 import { authorizeAnyPermission } from '../config/roleMiddleware.js';
 import * as captacaoController from '../controllers/captacaoController.js';
+import { uploadPlanta } from '../middlewares/uploadMiddleware.js';
 
 const router = Router();
 
@@ -12,9 +13,9 @@ const router = Router();
 
 router.get('/queue/:branch_id', authMiddleware, captacaoController.getQueueRanking);
 
-router.post('/lead/quick', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), captacaoController.processNewQuickLead);
+router.post('/lead/quick', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), uploadPlanta.single('planta'), captacaoController.processNewQuickLead);
 
-router.post('/lead/manual', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), captacaoController.processNewManualLead);
+router.post('/lead/manual', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), uploadPlanta.single('planta'), captacaoController.processNewManualLead);
 
 router.put('/queue/toggle-status', authMiddleware, captacaoController.toggleAgentAvailability);
 

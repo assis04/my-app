@@ -23,7 +23,11 @@ app.use(cors({
   credentials: true 
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Servir arquivos estáticos da pasta uploads (plantas, contratos, etc.)
+app.use('/uploads', express.static('uploads'));
 
 // Rate Limiting Global
 const limiter = rateLimit({
@@ -32,6 +36,8 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+import crmRoutes from "./src/routes/crmRoutes.js";
+
 // Rotas
 app.use("/auth", authRoutes); // Usa o prefixo /auth para organizar
 app.use("/roles", roleRoutes);
@@ -39,6 +45,7 @@ app.use("/users", userRoutes);
 app.use('/filiais', filialRoutes);
 app.use('/equipes', equipeRoutes);
 app.use('/api/captacao', captacaoRoutes); // Nova rota de Captação Fila inteligente
+app.use('/api/crm', crmRoutes); // Módulo de CRM
 
 // Tratamento Global de Erros (Middleware)
 app.use(errorHandler);

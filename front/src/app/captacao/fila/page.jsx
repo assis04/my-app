@@ -1,22 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Plus, ChevronDown, FolderOpen, Menu, X, Eye } from 'lucide-react';
+import { Search, Filter, Plus, ChevronDown, FolderOpen, Menu, X, Eye, FileUp, FileText } from 'lucide-react';
 import { useSalesQueue } from '@/hooks/useSalesQueue';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import { Sidebar } from '@/components/ui/Sidebar';
 import { useRouter } from 'next/navigation';
 import NovoLeadModal from './components/NovoLeadModal';
+import { formatPhone } from '@/lib/utils';
 
-function formatPhone(value) {
-  if (!value) return '';
-  const digits = value.replace(/\D/g, '');
-  if (digits.length <= 10) {
-    return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-  }
-  return digits.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-}
 
 function timeAgo(dateString) {
   if (!dateString) return '';
@@ -75,7 +68,22 @@ export default function CaptacaoFilaPage() {
     }
   }, [user, authLoading, isAdmOrSupervisor]);
 
-  const { queue, history, loading: queueLoading, handleCreateManualLead, refetch } = useSalesQueue(selectedBranchId);
+  const { 
+    queue, 
+    history, 
+    loading: queueLoading, 
+    handleCreateManualLead, 
+    handleToggleAgentStatus,
+    refetch 
+  } = useSalesQueue(selectedBranchId);
+
+  // Permissão para alternar status de OUTROS
+  const canToggleOthers = useMemo(() => {
+    const isAdm = ['ADM', 'Administrador', 'admin'].includes(user?.role);
+    const isGerente = ['Gerente', 'GERENTE'].includes(user?.role);
+    const sameBranch = Number(user?.filialId) === Number(selectedBranchId);
+    return isAdm || (isGerente && sameBranch);
+  }, [user, selectedBranchId]);
 
   // Derived: unique sellers from history for the filter dropdown
   const uniqueVendedores = useMemo(() => {
@@ -170,11 +178,11 @@ export default function CaptacaoFilaPage() {
       <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0 pt-16 md:pt-8 bg-[#212121]">
         
         {/* 🔹 FILA DA VEZ SECTION */}
-        <div className="mb-10 max-w-5xl mx-auto">
+        <div className="mb-10 max-w-[1600px] mx-auto">
           <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
             <div>
-              <h1 className="text-2xl font-light text-zinc-100">Fila da vez</h1>
-              <p className="text-sm text-zinc-500 mt-0.5">Atribuição e roteamento de leads</p>
+              <h1 className="text-3xl font-light text-zinc-100">Fila da vez</h1>
+              <p className="text-base text-zinc-500 mt-1">Atribuição e roteamento de leads</p>
             </div>
             
             <div className="relative">
@@ -205,7 +213,7 @@ export default function CaptacaoFilaPage() {
                 <span className="w-12 text-zinc-400 font-medium">{index + 1}º</span>
                 
                 <div className="flex items-center gap-4 flex-1">
-                  <span className="text-zinc-500 whitespace-nowrap text-sm">Telefone:</span>
+                  <span className="text-zinc-500 whitespace-nowrap text-base">Telefone:</span>
                   <form onSubmit={(e) => submitDirectLead(agent.id, agent.nome, e)} className="w-full sm:w-auto flex items-center">
                     <input 
                       type="text" 
@@ -213,32 +221,31 @@ export default function CaptacaoFilaPage() {
                       value={phoneInputs[agent.id] || ''}
                       onChange={(e) => handlePhoneChange(agent.id, e.target.value)}
                       disabled={!agent.isAvailable}
-                      className="bg-[#2a2a2a] border border-zinc-700/80 rounded-xl h-10 px-4 w-full sm:w-64 outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] text-zinc-200 text-sm disabled:opacity-50 transition-all"
+                      className="bg-[#2a2a2a] border border-zinc-700/80 rounded-xl h-11 px-4 w-full sm:w-72 outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] text-zinc-200 text-base disabled:opacity-50 transition-all font-medium"
                     />
                     <button type="submit" className="hidden">Submit</button>
                   </form>
                 </div>
 
-                <div className="flex-1 text-zinc-200 flex items-center justify-between font-medium">
-                  <div className="flex items-center gap-3">
+                <div className="flex-1 text-zinc-200 flex items-center justify-between font-medium text-lg">
+                  <div className="flex items-center gap-4">
                     {agent.nome}
                     {!agent.isAvailable ? (
-                      <span className="text-[10px] text-red-400 border border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Off</span>
+                      <span className="text-[11px] text-red-400 border border-red-500/30 bg-red-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Off</span>
                     ) : (
-                      <span className="text-[10px] text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Online</span>
+                      <span className="text-[11px] text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Online</span>
                     )}
                   </div>
                   
-                  {user?.id === agent.id && (
+                  {(user?.id === agent.id || canToggleOthers) && (
                      <button 
                        onClick={() => {
-                         api('/api/captacao/queue/toggle-status', { method: 'PUT', body: { branch_id: selectedBranchId, is_available: !agent.isAvailable } })
-                           .then(() => refetch())
-                           .catch(err => alert("Erro ao mudar status: " + err.message));
+                         handleToggleAgentStatus(agent.id, !agent.isAvailable)
+                           .catch(err => alert(err.message || "Erro ao mudar status"));
                        }}
                        className="text-xs text-[#0ea5e9] underline hover:text-white"
                      >
-                       Alternar Meu Status
+                       {user?.id === agent.id ? 'Alternar Meu Status' : 'Alternar Status'}
                      </button>
                   )}
                 </div>
@@ -248,9 +255,9 @@ export default function CaptacaoFilaPage() {
         </div>
 
         {/* 🔹 HISTÓRICO DE ATENDIMENTO SECTION */}
-        <div className="max-w-5xl mx-auto bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-medium text-zinc-300 mb-6 flex items-center gap-3">
-            <FolderOpen size={20} className="text-[#0ea5e9]" /> Histórico de Relacionamento
+        <div className="max-w-[1600px] mx-auto bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-xl font-medium text-zinc-300 mb-6 flex items-center gap-3">
+            <FolderOpen size={22} className="text-[#0ea5e9]" /> Histórico de Relacionamento
           </h2>
           
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -347,39 +354,75 @@ export default function CaptacaoFilaPage() {
 
           {/* DATA TABLE */}
           <div className="w-full overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap text-zinc-400 border-collapse">
+            <table className="w-full text-left text-base whitespace-nowrap text-zinc-400 border-collapse">
               <thead className="border-b border-zinc-800 text-zinc-100">
                 <tr>
-                  <th className="pb-4 pt-2 font-semibold px-2 w-12 text-center"></th>
-                  <th className="pb-4 pt-2 font-semibold px-2 w-24">ID</th>
-                  <th className="pb-4 pt-2 font-semibold px-2 min-w-[180px]">Nome</th>
-                  <th className="pb-4 pt-2 font-semibold px-2 min-w-[150px]">Telefone</th>
-                  <th className="pb-4 pt-2 font-semibold px-2 min-w-[150px]">Vendedor</th>
-                  <th className="pb-4 pt-2 font-semibold px-2 w-40">Origem</th>
-                  <th className="pb-4 pt-2 font-semibold px-2 w-32">Quando</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 w-12 text-center"></th>
+                  <th className="pb-4 pt-2 font-semibold px-3 w-24">Status</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 w-28">Etapa</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 min-w-[160px]">Lead</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 min-w-[120px]">Vendedor</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 min-w-[120px]">Imóvel</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 w-20 text-center">Planta</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 w-36">Data de Solicitação</th>
+                  <th className="pb-4 pt-2 font-semibold px-3 w-36 text-right">Última Interação</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredHistory.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-10 text-center text-zinc-600">
+                    <td colSpan={9} className="py-10 text-center text-zinc-600">
                       {searchTerm || filterVendedor ? 'Nenhum resultado encontrado para os filtros aplicados.' : 'Nenhum lead registrado ainda.'}
                     </td>
                   </tr>
                 )}
                 {filteredHistory.map((lead) => (
-                  <tr key={lead.id} className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors">
-                    <td className="py-4 px-2 text-zinc-500 text-center"><FolderOpen size={16} /></td>
-                    <td className="py-4 px-2 text-zinc-300 font-medium">#{lead.id}</td>
-                    <td className="py-4 px-2 text-zinc-200">{lead.nome || '—'}</td>
-                    <td className="py-4 px-2 text-zinc-400">{lead.telefone || '—'}</td>
-                    <td className="py-4 px-2">
-                      <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold">
-                        {lead.user?.nome || '???'}
+                  <tr key={lead.id} className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group">
+                    <td className="py-4 px-2 text-zinc-500 text-center uppercase text-[10px] font-bold">#{lead.id}</td>
+                    <td className="py-4 px-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold w-fit border ${
+                        lead.status === 'Ativo' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-500'
+                      }`}>
+                        {lead.status || 'Ativo'}
                       </span>
                     </td>
-                    <td className="py-4 px-2 text-zinc-400">CRM Interno</td>
-                    <td className="py-4 px-2 text-zinc-500 text-xs">{timeAgo(lead.createdAt)}</td>
+                    <td className="py-4 px-3">
+                      <span className="text-sm font-medium text-zinc-300">{lead.etapa || 'Novo'}</span>
+                    </td>
+                    <td className="py-4 px-2">
+                      <div className="flex flex-col">
+                        <span className="text-zinc-100 font-semibold">{lead.nome || '—'}</span>
+                        <span className="text-xs text-zinc-500">{lead.telefone || '—'}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-2">
+                      <span className="text-zinc-300 text-sm font-medium">{lead.user?.nome || '???'}</span>
+                    </td>
+                    <td className="py-4 px-2">
+                      <div className="flex flex-col">
+                        <span className="text-zinc-300 text-sm">{lead.tipoImovel || '—'}</span>
+                        <span className="text-[11px] text-zinc-500">{lead.statusImovel || '—'}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-2 text-center">
+                      {lead.plantaPath ? (
+                        <a 
+                          href={`http://localhost:3002/${lead.plantaPath}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex p-2 text-sky-400 hover:bg-sky-500/10 rounded-lg transition-all"
+                          title="Ver Planta"
+                        >
+                          <FileUp size={16} />
+                        </a>
+                      ) : (
+                        <span className="text-zinc-700 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-3 text-zinc-400 text-xs font-medium">
+                      {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('pt-BR') : '—'}
+                    </td>
+                    <td className="py-4 px-2 text-zinc-500 text-xs text-right font-medium">{timeAgo(lead.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

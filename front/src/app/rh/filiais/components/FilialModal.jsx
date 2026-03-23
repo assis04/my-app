@@ -1,17 +1,33 @@
-'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
-import { Loader2, Building2, AlertTriangle } from 'lucide-react';
+import { Loader2, Building2, AlertTriangle, UserCheck, ChevronDown } from 'lucide-react';
 
 export default function FilialModal({ filial = null, onClose, onRefresh }) {
   const isEditing = !!filial;
   const [formData, setFormData] = useState({
     nome: filial?.nome || '',
     endereco: filial?.endereco || '',
+    managerId: filial?.managerId || '',
   });
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const data = await api('/users');
+        // Filtrar apenas gerentes/admins
+        const filtered = data.filter(u => 
+          ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(u.perfil)
+        );
+        setUsers(filtered);
+      } catch (err) {
+        console.error('Erro ao carregar usuários:', err);
+      }
+    }
+    fetchUsers();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,6 +93,25 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
               value={formData.endereco}
               onChange={e => setFormData(p => ({ ...p, endereco: e.target.value }))}
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <UserCheck size={14} /> Gerente Responsável
+            </label>
+            <div className="relative">
+              <select
+                value={formData.managerId}
+                onChange={(e) => setFormData(p => ({ ...p, managerId: e.target.value }))}
+                className="appearance-none w-full bg-[#242424] text-white p-3 pr-10 rounded-xl border border-zinc-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition-all text-sm cursor-pointer"
+              >
+                <option value="">Selecione um gerente...</option>
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>{u.nome} ({u.perfil})</option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">

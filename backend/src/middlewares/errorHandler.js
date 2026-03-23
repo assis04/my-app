@@ -26,6 +26,16 @@ export const errorHandler = (err, req, res, next) => {
     statusCode = 404;
   }
 
+  if (err.code === 'P2024') {
+    errorMsg = "O servidor demorou muito para responder (Database Timeout). Tente novamente.";
+    statusCode = 504;
+  }
+
+  // Se for erro operacional (validado por nós), logamos de forma informativa mas sem stack trace poluido
+  if (err.isOperational) {
+    console.log(`[Validation Error] ℹ️: ${errorMsg}`);
+  }
+
   res.status(statusCode).json({
     status: err.status,
     message: errorMsg,
