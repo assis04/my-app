@@ -439,7 +439,7 @@ export default function NovoLeadModal({
             Cancelar
           </button>
           <button type="button" disabled={loading} onClick={handleSubmit}
-            className="flex-1 bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] text-white py-3 rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-sky-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-sm">
+            className="flex-1 bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white py-3 rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-sky-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-sm">
             {loading ? <><Loader2 size={16} className="animate-spin" /> Registrando Lead...</> : 'Criar e Atribuir Lead'}
           </button>
         </div>

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Search, ChevronDown, Plus, Edit, Menu } from 'lucide-react';
 import { Sidebar } from '@/components/ui/Sidebar';
 import NovoLeadModal from '../../captacao/fila/components/NovoLeadModal';
+import LeadDetailsDrawer from '@/components/ui/LeadDetailsDrawer';
 
 export default function SolicitacaoOrcamentoPage() {
   const { user } = useAuth();
@@ -13,6 +14,7 @@ export default function SolicitacaoOrcamentoPage() {
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   // States for dynamic selects
   const [branches, setBranches] = useState([]);
@@ -348,8 +350,12 @@ export default function SolicitacaoOrcamentoPage() {
                 )}
 
                 {!loading && leads.map((lead) => (
-                  <div key={lead.id} className="grid grid-cols-[50px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_1fr] gap-4 py-3.5 border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors items-center text-sm px-4 group">
-                    <div className="flex justify-center text-zinc-600 hover:text-[#0ea5e9] cursor-pointer transition-colors">
+                  <div 
+                    key={lead.id} 
+                    onClick={() => setSelectedLead(lead)}
+                    className="grid grid-cols-[50px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_1fr] gap-4 py-3.5 border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors items-center text-sm px-4 group cursor-pointer"
+                  >
+                    <div className="flex justify-center text-zinc-600 group-hover:text-[#0ea5e9] transition-colors">
                       <Edit size={16} />
                     </div>
                     <div className="truncate font-medium text-zinc-200" title={lead.nome}>{lead.nome || '—'}</div>
@@ -382,6 +388,13 @@ export default function SolicitacaoOrcamentoPage() {
             onSave={handleSaveLead}
           />
         )}
+        
+        {/* Painel Lateral com Detalhes do Lead */}
+        <LeadDetailsDrawer
+          isOpen={!!selectedLead}
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+        />
       </main>
     </div>
   );

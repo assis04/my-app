@@ -59,6 +59,6 @@ const serverApp = http.createServer(app);
 initSocket(serverApp);
 
 const PORT = env.PORT || 3001;
-serverApp.listen(PORT, () => {
+serverApp.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} with WebSocket Support 🚀`);
 });

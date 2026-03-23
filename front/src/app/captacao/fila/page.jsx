@@ -8,6 +8,7 @@ import { api } from '@/services/api';
 import { Sidebar } from '@/components/ui/Sidebar';
 import { useRouter } from 'next/navigation';
 import NovoLeadModal from './components/NovoLeadModal';
+import LeadDetailsDrawer from '@/components/ui/LeadDetailsDrawer';
 import { formatPhone } from '@/lib/utils';
 
 
@@ -39,11 +40,15 @@ export default function CaptacaoFilaPage() {
   // State for the new lead modal
   const [modalData, setModalData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   // State for search and filter
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterVendedor, setFilterVendedor] = useState('');
+  
+  const [filterPeriodo, setFilterPeriodo] = useState('7d');
+  const [periodoOpen, setPeriodoOpen] = useState(false);
 
   const isAdmOrSupervisor = user?.permissions?.includes('*') || user?.permissions?.includes('captacao:leads:manage');
 
@@ -116,8 +121,31 @@ export default function CaptacaoFilaPage() {
       items = items.filter(lead => String(lead.user?.id) === filterVendedor);
     }
 
+    // Period filter
+    if (filterPeriodo !== 'todos') {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+      
+      const cutoffDate = new Date();
+      cutoffDate.setHours(0, 0, 0, 0);
+      
+      if (filterPeriodo === 'hoje') {
+        // already set to start of today
+      } else if (filterPeriodo === '7d') {
+        cutoffDate.setDate(now.getDate() - 7);
+      } else if (filterPeriodo === '30d') {
+        cutoffDate.setDate(now.getDate() - 30);
+      }
+
+      items = items.filter(lead => {
+        if (!lead.createdAt) return false;
+        const leadDate = new Date(lead.createdAt);
+        return leadDate >= cutoffDate && leadDate <= now;
+      });
+    }
+
     return items;
-  }, [history, searchTerm, filterVendedor]);
+  }, [history, searchTerm, filterVendedor, filterPeriodo]);
 
   const handlePhoneChange = (agentId, value) => {
     setPhoneInputs(prev => ({ ...prev, [agentId]: formatPhone(value) }));
@@ -282,6 +310,43 @@ export default function CaptacaoFilaPage() {
                 )}
               </div>
               
+              {/* 📅 Date Period dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setPeriodoOpen(!periodoOpen)}
+                  className={`flex items-center gap-2 text-sm whitespace-nowrap px-3 py-2.5 rounded-xl transition-colors border ${
+                    filterPeriodo !== 'todos'
+                      ? 'bg-[#0ea5e9]/10 border-[#0ea5e9]/30 text-[#0ea5e9]' 
+                      : 'border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+                  }`}
+                >
+                  <Filter size={16} />
+                  {filterPeriodo === 'hoje' ? 'Hoje' : filterPeriodo === '7d' ? 'Últimos 7 dias' : filterPeriodo === '30d' ? 'Últimos 30 dias' : 'Todo Período'}
+                </button>
+
+                {periodoOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setPeriodoOpen(false)} />
+                    <div className="absolute top-full left-0 mt-2 z-20 bg-[#1c1c1c] border border-zinc-700 rounded-xl shadow-2xl w-48 overflow-hidden">
+                      <div className="p-2 border-b border-zinc-800">
+                        <p className="text-xs text-zinc-500 px-2 py-1 uppercase tracking-wider">Período</p>
+                      </div>
+                      <div>
+                        {['hoje', '7d', '30d', 'todos'].map((period) => (
+                          <button 
+                            key={period}
+                            onClick={() => { setFilterPeriodo(period); setPeriodoOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${period === filterPeriodo ? 'text-[#0ea5e9] bg-[#0ea5e9]/10' : 'text-zinc-300 hover:bg-zinc-800'}`}
+                          >
+                            {period === 'hoje' ? 'Hoje' : period === '7d' ? 'Últimos 7 dias' : period === '30d' ? 'Últimos 30 dias' : 'Todo o Período'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* 🎚️ Filter dropdown */}
               <div className="relative">
                 <button 
@@ -326,9 +391,9 @@ export default function CaptacaoFilaPage() {
               </div>
 
               {/* Clear all filters */}
-              {(searchTerm || filterVendedor) && (
+              {(searchTerm || filterVendedor || filterPeriodo !== '7d') && (
                 <button 
-                  onClick={() => { setSearchTerm(''); setFilterVendedor(''); }}
+                  onClick={() => { setSearchTerm(''); setFilterVendedor(''); setFilterPeriodo('7d'); }}
                   className="text-xs text-zinc-500 hover:text-zinc-300 underline whitespace-nowrap"
                 >
                   Limpar filtros
@@ -336,13 +401,23 @@ export default function CaptacaoFilaPage() {
               )}
             </div>
             
-            {/* ➕ Novo Lead Manual button */}
-            <button 
-              onClick={openNewLeadModal}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] text-white px-5 py-2.5 rounded-full hover:opacity-90 font-medium shadow-lg shadow-sky-900/20 transition-all text-sm"
-            >
-              Novo Lead Manual <Plus size={16} />
-            </button>
+            <div className="flex items-center gap-4">
+              {/* Filial Indicator */}
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#2a2a2a] border border-zinc-700 rounded-lg">
+                <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Filial:</span>
+                <span className="text-sm font-medium text-zinc-200">
+                  {branches.find(b => String(b.id) === selectedBranchId)?.nome || 'Todas'}
+                </span>
+              </div>
+
+              {/* ➕ Novo Lead Manual button */}
+              <button 
+                onClick={openNewLeadModal}
+                className="flex items-center gap-2 bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white px-5 py-2.5 rounded-full hover:opacity-90 font-medium shadow-lg shadow-sky-900/20 transition-all text-sm"
+              >
+                Novo Lead Manual <Plus size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Results count */}
@@ -357,15 +432,15 @@ export default function CaptacaoFilaPage() {
             <table className="w-full text-left text-base whitespace-nowrap text-zinc-400 border-collapse">
               <thead className="border-b border-zinc-800 text-zinc-100">
                 <tr>
-                  <th className="pb-4 pt-2 font-semibold px-3 w-12 text-center"></th>
-                  <th className="pb-4 pt-2 font-semibold px-3 w-24">Status</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 w-28">Etapa</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 min-w-[160px]">Lead</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 min-w-[120px]">Vendedor</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 min-w-[120px]">Imóvel</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 w-20 text-center">Planta</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 w-36">Data de Solicitação</th>
-                  <th className="pb-4 pt-2 font-semibold px-3 w-36 text-right">Última Interação</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[5%] text-center">ID</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%]">Status</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%]">Etapa</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[20%]">Lead</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[15%]">Vendedor</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[15%]">Imóvel / Fonte</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[5%] text-center">Planta</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%]">Data de Solicitação</th>
+                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%] text-right">Última Interação</th>
                 </tr>
               </thead>
               <tbody>
@@ -377,34 +452,42 @@ export default function CaptacaoFilaPage() {
                   </tr>
                 )}
                 {filteredHistory.map((lead) => (
-                  <tr key={lead.id} className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group">
-                    <td className="py-4 px-2 text-zinc-500 text-center uppercase text-[10px] font-bold">#{lead.id}</td>
-                    <td className="py-4 px-3">
+                  <tr 
+                    key={lead.id} 
+                    onClick={() => setSelectedLead(lead)}
+                    className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group cursor-pointer"
+                  >
+                    <td className="py-5 px-4 text-zinc-500 text-center uppercase text-[10px] font-bold">#{lead.id}</td>
+                    <td className="py-5 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold w-fit border ${
                         lead.status === 'Ativo' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-500'
                       }`}>
                         {lead.status || 'Ativo'}
                       </span>
                     </td>
-                    <td className="py-4 px-3">
+                    <td className="py-5 px-4">
                       <span className="text-sm font-medium text-zinc-300">{lead.etapa || 'Novo'}</span>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-5 px-4">
                       <div className="flex flex-col">
                         <span className="text-zinc-100 font-semibold">{lead.nome || '—'}</span>
                         <span className="text-xs text-zinc-500">{lead.telefone || '—'}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-5 px-4">
                       <span className="text-zinc-300 text-sm font-medium">{lead.user?.nome || '???'}</span>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-5 px-4">
                       <div className="flex flex-col">
-                        <span className="text-zinc-300 text-sm">{lead.tipoImovel || '—'}</span>
-                        <span className="text-[11px] text-zinc-500">{lead.statusImovel || '—'}</span>
+                        <span className="text-zinc-300 text-sm" title={lead.tipoImovel}>{lead.tipoImovel || '—'}</span>
+                        <div className="flex gap-2 items-center text-[11px] text-zinc-500 mt-0.5">
+                          <span className="truncate" title={lead.canal}>{lead.canal || 'N/A'}</span>
+                          &bull; 
+                          <span className="truncate" title={lead.origem}>{lead.origem || 'N/A'}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="py-4 px-2 text-center">
+                    <td className="py-5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                       {lead.plantaPath ? (
                         <a 
                           href={`http://localhost:3002/${lead.plantaPath}`} 
@@ -419,10 +502,10 @@ export default function CaptacaoFilaPage() {
                         <span className="text-zinc-700 text-xs">—</span>
                       )}
                     </td>
-                    <td className="py-4 px-3 text-zinc-400 text-xs font-medium">
+                    <td className="py-5 px-4 text-zinc-400 text-xs font-medium">
                       {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('pt-BR') : '—'}
                     </td>
-                    <td className="py-4 px-2 text-zinc-500 text-xs text-right font-medium">{timeAgo(lead.createdAt)}</td>
+                    <td className="py-5 px-4 text-zinc-500 text-xs text-right font-medium">{timeAgo(lead.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -449,6 +532,13 @@ export default function CaptacaoFilaPage() {
           }}
         />
       )}
+
+      {/* Slide-in Lead Details */}
+      <LeadDetailsDrawer
+        isOpen={!!selectedLead}
+        lead={selectedLead}
+        onClose={() => setSelectedLead(null)}
+      />
     </div>
   );
 }
