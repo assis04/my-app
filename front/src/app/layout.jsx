@@ -1,14 +1,16 @@
-import './globals.css';
+'use client';
 
-export const metadata = {
-  title: 'Meu CRM',
-  description: 'Sistema de gestão',
-}
+import './globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="pt">
-      <body>{children}</body>
+      <body className="antialiased">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
-  )
+  );
 }
