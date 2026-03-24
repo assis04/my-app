@@ -135,7 +135,7 @@ export async function updateUser(id, data, invokerUser) {
     await prisma.salesQueue.deleteMany({
       where: { userId: Number(id) }
     });
-    console.log(`[SYNC] Cleaned queue entries for user ${id} (filial changed: ${filialChanged}, role changed: ${roleChanged})`);
+    // Removed debug log
   }
 
   // SYNC: Se o usuário foi desativado, remove da fila também
@@ -143,7 +143,7 @@ export async function updateUser(id, data, invokerUser) {
     await prisma.salesQueue.deleteMany({
       where: { userId: Number(id) }
     });
-    console.log(`[SYNC] User ${id} deactivated, removed from queue.`);
+    // Removed debug log
   }
 
   return updatedUser;

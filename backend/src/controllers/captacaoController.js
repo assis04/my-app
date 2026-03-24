@@ -17,7 +17,7 @@ export async function processNewQuickLead(req, res, next) {
     const body = req.body || {};
     const { branch_id } = body;
 
-    console.log('[CAPTACAO] Quick lead request DEBUG:', { 
+    // Removed debug log
       hasBody: !!req.body,
       contentType: req.headers['content-type'],
       branch_id,
@@ -53,7 +53,7 @@ export async function processNewManualLead(req, res, next) {
     const body = req.body || {};
     const { branch_id, assigned_user_id } = body;
     
-    console.log('[CAPTACAO] Manual lead request DEBUG:', { 
+    // Removed debug log
       hasBody: !!req.body,
       contentType: req.headers['content-type'],
       branch_id, 
@@ -76,7 +76,7 @@ export async function processNewManualLead(req, res, next) {
     // Atribuir o lead a um consultor especifico
     const result = await captacaoService.assignLeadManual(branch_id, leadData, assigned_user_id);
     
-    console.log('[CAPTACAO] Manual lead SUCCESS:', result);
+    // Removed success log
     
     // Emitir via SOCKET.IO que a fila da filial atualizou
     emitQueueUpdate(branch_id);
