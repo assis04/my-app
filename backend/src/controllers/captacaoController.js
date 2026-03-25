@@ -18,11 +18,6 @@ export async function processNewQuickLead(req, res, next) {
     const { branch_id } = body;
 
     // Removed debug log
-      hasBody: !!req.body,
-      contentType: req.headers['content-type'],
-      branch_id,
-      hasFile: !!req.file 
-    });
 
     if (!branch_id) {
       throw new AppError('A filial deve ser informada para a captação.', 400);
@@ -54,14 +49,6 @@ export async function processNewManualLead(req, res, next) {
     const { branch_id, assigned_user_id } = body;
     
     // Removed debug log
-      hasBody: !!req.body,
-      contentType: req.headers['content-type'],
-      branch_id, 
-      assigned_user_id, 
-      telefone: body.telefone, 
-      nome: body.nome,
-      hasFile: !!req.file 
-    });
 
     if (!branch_id || !assigned_user_id) {
       throw new AppError('A filial e o vendedor alvo devem ser informados.', 400);
