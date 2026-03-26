@@ -36,22 +36,21 @@ export default function PremiumSelect({
 
   return (
     <div className={`relative w-full ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={containerRef}>
-      {/* Gatilho (Trigger) */}
       <button
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border transition-all font-bold text-sm flex items-center justify-between outline-none 
-          ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-          ${isOpen && !disabled ? 'border-sky-500 ring-4 ring-sky-500/10 bg-white' : 'border-slate-200 hover:border-slate-300 hover:bg-white'}
+        className={`w-full bg-white text-slate-900 h-9 px-4 rounded-2xl border transition-all font-bold text-sm flex items-center justify-between outline-none 
+          ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-slate-300 hover:bg-slate-50/10'}
+          ${isOpen && !disabled ? 'border-sky-500 ring-4 ring-sky-500/10' : 'border-slate-200'}
         `}
       >
-        <span className={!selectedOption ? 'text-slate-300' : 'text-slate-900'}>
+        <span className={`${!selectedOption ? 'text-slate-300' : 'text-slate-900'} whitespace-nowrap overflow-hidden text-ellipsis`}>
           {selectedOption ? selectedOption.nome : placeholder}
         </span>
         <ChevronDown 
           size={18} 
-          className={`text-slate-400 transition-transform duration-300 ${isOpen && !disabled ? 'rotate-180 text-sky-500' : ''}`} 
+          className={`text-slate-400 shrink-0 transition-transform duration-300 ${isOpen && !disabled ? 'rotate-180 text-sky-500' : ''}`} 
         />
       </button>
 
@@ -75,9 +74,9 @@ export default function PremiumSelect({
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
                   `}
                 >
-                  <span>{option.nome}</span>
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{option.nome}</span>
                   {String(option.id) === String(value) && (
-                    <Check size={16} className="text-sky-500" />
+                    <Check size={16} className="text-sky-500 shrink-0" />
                   )}
                 </button>
               ))

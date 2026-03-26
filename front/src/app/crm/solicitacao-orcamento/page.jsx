@@ -147,34 +147,34 @@ export default function SolicitacaoOrcamentoPage() {
         <Sidebar />
       </div>
 
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0 pt-16 md:pt-8 bg-slate-50">
+      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 pt-16 md:pt-6 bg-slate-50">
         <div className="max-w-[1600px] mx-auto">
           
           {/* Container de Filtros */}
-          <div className="glass-card rounded-2xl p-8 mb-8 relative border border-white/60 shadow-floating bg-white/40 backdrop-blur-xl">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3">
-                Filtros
+          <div className="glass-card rounded-2xl p-4 mb-6 relative border border-white/60 shadow-floating bg-white/40 backdrop-blur-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-base font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                Filtros Inteligentes
               </h2>
               <button 
                 onClick={fetchLeads} 
-                className="p-3 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-2xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95" 
+                className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95" 
                 title="Sincronizar Dados"
               >
-                <RefreshCw size={18} className={loading && leads.length > 0 ? 'animate-spin' : ''} />
+                <RefreshCw size={16} className={loading && leads.length > 0 ? 'animate-spin' : ''} />
               </button>
             </div>
         
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
               
               <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black group-focus-within:text-sky-500 transition-colors" size={16} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-black group-focus-within:text-sky-500 transition-colors" size={14} />
                 <input 
                   type="text" 
                   placeholder="Nome do cliente" 
                   value={filters.nome}
                   onChange={(e) => handleFilterChange('nome', e.target.value)}
-                  className="premium-input py-4 pl-12 text-sm shadow-sm"
+                  className="premium-input py-2 pl-10 text-xs shadow-xs font-bold"
                 />
               </div>
 
@@ -218,13 +218,13 @@ export default function SolicitacaoOrcamentoPage() {
               />
 
               <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black group-focus-within:text-sky-500 transition-colors" size={16} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-black group-focus-within:text-sky-500 transition-colors" size={14} />
                 <input 
                   type="text" 
                   placeholder="Telefone" 
                   value={filters.telefone}
                   onChange={(e) => handleFilterChange('telefone', e.target.value)}
-                  className="premium-input py-4 pl-12 text-sm shadow-sm"
+                  className="premium-input py-2 pl-10 text-xs shadow-xs font-bold"
                 />
               </div>
 
@@ -271,29 +271,29 @@ export default function SolicitacaoOrcamentoPage() {
           </div>
 
           {/* Button Novo Lead & Results Summary */}
-          <div className="flex justify-between items-center mb-6 px-2">
-            <div className="text-zinc-500 text-sm font-medium bg-slate-100/50 px-4 py-1 rounded-full border border-slate-200">
-              {!loading && <span>{leads.length} Solicitações de orçamento</span>}
+          <div className="flex justify-between items-center mb-4 px-2">
+            <div className="text-zinc-500 text-[10px] uppercase font-black bg-slate-100/50 px-3 py-1 rounded-full border border-slate-200 tracking-tighter shadow-xs italic">
+              {!loading && <span>{leads.length} Solicitações Ativas</span>}
             </div>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-6 py-2.5 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-sm active:scale-95"
+              className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-black shadow-lg shadow-sky-900/10 transition-all text-xs active:scale-95 whitespace-nowrap uppercase tracking-tight"
             >
-              Novo Lead <Plus size={18} />
+              Novo Lead <Plus size={16} />
             </button>
           </div>
 
           {/* Tabela de Resultados */}
-          <div className="w-full bg-white/80 backdrop-blur-md border border-slate-100 rounded-2xl shadow-floating overflow-hidden mb-12">
+          <div className="w-full bg-white border border-slate-100 rounded-2xl shadow-floating overflow-hidden mb-6">
             <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
               <div className="min-w-[1400px] w-full">
                 
-                <div className="grid grid-cols-[60px_3fr_2fr_2fr_2fr_1.2fr_1.2fr_1.2fr_1.2fr_1.2fr] gap-4 py-6 bg-slate-50/50 border-b border-slate-100 text-slate-500 font-bold text-xs px-8">
+                <div className="grid grid-cols-[50px_3fr_2fr_2fr_2fr_1.2fr_1.2fr_1.2fr_1.2fr_1.2fr] gap-3 py-3 bg-slate-50/50 border-b border-slate-100 text-slate-500 font-black text-[10px] uppercase px-4 italic tracking-tighter">
                   <div className="text-center">#</div>
-                  <div>Nome</div>
-                  <div>Telefone</div>
+                  <div>Nome do Cliente</div>
+                  <div>Contato</div>
                   <div>Responsável</div>
-                  <div>Filial</div>
+                  <div>Unidade</div>
                   <div>Canal</div>
                   <div>Origem</div>
                   <div>Data</div>
@@ -302,18 +302,18 @@ export default function SolicitacaoOrcamentoPage() {
                 </div>
 
                 {loading && (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <div className="w-12 h-12 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
-                    <p className="text-slate-400 font-medium text-sm animate-pulse">Sincronizando Base de Dados...</p>
+                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <div className="w-10 h-10 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
+                    <p className="text-slate-400 font-black text-[10px] uppercase animate-pulse">Sincronizando Base...</p>
                   </div>
                 )}
 
                 {!loading && leads.length === 0 && (
-                  <div className="text-center py-24">
-                    <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-slate-100 text-slate-300">
-                       <Search size={32} />
+                  <div className="text-center py-20">
+                    <div className="w-12 h-12 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-3 border border-slate-100 text-slate-300">
+                       <Search size={24} />
                     </div>
-                    <p className="text-slate-400 font-medium text-sm">Nenhuma solicitação encontrada.</p>
+                    <p className="text-slate-400 font-black text-[10px] uppercase">Nenhum registro encontrado.</p>
                   </div>
                 )}
 
@@ -321,26 +321,26 @@ export default function SolicitacaoOrcamentoPage() {
                   <div 
                     key={lead.id} 
                     onClick={() => setSelectedLead(lead)}
-                    className="grid grid-cols-[60px_3fr_2fr_2fr_2fr_1.2fr_1.2fr_1.2fr_1.2fr_1.2fr] gap-4 py-5 border-b border-slate-50 hover:bg-sky-50 transition-all items-center text-sm px-8 group cursor-pointer relative"
+                    className="grid grid-cols-[50px_3fr_2fr_2fr_2fr_1.2fr_1.2fr_1.2fr_1.2fr_1.2fr] gap-3 py-1.5 border-b border-slate-50 hover:bg-sky-50 transition-all items-center text-[11px] px-4 group cursor-pointer relative"
                   >
-                    <div className="flex justify-center text-slate-300 group-hover:text-sky-600 transition-colors">
-                      <Edit size={16} />
+                    <div className="flex justify-center text-slate-200 group-hover:text-sky-600 transition-colors">
+                      <Edit size={14} />
                     </div>
-                    <div className="truncate font-black text-slate-900 group-hover:text-sky-700" title={lead.nome}>{lead.nome || '—'}</div>
-                    <div className="truncate text-slate-500 font-bold">{lead.telefone || '—'}</div>
+                    <div className="truncate font-black text-slate-900 group-hover:text-sky-700 uppercase tracking-tighter" title={lead.nome}>{lead.nome || '—'}</div>
+                    <div className="truncate text-slate-500 font-bold tracking-tighter uppercase">{lead.telefone || '—'}</div>
                     <div className="truncate" title={lead.user?.nome}>
-                      <span className="bg-slate-100 px-3 py-1 rounded-xl text-xs font-semibold text-slate-600 border border-slate-200">{lead.user?.nome || '—'}</span>
+                      <span className="bg-slate-50 px-2 py-0.5 rounded-xl text-[9px] font-black text-slate-400 border border-slate-100 group-hover:bg-white group-hover:text-slate-600 group-hover:border-slate-200 transition-all uppercase tracking-tighter">{lead.user?.nome || '—'}</span>
                     </div>
-                    <div className="truncate text-slate-600 font-bold" title={lead.filial?.nome}>{lead.filial?.nome || '—'}</div>
+                    <div className="truncate text-slate-600 font-bold uppercase tracking-tighter" title={lead.filial?.nome}>{lead.filial?.nome || '—'}</div>
                     <div className="truncate">
-                      <span className="text-xs font-semibold text-sky-500 bg-sky-50 px-2 py-1 rounded-lg border border-sky-100">{lead.canal || '—'}</span>
+                      <span className="text-[9px] font-black text-sky-500 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-100 uppercase tracking-tighter">{lead.canal || '—'}</span>
                     </div>
-                    <div className="truncate text-slate-500 font-medium text-xs">{lead.origem || '—'}</div>
-                    <div className="truncate text-slate-500 font-medium text-xs">{new Date(lead.createdAt).toLocaleDateString('pt-BR')}</div>
-                    <div className="truncate font-semibold text-sky-600 text-xs">{lead.etapa || '—'}</div>
+                    <div className="truncate text-slate-400 font-bold text-[9px] uppercase tracking-tighter">{lead.origem || '—'}</div>
+                    <div className="truncate text-slate-400 font-bold text-[9px] uppercase tracking-tighter">{new Date(lead.createdAt).toLocaleDateString('pt-BR')}</div>
+                    <div className="truncate font-black text-sky-600 text-[10px] uppercase tracking-tighter">{lead.etapa || '—'}</div>
                     <div className="truncate">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-semibold border shadow-xs ${
-                        lead.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-900/5' : 'bg-rose-50 text-rose-600 border-rose-100 shadow-rose-900/5'
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border shadow-xs uppercase tracking-tighter ${
+                        lead.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
                       }`}>
                         {lead.status === 'Ativo' ? '● Ativo' : '● Inativo'}
                       </span>
