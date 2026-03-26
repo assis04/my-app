@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
-import { Loader2, Building2, AlertTriangle, UserCheck, ChevronDown } from 'lucide-react';
+import { Loader2, Building2, AlertTriangle, UserCheck } from 'lucide-react';
+import PremiumSelect from '@/components/ui/PremiumSelect';
 
 export default function FilialModal({ filial = null, onClose, onRefresh }) {
   const isEditing = !!filial;
@@ -17,10 +18,10 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
     async function fetchUsers() {
       try {
         const data = await api('/users');
-        // Filtrar apenas gerentes/admins
-        const filtered = data.filter(u => 
-          ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(u.perfil)
-        );
+        // Filtrar apenas gerentes/admins e formatar para o Select
+        const filtered = data
+          .filter(u => ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(u.perfil))
+          .map(u => ({ id: u.id, nome: `${u.nome} (${u.perfil})` }));
         setUsers(filtered);
       } catch (err) {
         console.error('Erro ao carregar usuários:', err);
@@ -50,78 +51,75 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#1a1a1a] border border-zinc-800 w-full max-w-md rounded-2xl shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden relative transition-all">
 
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-zinc-800">
-          <h2 className="text-xl font-bold flex items-center gap-3 text-zinc-100">
-            <div className="w-9 h-9 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
-              <Building2 size={18} className="text-amber-400" />
+        <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-white">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-4 text-slate-900">
+            <div className="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm">
+              <Building2 size={24} className="text-sky-600" />
             </div>
-            {isEditing ? 'Editar Filial' : 'Nova Filial'}
+            {isEditing ? 'Ajustar Filial' : 'Nova Filial'}
           </h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-1.5 rounded-full cursor-pointer text-xl leading-none transition-colors">&times;</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-900 transition-all bg-slate-50 hover:bg-slate-100 p-2.5 rounded-full cursor-pointer border border-slate-100 flex items-center justify-center active:scale-90">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-white relative z-10">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3.5 rounded-xl text-sm flex items-start gap-2.5">
-              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-sm font-bold flex items-start gap-3 shadow-sm">
+              <AlertTriangle size={18} className="shrink-0 mt-0.5" />
               <p>{error}</p>
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-400">Nome da Filial *</label>
+          <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
+            <label className="text-xs font-bold text-slate-400 ml-1">Nome da Filial *</label>
             <input
               required
               type="text"
               placeholder="Ex: Matriz São Paulo"
-              className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition-all placeholder:text-zinc-600 text-sm"
+              className="w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm shadow-xs"
               value={formData.nome}
               onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-400">Endereço</label>
+          <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
+            <label className="text-xs font-bold text-slate-400 ml-1">Localização (Endereço)</label>
             <input
               type="text"
               placeholder="Rua, número, cidade - estado"
-              className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition-all placeholder:text-zinc-600 text-sm"
+              className="w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-sm shadow-xs"
               value={formData.endereco}
               onChange={e => setFormData(p => ({ ...p, endereco: e.target.value }))}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-              <UserCheck size={14} /> Gerente Responsável
+          <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
+            <label className="text-xs font-bold text-slate-400 ml-1 flex items-center gap-2">
+              <UserCheck size={14} /> Gerente
             </label>
-            <div className="relative">
-              <select
-                value={formData.managerId}
-                onChange={(e) => setFormData(p => ({ ...p, managerId: e.target.value }))}
-                className="appearance-none w-full bg-[#242424] text-white p-3 pr-10 rounded-xl border border-zinc-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition-all text-sm cursor-pointer"
-              >
-                <option value="">Selecione um gerente...</option>
-                {users.map(u => (
-                  <option key={u.id} value={u.id}>{u.nome} ({u.perfil})</option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
-            </div>
+            <PremiumSelect 
+              placeholder="Selecione um gestor..."
+              options={users}
+              value={formData.managerId}
+              onChange={(e) => setFormData(p => ({ ...p, managerId: e.target.value }))}
+            />
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-4 pt-4 border-t border-slate-50">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3 font-medium border border-zinc-700 text-zinc-400 rounded-xl hover:bg-zinc-800 hover:text-zinc-200 transition-colors text-sm">
-              Cancelar
+              className="flex-1 py-3 font-bold text-xs border border-slate-200 text-slate-400 rounded-2xl hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-95 shadow-sm">
+              Retornar
             </button>
             <button type="submit" disabled={loading}
-              className="flex-1 bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-xl transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-sm">
-              {loading ? <><Loader2 size={16} className="animate-spin" /> Salvando...</> : isEditing ? 'Salvar Alterações' : 'Criar Filial'}
+              className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95">
+              {loading ? <><Loader2 size={18} className="animate-spin" /> Processando...</> : (
+                <>{isEditing ? 'Confirmar Ajuste' : 'Efetivar Unidade'}</>
+              )}
             </button>
           </div>
         </form>

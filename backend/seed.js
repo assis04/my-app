@@ -54,7 +54,7 @@ async function seed() {
 
   console.log(`\n✅ Usuário Admin criado:`);
   console.log(`   📧 Email: admin@ambisistem.com`);
-  console.log(`   🔑 Senha: admin123`);
+  console.log(`   🔑 Senha: 123456`);
   console.log(`   👤 ID: ${adminUser.id}`);
   console.log('\n🌱 Seed concluído com sucesso!');
 }

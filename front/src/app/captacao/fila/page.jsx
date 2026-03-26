@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Plus, ChevronDown, FolderOpen, Menu, X, Eye, FileUp, FileText } from 'lucide-react';
+import { Search, Plus, FolderOpen, Menu, X, FileUp, Edit, RefreshCw } from 'lucide-react';
 import { useSalesQueue } from '@/hooks/useSalesQueue';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import NovoLeadModal from './components/NovoLeadModal';
 import LeadDetailsDrawer from '@/components/ui/LeadDetailsDrawer';
 import { formatPhone } from '@/lib/utils';
+import PremiumSelect from '@/components/ui/PremiumSelect';
 
 
 function timeAgo(dateString) {
@@ -34,21 +35,14 @@ export default function CaptacaoFilaPage() {
   const [branches, setBranches] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState('');
   
-  // State for the direct input boxes
   const [phoneInputs, setPhoneInputs] = useState({});
-  
-  // State for the new lead modal
-  const [modalData, setModalData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalData, setModalData] = useState(null);
   const [selectedLead, setSelectedLead] = useState(null);
 
-  // State for search and filter
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterOpen, setFilterOpen] = useState(false);
   const [filterVendedor, setFilterVendedor] = useState('');
-  
   const [filterPeriodo, setFilterPeriodo] = useState('7d');
-  const [periodoOpen, setPeriodoOpen] = useState(false);
 
   const isAdmOrSupervisor = user?.permissions?.includes('*') || user?.permissions?.includes('captacao:leads:manage');
 
@@ -82,7 +76,6 @@ export default function CaptacaoFilaPage() {
     refetch 
   } = useSalesQueue(selectedBranchId);
 
-  // Permissão para alternar status de OUTROS
   const canToggleOthers = useMemo(() => {
     const isAdm = ['ADM', 'Administrador', 'admin'].includes(user?.role);
     const isGerente = ['Gerente', 'GERENTE'].includes(user?.role);
@@ -90,22 +83,20 @@ export default function CaptacaoFilaPage() {
     return isAdm || (isGerente && sameBranch);
   }, [user, selectedBranchId]);
 
-  // Derived: unique sellers from history for the filter dropdown
   const uniqueVendedores = useMemo(() => {
     const map = new Map();
     history.forEach(lead => {
       if (lead.user?.id && lead.user?.nome) {
-        map.set(lead.user.id, lead.user.nome);
+        map.set(String(lead.user.id), lead.user.nome);
       }
     });
     return Array.from(map, ([id, nome]) => ({ id, nome }));
   }, [history]);
 
-  // Filtered history based on search and filter
+  const firstAvailableIndex = useMemo(() => queue.findIndex(a => a.isAvailable), [queue]);
+
   const filteredHistory = useMemo(() => {
     let items = history;
-
-    // Search filter (name, phone, ID)
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       items = items.filter(lead =>
@@ -115,48 +106,34 @@ export default function CaptacaoFilaPage() {
         (String(lead.id).includes(term))
       );
     }
-
-    // Vendedor filter
     if (filterVendedor) {
       items = items.filter(lead => String(lead.user?.id) === filterVendedor);
     }
-
-    // Period filter
     if (filterPeriodo !== 'todos') {
       const now = new Date();
       now.setHours(23, 59, 59, 999);
-      
       const cutoffDate = new Date();
       cutoffDate.setHours(0, 0, 0, 0);
-      
-      if (filterPeriodo === 'hoje') {
-        // already set to start of today
-      } else if (filterPeriodo === '7d') {
-        cutoffDate.setDate(now.getDate() - 7);
-      } else if (filterPeriodo === '30d') {
-        cutoffDate.setDate(now.getDate() - 30);
-      }
-
+      if (filterPeriodo === 'hoje') {} 
+      else if (filterPeriodo === '7d') cutoffDate.setDate(now.getDate() - 7);
+      else if (filterPeriodo === '30d') cutoffDate.setDate(now.getDate() - 30);
       items = items.filter(lead => {
         if (!lead.createdAt) return false;
         const leadDate = new Date(lead.createdAt);
         return leadDate >= cutoffDate && leadDate <= now;
       });
     }
-
     return items;
   }, [history, searchTerm, filterVendedor, filterPeriodo]);
 
-  const handlePhoneChange = (agentId, value) => {
+  const handlePhoneChange = React.useCallback((agentId, value) => {
     setPhoneInputs(prev => ({ ...prev, [agentId]: formatPhone(value) }));
-  };
+  }, []);
 
-  const submitDirectLead = async (agentId, agentName, e) => {
+  const submitDirectLead = React.useCallback(async (agentId, agentName, e) => {
     e.preventDefault();
     const phone = phoneInputs[agentId];
     if (!phone) return;
-    
-    // Open the Modal with the first agent pre-selected
     setModalData({
       initialPhone: phone,
       agentId,
@@ -165,10 +142,9 @@ export default function CaptacaoFilaPage() {
       branchName: branches.find(b => String(b.id) === selectedBranchId)?.nome || selectedBranchId
     });
     setIsModalOpen(true);
-  };
+  }, [phoneInputs, selectedBranchId, branches]);
 
-  // "Novo Lead Manual" button: opens modal with first available agent and empty phone
-  const openNewLeadModal = () => {
+  const openNewLeadModal = React.useCallback(() => {
     const firstAvailable = queue.find(a => a.isAvailable);
     if (!firstAvailable) {
       alert('Nenhum vendedor disponível para receber leads.');
@@ -182,340 +158,285 @@ export default function CaptacaoFilaPage() {
       branchName: branches.find(b => String(b.id) === selectedBranchId)?.nome || selectedBranchId
     });
     setIsModalOpen(true);
-  };
+  }, [queue, selectedBranchId, branches]);
+
+  const RenderedQueue = useMemo(() => {
+    return queue.map((agent, index) => (
+      <div key={agent.id} className="flex flex-col sm:flex-row sm:items-center py-5 border-b border-slate-50 last:border-0 gap-4 sm:gap-0 transition-all hover:bg-slate-50/80 px-4 rounded-2xl group">
+        <span className="w-12 text-slate-300 font-black text-lg italic tracking-tighter group-hover:text-sky-400 transition-colors">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        
+        <div className="flex items-center gap-6 flex-1">
+          <span className="text-slate-400 whitespace-nowrap text-xs font-bold">Atribuir Lead:</span>
+          <form onSubmit={(e) => submitDirectLead(agent.id, agent.nome, e)} className="w-full sm:w-auto flex items-center relative">
+            <input 
+              type="text" 
+              placeholder={agent.isAvailable && index === firstAvailableIndex ? "Digite o telefone..." : ""}
+              value={phoneInputs[agent.id] || ''}
+              onChange={(e) => handlePhoneChange(agent.id, e.target.value)}
+              disabled={!agent.isAvailable}
+              className="bg-slate-50/50 border border-slate-200 rounded-xl h-12 px-5 w-full sm:w-80 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5 text-slate-900 text-base disabled:opacity-50 disabled:bg-slate-100 transition-all font-bold placeholder:text-slate-300 shadow-inner"
+            />
+            {agent.isAvailable && index === firstAvailableIndex && !phoneInputs[agent.id] && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-sky-100 text-sky-600 px-2 py-0.5 rounded text-[10px] font-black uppercase pointer-events-none">ENTER</div>
+            )}
+            <button type="submit" className="hidden">Submit</button>
+          </form>
+        </div>
+
+        <div className="flex-1 text-slate-900 flex items-center justify-between pl-4">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="font-black text-lg text-slate-900 group-hover:text-sky-700 transition-colors leading-tight">{agent.nome}</span>
+              <span className="text-xs font-bold text-slate-400 leading-none mt-0.5">Vendedor</span>
+            </div>
+            {!agent.isAvailable ? (
+              <span className="text-[10px] font-semibold text-rose-600 border border-rose-100 bg-rose-50 px-2.5 py-1 rounded-full shadow-sm">Ausente</span>
+            ) : agent.isAvailable && index === firstAvailableIndex ? (
+              <span className="text-[10px] font-semibold text-emerald-600 border border-emerald-100 bg-emerald-50 px-2.5 py-1 rounded-full shadow-sm">Na Vez</span>
+            ) : (
+              <span className="text-[10px] font-semibold text-sky-600 border border-sky-100 bg-sky-50 px-2.5 py-1 rounded-full shadow-sm">Disponível</span>
+            )}
+          </div>
+          
+          {(user?.id === agent.id || canToggleOthers) && (
+             <button 
+               onClick={() => {
+                 handleToggleAgentStatus(agent.id, !agent.isAvailable)
+                   .catch(err => alert(err.message || "Erro ao mudar status"));
+               }}
+               className="text-xs font-bold text-sky-600 hover:text-white hover:bg-sky-600 px-4 py-2.5 rounded-xl border border-sky-100 bg-sky-50 transition-all shadow-sm ring-sky-500/10 focus:ring-4 active:scale-95"
+             >
+               {user?.id === agent.id ? 'Meu Status' : 'Alterar Status'}
+             </button>
+          )}
+        </div>
+      </div>
+    ));
+  }, [queue, firstAvailableIndex, phoneInputs, user, canToggleOthers, handleToggleAgentStatus, submitDirectLead, handlePhoneChange]);
 
   if (authLoading) return null;
 
   return (
-    <div className="flex h-screen bg-[#212121] text-zinc-100 font-sans relative">
+    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
       <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-[#1c1c1c] p-2 rounded-xl border border-zinc-800 text-zinc-300"
+        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm transition-all hover:bg-slate-50"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         <Menu size={24} />
       </button>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
       )}
 
       <div className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
         <Sidebar />
       </div>
 
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0 pt-16 md:pt-8 bg-[#212121]">
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0 pt-16 md:pt-8 bg-slate-50">
         
-        {/* 🔹 FILA DA VEZ SECTION */}
         <div className="mb-10 max-w-[1600px] mx-auto">
-          <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+          <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-6">
             <div>
-              <h1 className="text-3xl font-light text-zinc-100">Fila da vez</h1>
-              <p className="text-base text-zinc-500 mt-1">Atribuição e roteamento de leads</p>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Fila da Vez</h1>
             </div>
             
-            <div className="relative">
-              <select
-                className="appearance-none bg-[#1c1c1c] border border-zinc-800 rounded-xl px-4 py-2 pr-10 text-sm text-zinc-300 outline-none focus:border-[#0ea5e9] disabled:opacity-50 min-w-[150px] transition-colors"
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={refetch} 
+                className="p-3 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-2xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95" 
+                title="Sincronizar Fila"
+              >
+                <RefreshCw size={18} className={queueLoading ? 'animate-spin' : ''} />
+              </button>
+              <div className="w-64">
+                <PremiumSelect 
+                placeholder="Selecione a Filial"
+                options={branches}
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
                 disabled={!isAdmOrSupervisor}
-              >
-                {branches.length === 0 && <option>Carregando...</option>}
-                {branches.map(b => (
-                  <option key={b.id} value={String(b.id)} className="bg-zinc-800 text-zinc-200">{b.nome}</option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+              />
             </div>
-          </div>
-
-          <div className="w-full relative bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-6 shadow-sm mb-10">
-            {queueLoading && queue.length === 0 && (
-               <div className="text-zinc-500 py-4 opacity-50 flex items-center justify-center">Atualizando Fila...</div>
-            )}
-            {queue.length === 0 && !queueLoading && (
-              <div className="text-zinc-500 py-4">Nenhum vendedor cadastrado nesta filial.</div>
-            )}
-            {queue.map((agent, index) => (
-              <div key={agent.id} className="flex flex-col sm:flex-row sm:items-center py-4 border-b border-zinc-800/60 gap-4 sm:gap-0 transition-all hover:bg-zinc-800/10 px-2 rounded-lg">
-                <span className="w-12 text-zinc-400 font-medium">{index + 1}º</span>
-                
-                <div className="flex items-center gap-4 flex-1">
-                  <span className="text-zinc-500 whitespace-nowrap text-base">Telefone:</span>
-                  <form onSubmit={(e) => submitDirectLead(agent.id, agent.nome, e)} className="w-full sm:w-auto flex items-center">
-                    <input 
-                      type="text" 
-                      placeholder={index === 0 ? "Novo lead (Enter)" : ""}
-                      value={phoneInputs[agent.id] || ''}
-                      onChange={(e) => handlePhoneChange(agent.id, e.target.value)}
-                      disabled={!agent.isAvailable}
-                      className="bg-[#2a2a2a] border border-zinc-700/80 rounded-xl h-11 px-4 w-full sm:w-72 outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] text-zinc-200 text-base disabled:opacity-50 transition-all font-medium"
-                    />
-                    <button type="submit" className="hidden">Submit</button>
-                  </form>
-                </div>
-
-                <div className="flex-1 text-zinc-200 flex items-center justify-between font-medium text-lg">
-                  <div className="flex items-center gap-4">
-                    {agent.nome}
-                    {!agent.isAvailable ? (
-                      <span className="text-[11px] text-red-400 border border-red-500/30 bg-red-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Off</span>
-                    ) : (
-                      <span className="text-[11px] text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Online</span>
-                    )}
-                  </div>
-                  
-                  {(user?.id === agent.id || canToggleOthers) && (
-                     <button 
-                       onClick={() => {
-                         handleToggleAgentStatus(agent.id, !agent.isAvailable)
-                           .catch(err => alert(err.message || "Erro ao mudar status"));
-                       }}
-                       className="text-xs text-[#0ea5e9] underline hover:text-white"
-                     >
-                       {user?.id === agent.id ? 'Alternar Meu Status' : 'Alternar Status'}
-                     </button>
-                  )}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
-        {/* 🔹 HISTÓRICO DE ATENDIMENTO SECTION */}
-        <div className="max-w-[1600px] mx-auto bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-6 shadow-sm">
-          <h2 className="text-xl font-medium text-zinc-300 mb-6 flex items-center gap-3">
-            <FolderOpen size={22} className="text-[#0ea5e9]" /> Histórico de Relacionamento
+          <div className="w-full relative glass-card border border-white/60 rounded-3xl p-4 shadow-floating overflow-hidden transition-all bg-white/40 backdrop-blur-xl">
+            <div className="absolute top-0 left-0 w-2.5 h-full bg-sky-500 shadow-[4px_0_15px_rgba(14,165,233,0.3)]" />
+            
+            {queueLoading && queue.length === 0 && (
+               <div className="text-slate-400 py-10 opacity-70 flex items-center justify-center font-bold text-sm animate-pulse">
+                 Sincronizando Fila Digital...
+               </div>
+            )}
+            {queue.length === 0 && !queueLoading && (
+              <div className="text-slate-400 py-10 text-center font-medium italic">Nenhum vendedor disponível nesta unidade.</div>
+            )}
+            
+            <div className="space-y-2">
+              {RenderedQueue}
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-[1600px] mx-auto glass-card border border-white/60 rounded-3xl p-10 shadow-floating mb-20 bg-white/40 backdrop-blur-xl">
+          <h2 className="text-xl font-bold text-slate-800 mb-10 flex items-center gap-4">
+            <div className="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-sm">
+              <FolderOpen size={22} className="text-sky-500" />
+            </div>
+            Histórico de atendimento
           </h2>
           
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <div className="flex items-center gap-4 sm:gap-3 w-full sm:w-auto flex-wrap">
-              {/* 🔍 Search bar */}
-              <div className="relative flex-1 sm:w-64 sm:flex-none">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full xl:w-auto">
+              
+              <div className="relative group min-w-[280px]">
                 <input 
                   type="text" 
-                  placeholder="Buscar por nome, telefone, ID..."
+                  placeholder="Nome, telefone, ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#2a2a2a] text-sm text-zinc-200 pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] outline-none transition-all placeholder:text-zinc-600"
+                  className="w-full bg-slate-50 text-sm text-slate-900 pl-11 pr-4 py-4 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5 outline-none transition-all placeholder:text-slate-400 font-bold shadow-inner"
                 />
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black" />
               </div>
               
-              {/* 📅 Date Period dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={() => setPeriodoOpen(!periodoOpen)}
-                  className={`flex items-center gap-2 text-sm whitespace-nowrap px-3 py-2.5 rounded-xl transition-colors border ${
-                    filterPeriodo !== 'todos'
-                      ? 'bg-[#0ea5e9]/10 border-[#0ea5e9]/30 text-[#0ea5e9]' 
-                      : 'border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-                  }`}
-                >
-                  <Filter size={16} />
-                  {filterPeriodo === 'hoje' ? 'Hoje' : filterPeriodo === '7d' ? 'Últimos 7 dias' : filterPeriodo === '30d' ? 'Últimos 30 dias' : 'Todo Período'}
-                </button>
+              <PremiumSelect 
+                placeholder="Período"
+                options={[
+                  { id: 'hoje', nome: 'Hoje' },
+                  { id: '7d', nome: 'Últimos 7 dias' },
+                  { id: '30d', nome: 'Últimos 30 dias' },
+                  { id: 'todos', nome: 'Todo o Histórico' }
+                ]}
+                value={filterPeriodo}
+                onChange={(e) => setFilterPeriodo(e.target.value)}
+              />
 
-                {periodoOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setPeriodoOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 z-20 bg-[#1c1c1c] border border-zinc-700 rounded-xl shadow-2xl w-48 overflow-hidden">
-                      <div className="p-2 border-b border-zinc-800">
-                        <p className="text-xs text-zinc-500 px-2 py-1 uppercase tracking-wider">Período</p>
-                      </div>
-                      <div>
-                        {['hoje', '7d', '30d', 'todos'].map((period) => (
-                          <button 
-                            key={period}
-                            onClick={() => { setFilterPeriodo(period); setPeriodoOpen(false); }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${period === filterPeriodo ? 'text-[#0ea5e9] bg-[#0ea5e9]/10' : 'text-zinc-300 hover:bg-zinc-800'}`}
-                          >
-                            {period === 'hoje' ? 'Hoje' : period === '7d' ? 'Últimos 7 dias' : period === '30d' ? 'Últimos 30 dias' : 'Todo o Período'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              <PremiumSelect 
+                placeholder="Responsável"
+                options={uniqueVendedores}
+                value={filterVendedor}
+                onChange={(e) => setFilterVendedor(e.target.value)}
+              />
 
-              {/* 🎚️ Filter dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={() => setFilterOpen(!filterOpen)}
-                  className={`flex items-center gap-2 text-sm whitespace-nowrap px-3 py-2.5 rounded-xl transition-colors border ${
-                    filterVendedor 
-                      ? 'bg-[#0ea5e9]/10 border-[#0ea5e9]/30 text-[#0ea5e9]' 
-                      : 'border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-                  }`}
-                >
-                  <Filter size={16} />
-                  {filterVendedor ? uniqueVendedores.find(v => String(v.id) === filterVendedor)?.nome || 'Filtrado' : 'Filtro'}
-                </button>
-
-                {filterOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setFilterOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 z-20 bg-[#1c1c1c] border border-zinc-700 rounded-xl shadow-2xl w-56 overflow-hidden">
-                      <div className="p-2 border-b border-zinc-800">
-                        <p className="text-xs text-zinc-500 px-2 py-1 uppercase tracking-wider">Filtrar por vendedor</p>
-                      </div>
-                      <div className="max-h-48 overflow-y-auto">
-                        <button 
-                          onClick={() => { setFilterVendedor(''); setFilterOpen(false); }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${!filterVendedor ? 'text-[#0ea5e9] bg-[#0ea5e9]/10' : 'text-zinc-300 hover:bg-zinc-800'}`}
-                        >
-                          Todos
-                        </button>
-                        {uniqueVendedores.map(v => (
-                          <button 
-                            key={v.id}
-                            onClick={() => { setFilterVendedor(String(v.id)); setFilterOpen(false); }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${String(v.id) === filterVendedor ? 'text-[#0ea5e9] bg-[#0ea5e9]/10' : 'text-zinc-300 hover:bg-zinc-800'}`}
-                          >
-                            {v.nome}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Clear all filters */}
               {(searchTerm || filterVendedor || filterPeriodo !== '7d') && (
                 <button 
                   onClick={() => { setSearchTerm(''); setFilterVendedor(''); setFilterPeriodo('7d'); }}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 underline whitespace-nowrap"
+                  className="h-full px-6 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors bg-slate-50 border border-slate-200 rounded-2xl active:scale-95"
                 >
-                  Limpar filtros
+                  Limpar Filtros
                 </button>
               )}
             </div>
             
             <div className="flex items-center gap-4">
-              {/* Filial Indicator */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#2a2a2a] border border-zinc-700 rounded-lg">
-                <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Filial:</span>
-                <span className="text-sm font-medium text-zinc-200">
-                  {branches.find(b => String(b.id) === selectedBranchId)?.nome || 'Todas'}
+              <div className="hidden lg:flex flex-col items-end mr-2">
+                <span className="text-xs text-slate-400 font-bold leading-tight">Filial</span>
+                <span className="text-sm font-black text-sky-600 leading-tight">
+                  {branches.find(b => String(b.id) === String(selectedBranchId))?.nome || 'GLOBAL'}
                 </span>
               </div>
 
-              {/* ➕ Novo Lead Manual button */}
               <button 
                 onClick={openNewLeadModal}
-                className="flex items-center gap-2 bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white px-5 py-2.5 rounded-full hover:opacity-90 font-medium shadow-lg shadow-sky-900/20 transition-all text-sm"
+                className="flex items-center gap-3 bg-linear-to-r from-sky-500 to-sky-600 text-white px-10 py-2 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl hover:-translate-y-1 font-bold shadow-xl shadow-sky-900/10 transition-all text-sm active:scale-95"
               >
-                Novo Lead Manual <Plus size={16} />
+                Novo Lead 
+                <Plus size={18} />
               </button>
             </div>
           </div>
 
-          {/* Results count */}
-          {(searchTerm || filterVendedor) && (
-            <p className="text-xs text-zinc-500 mb-4">
-              {filteredHistory.length} resultado{filteredHistory.length !== 1 ? 's' : ''} encontrado{filteredHistory.length !== 1 ? 's' : ''}
-            </p>
-          )}
-
-          {/* DATA TABLE */}
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left text-base whitespace-nowrap text-zinc-400 border-collapse">
-              <thead className="border-b border-zinc-800 text-zinc-100">
-                <tr>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[5%] text-center">ID</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%]">Status</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%]">Etapa</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[20%]">Lead</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[15%]">Vendedor</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[15%]">Imóvel / Fonte</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[5%] text-center">Planta</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%]">Data de Solicitação</th>
-                  <th className="pb-4 pt-2 font-semibold px-4 w-[10%] text-right">Última Interação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredHistory.length === 0 && (
+          <div className="w-full overflow-hidden rounded-2xl border border-slate-100 bg-white/60">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
+                <thead className="bg-slate-50/80 text-slate-500 font-bold text-xs border-b border-slate-100">
                   <tr>
-                    <td colSpan={9} className="py-10 text-center text-zinc-600">
-                      {searchTerm || filterVendedor ? 'Nenhum resultado encontrado para os filtros aplicados.' : 'Nenhum lead registrado ainda.'}
-                    </td>
+                    <th className="py-5 px-8 text-center w-[60px]">ID</th>
+                    <th className="py-5 px-6">Status</th>
+                    <th className="py-5 px-6">Etapa</th>
+                    <th className="py-5 px-6">Lead</th>
+                    <th className="py-5 px-6">Responsável</th>
+                    <th className="py-5 px-6">Origem / Canal</th>
+                    <th className="py-5 px-6 text-center">Docs</th>
+                    <th className="py-5 px-6">Registro</th>
+                    <th className="py-5 px-8 text-right">Interação</th>
                   </tr>
-                )}
-                {filteredHistory.map((lead) => (
-                  <tr 
-                    key={lead.id} 
-                    onClick={() => setSelectedLead(lead)}
-                    className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group cursor-pointer"
-                  >
-                    <td className="py-5 px-4 text-zinc-500 text-center uppercase text-[10px] font-bold">#{lead.id}</td>
-                    <td className="py-5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold w-fit border ${
-                        lead.status === 'Ativo' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-500'
-                      }`}>
-                        {lead.status || 'Ativo'}
-                      </span>
-                    </td>
-                    <td className="py-5 px-4">
-                      <span className="text-sm font-medium text-zinc-300">{lead.etapa || 'Novo'}</span>
-                    </td>
-                    <td className="py-5 px-4">
-                      <div className="flex flex-col">
-                        <span className="text-zinc-100 font-semibold">{lead.nome || '—'}</span>
-                        <span className="text-xs text-zinc-500">{lead.telefone || '—'}</span>
-                      </div>
-                    </td>
-                    <td className="py-5 px-4">
-                      <span className="text-zinc-300 text-sm font-medium">{lead.user?.nome || '???'}</span>
-                    </td>
-                    <td className="py-5 px-4">
-                      <div className="flex flex-col">
-                        <span className="text-zinc-300 text-sm" title={lead.tipoImovel}>{lead.tipoImovel || '—'}</span>
-                        <div className="flex gap-2 items-center text-[11px] text-zinc-500 mt-0.5">
-                          <span className="truncate" title={lead.canal}>{lead.canal || 'N/A'}</span>
-                          &bull; 
-                          <span className="truncate" title={lead.origem}>{lead.origem || 'N/A'}</span>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {filteredHistory.length === 0 && (
+                    <tr>
+                      <td colSpan={9} className="py-24 text-center">
+                        <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-slate-100 text-slate-200">
+                           <FolderOpen size={32} />
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      {lead.plantaPath ? (
-                        <a 
-                          href={`http://localhost:3002/${lead.plantaPath}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex p-2 text-sky-400 hover:bg-sky-500/10 rounded-lg transition-all"
-                          title="Ver Planta"
-                        >
-                          <FileUp size={16} />
-                        </a>
-                      ) : (
-                        <span className="text-zinc-700 text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="py-5 px-4 text-zinc-400 text-xs font-medium">
-                      {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('pt-BR') : '—'}
-                    </td>
-                    <td className="py-5 px-4 text-zinc-500 text-xs text-right font-medium">{timeAgo(lead.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <p className="text-slate-400 font-medium text-sm">Nenhum registro localizado no histórico.</p>
+                      </td>
+                    </tr>
+                  )}
+                  {filteredHistory.map((lead) => (
+                    <tr 
+                      key={lead.id} 
+                      onClick={() => setSelectedLead(lead)}
+                      className="hover:bg-sky-50/50 font-medium transition-all group cursor-pointer"
+                    >
+                      <td className="py-5 px-8 text-slate-300 text-center text-[10px] font-black group-hover:text-sky-500 transition-colors">#{String(lead.id).padStart(4, '0')}</td>
+                      <td className="py-5 px-6">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border shadow-xs ${
+                          lead.status === 'Ativo' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'
+                        }`}>
+                          {lead.status === 'Ativo' ? '● Ativo' : '● Inativo'}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-2 py-1 rounded-lg border border-sky-100">{lead.etapa || 'Novo'}</span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="flex flex-col">
+                          <span className="text-slate-900 font-black group-hover:text-sky-700 transition-colors">{lead.nome || '—'}</span>
+                          <span className="text-[11px] text-slate-400 font-bold">{lead.telefone || '—'}</span>
+                        </div>
+                      </td>
+                      <td className="py-5 px-6">
+                        <span className="text-slate-600 text-xs font-semibold bg-slate-100 px-3 py-1 rounded-xl border border-slate-200">{lead.user?.nome || '???'}</span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-sky-500 leading-none mb-1">{lead.canal || 'N/D'}</span>
+                          <span className="text-xs font-bold text-slate-500 leading-none">{lead.origem || 'N/D'}</span>
+                        </div>
+                      </td>
+                      <td className="py-5 px-6 text-center" onClick={(e) => e.stopPropagation()}>
+                        {lead.plantaPath ? (
+                          <a 
+                            href={`http://localhost:3002/${lead.plantaPath}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex p-2 text-sky-500 hover:bg-white border border-transparent hover:border-sky-100 rounded-xl transition-all shadow-sm active:scale-90"
+                          >
+                            <FileUp size={18} />
+                          </a>
+                        ) : (
+                          <span className="text-slate-200 text-xs font-black">—</span>
+                        )}
+                      </td>
+                      <td className="py-5 px-6 text-slate-500 text-xs font-medium">
+                        {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('pt-BR') : '—'}
+                      </td>
+                      <td className="py-5 px-8 text-slate-400 text-xs font-medium text-right">{timeAgo(lead.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
       </main>
 
-      {/* Render the modal when open */}
       {isModalOpen && modalData && (
         <NovoLeadModal
           initialPhone={modalData.initialPhone}
@@ -533,7 +454,6 @@ export default function CaptacaoFilaPage() {
         />
       )}
 
-      {/* Slide-in Lead Details */}
       <LeadDetailsDrawer
         isOpen={!!selectedLead}
         lead={selectedLead}
