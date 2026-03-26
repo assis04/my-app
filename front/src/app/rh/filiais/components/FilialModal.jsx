@@ -81,7 +81,7 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
               required
               type="text"
               placeholder="Ex: Matriz São Paulo"
-              className="w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm shadow-xs"
+              className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm shadow-xs"
               value={formData.nome}
               onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
             />
@@ -92,7 +92,7 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
             <input
               type="text"
               placeholder="Rua, número, cidade - estado"
-              className="w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-sm shadow-xs"
+              className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-sm shadow-xs"
               value={formData.endereco}
               onChange={e => setFormData(p => ({ ...p, endereco: e.target.value }))}
             />
@@ -116,7 +116,7 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
               Retornar
             </button>
             <button type="submit" disabled={loading}
-              className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95">
+              className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap">
               {loading ? <><Loader2 size={18} className="animate-spin" /> Processando...</> : (
                 <>{isEditing ? 'Confirmar Ajuste' : 'Efetivar Unidade'}</>
               )}

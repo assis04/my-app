@@ -53,7 +53,7 @@ export default function UserModal({ userObj = null, onClose, onRefresh }) {
                   required
                   type="text" 
                   placeholder="Ex: Thiago Ribeiro"
-                  className="premium-input p-4 text-sm"
+                  className="premium-input p-3 text-sm"
                   value={formData.nome}
                   onChange={e => handleInputChange('nome', e.target.value)}
                 />
@@ -65,7 +65,7 @@ export default function UserModal({ userObj = null, onClose, onRefresh }) {
                   required
                   type="email" 
                   placeholder="thiago@empresa.com.br"
-                  className="premium-input p-4 text-sm"
+                  className="premium-input p-3 text-sm"
                   value={formData.email}
                   onChange={e => handleInputChange('email', e.target.value)}
                 />
@@ -77,7 +77,7 @@ export default function UserModal({ userObj = null, onClose, onRefresh }) {
                   required={!isEditing}
                   type="password" 
                   placeholder={isEditing ? "Deixe vazio para manter atual" : "Mínimo 6 caracteres"}
-                  className="premium-input p-4 text-sm"
+                  className="premium-input p-3 text-sm"
                   value={formData.password}
                   onChange={e => handleInputChange('password', e.target.value)}
                 />
@@ -126,7 +126,7 @@ export default function UserModal({ userObj = null, onClose, onRefresh }) {
                   Descartar
                 </button>
                 <button type="button" disabled={loading} onClick={handleSubmit}
-                  className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95">
+                  className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap">
             {loading ? <><Loader2 size={18} className="animate-spin" /> Sincronizando...</> : isEditing ? 'Atualizar Colaborador' : 'Confirmar e Sincronizar'}
           </button>
               </div>

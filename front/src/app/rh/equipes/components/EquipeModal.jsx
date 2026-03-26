@@ -116,7 +116,7 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
               <label className="text-xs font-bold text-slate-400 ml-1">Identificação da Equipe *</label>
               <input
                 required type="text" placeholder="Ex: Comercial Sul"
-                className="w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm"
+                className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm"
                 value={formData.nome}
                 onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
               />
@@ -180,7 +180,7 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-sky-500 transition-colors" size={16} />
               <input
                 type="text" placeholder="Filtrar por nome..."
-                className="w-full bg-slate-50 text-sm text-slate-900 pl-12 pr-6 py-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300"
+                className="w-full bg-slate-50 text-sm text-slate-900 pl-12 pr-6 py-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300"
                 value={searchMembro}
                 onChange={e => setSearchMembro(e.target.value)}
               />
@@ -231,7 +231,7 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
             Retornar
           </button>
           <button type="button" disabled={loading} onClick={handleSubmit}
-            className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95">
+            className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap">
             {loading ? <><Loader2 size={18} className="animate-spin" /> Processando...</> : (
               <>{isEditing ? 'Confirmar Atualização' : 'Efetivar Estrutura'}</>
             )}
