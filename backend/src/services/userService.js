@@ -3,8 +3,8 @@ import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 
 export async function findUserByEmail(email) {
-  const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase().trim() },
+  const user = await prisma.user.findFirst({
+    where: { email: email.toLowerCase().trim(), deletedAt: null },
     include: { role: true },
   });
 
@@ -63,20 +63,32 @@ export async function createUserByAdminOrHR({ nome, email, password, roleId, fil
   return { id: newUser.id, nome: newUser.nome, email: newUser.email, role: targetRole.nome };
 }
 
-export async function listUsers() {
-  const users = await prisma.user.findMany({
-    orderBy: { nome: 'asc' },
-    select: {
-      id: true,
-      nome: true,
-      email: true,
-      ativo: true,
-      role: { select: { id: true, nome: true } },
-      filial: { select: { id: true, nome: true } }
-    }
-  });
+export async function listUsers({ page = 1, limit = 100 } = {}) {
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const take = Math.min(500, Math.max(1, parseInt(limit, 10) || 100));
+  const skip = (pageNum - 1) * take;
 
-  return users.map(u => ({
+  const where = { deletedAt: null };
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { nome: 'asc' },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        ativo: true,
+        role: { select: { id: true, nome: true } },
+        filial: { select: { id: true, nome: true } }
+      },
+      skip,
+      take,
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  const data = users.map(u => ({
     id: u.id,
     nome: u.nome,
     email: u.email,
@@ -86,12 +98,15 @@ export async function listUsers() {
     filialId: u.filial?.id,
     filial: u.filial?.nome || '-'
   }));
+
+  return { data, total, page: pageNum, limit: take, totalPages: Math.ceil(total / take) };
 }
 
 export async function updateUser(id, data, invokerUser) {
   const { nome, email, password, roleId, filialId, ativo } = data;
+  const numId = Number(id);
 
-  const userToUpdate = await prisma.user.findUnique({ where: { id: Number(id) } });
+  const userToUpdate = await prisma.user.findUnique({ where: { id: numId } });
   if (!userToUpdate) throw new AppError('Usuário não encontrado.', 404);
 
   const targetRole = roleId ? await prisma.role.findUnique({ where: { id: Number(roleId) } }) : null;
@@ -121,36 +136,32 @@ export async function updateUser(id, data, invokerUser) {
     updateData.password = await bcrypt.hash(password, 10);
   }
 
-  const updatedUser = await prisma.user.update({
-    where: { id: Number(id) },
-    data: updateData
+  return prisma.$transaction(async (tx) => {
+    const updatedUser = await tx.user.update({
+      where: { id: numId },
+      data: updateData
+    });
+
+    // SYNC: Quando filial ou cargo muda, limpa registros antigos da fila da vez
+    const filialChanged = filialId !== undefined && Number(filialId) !== userToUpdate.filialId;
+    const roleChanged = roleId !== undefined && Number(roleId) !== userToUpdate.roleId;
+
+    if (filialChanged || roleChanged) {
+      await tx.salesQueue.deleteMany({ where: { userId: numId } });
+    }
+
+    // SYNC: Se o usuário foi desativado, remove da fila também
+    if (ativo === false) {
+      await tx.salesQueue.deleteMany({ where: { userId: numId } });
+    }
+
+    return updatedUser;
   });
-
-  // SYNC: Quando filial ou cargo muda, limpa registros antigos da fila da vez
-  const filialChanged = filialId !== undefined && Number(filialId) !== userToUpdate.filialId;
-  const roleChanged = roleId !== undefined && Number(roleId) !== userToUpdate.roleId;
-
-  if (filialChanged || roleChanged) {
-    // Remove TODOS os registros do usuário na fila (de qualquer filial)
-    await prisma.salesQueue.deleteMany({
-      where: { userId: Number(id) }
-    });
-    // Removed debug log
-  }
-
-  // SYNC: Se o usuário foi desativado, remove da fila também
-  if (ativo === false) {
-    await prisma.salesQueue.deleteMany({
-      where: { userId: Number(id) }
-    });
-    // Removed debug log
-  }
-
-  return updatedUser;
 }
 
 export async function deleteUser(id, invokerUser) {
-  const userToDelete = await prisma.user.findUnique({ where: { id: Number(id) }, include: { role: true } });
+  const numId = Number(id);
+  const userToDelete = await prisma.user.findUnique({ where: { id: numId, deletedAt: null }, include: { role: true } });
   if (!userToDelete) throw new AppError('Usuário não encontrado.', 404);
 
   if (userToDelete.id === invokerUser.id) {
@@ -164,10 +175,11 @@ export async function deleteUser(id, invokerUser) {
     throw new AppError('Acesso Negado: Apenas Administradores podem excluir um ADM.', 403);
   }
 
-  // Limpa registros da fila antes de deletar
-  await prisma.salesQueue.deleteMany({
-    where: { userId: Number(id) }
+  return prisma.$transaction(async (tx) => {
+    await tx.salesQueue.deleteMany({ where: { userId: numId } });
+    await tx.user.update({
+      where: { id: numId },
+      data: { deletedAt: new Date(), ativo: false },
+    });
   });
-
-  await prisma.user.delete({ where: { id: Number(id) } });
 }

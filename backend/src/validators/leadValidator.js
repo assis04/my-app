@@ -1,0 +1,76 @@
+import { z } from 'zod';
+
+export const createLeadSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório.').max(200),
+  sobrenome: z.string().max(200).optional().default(''),
+  celular: z.string().min(10, 'Celular deve ter pelo menos 10 dígitos.').max(20),
+  cep: z.string().min(8, 'CEP deve ter pelo menos 8 caracteres.').max(10),
+  conjugeNome: z.string().max(200).optional().default(''),
+  conjugeSobrenome: z.string().max(200).optional().default(''),
+  conjugeCelular: z.string().max(20).optional().default(''),
+  conjugeEmail: z.string().email('E-mail do cônjuge inválido.').optional().or(z.literal('')).default(''),
+  status: z.string().max(50).optional().default('Prospecção'),
+  etapa: z.string().max(50).optional().default(''),
+  origemCanal: z.string().max(50).optional().default(''),
+  preVendedorId: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+    z.number().int().positive().nullable()
+  ),
+  idKanban: z.string().max(100).optional().default(''),
+});
+
+export const updateLeadSchema = createLeadSchema.partial();
+
+export const transferLeadsSchema = z.object({
+  leadIds: z.array(z.number().int().positive()).min(1, 'Selecione ao menos um lead.'),
+  preVendedorId: z.preprocess((val) => Number(val), z.number().int().positive('Pré-vendedor é obrigatório.')),
+});
+
+export const updateEtapaSchema = z.object({
+  leadIds: z.array(z.number().int().positive()).min(1, 'Selecione ao menos um lead.'),
+  etapa: z.string().min(1, 'Etapa é obrigatória.').max(50),
+});
+
+// ─── Fila da Vez (Client/Lead legado) ────────────────────────────────────
+
+export const quickLeadSchema = z.object({
+  branch_id: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number({ message: 'A filial é obrigatória.' }).int().positive()
+  ),
+  nome: z.string().max(200).optional().default(''),
+  telefone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos.').max(20),
+  cep: z.string().max(10).optional().default(''),
+  sobrenome: z.string().max(200).optional().default(''),
+  etapa: z.string().max(50).optional().default('Novo'),
+  status: z.string().max(50).optional().default('Ativo'),
+  tipoImovel: z.string().max(100).optional().default(''),
+  statusImovel: z.string().max(100).optional().default(''),
+  pedidosContratos: z.string().max(2000).optional().default(''),
+  canal: z.string().max(50).optional().default(''),
+  origem: z.string().max(100).optional().default(''),
+  parceria: z.string().max(200).optional().default(''),
+  gerenteId: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+    z.number().int().positive().nullable().optional()
+  ),
+});
+
+export const manualLeadSchema = quickLeadSchema.extend({
+  assigned_user_id: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number({ message: 'O vendedor alvo é obrigatório.' }).int().positive()
+  ),
+});
+
+export const toggleStatusSchema = z.object({
+  branch_id: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number({ message: 'branch_id é obrigatório.' }).int().positive()
+  ),
+  is_available: z.boolean({ message: 'is_available é obrigatório.' }),
+  user_id: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+    z.number().int().positive().nullable().optional()
+  ),
+});

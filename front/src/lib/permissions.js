@@ -133,10 +133,10 @@ export const ROLE_DEFAULT_PERMISSIONS = {
  */
 export const SYSTEM_MODULES = [
   {
-    category: "RH",
-    color: "text-fuchsia-400",
-    borderColor: "border-fuchsia-500/20",
-    bgColor: "bg-fuchsia-500/5",
+    category: "Recursos Humanos (RH)",
+    color: "text-fuchsia-600",
+    borderColor: "border-fuchsia-200",
+    bgColor: "bg-fuchsia-50/50",
     modules: [
       { key: PERMISSIONS.RH_USERS_READ,    label: "Usuários - Visualizar" },
       { key: PERMISSIONS.RH_USERS_CREATE,  label: "Usuários - Criar" },
@@ -150,10 +150,10 @@ export const SYSTEM_MODULES = [
     ]
   },
   {
-    category: "CRM - Leads",
-    color: "text-emerald-400",
-    borderColor: "border-emerald-500/20",
-    bgColor: "bg-emerald-500/5",
+    category: "CRM & Funil de Vendas",
+    color: "text-emerald-700",
+    borderColor: "border-emerald-200",
+    bgColor: "bg-emerald-50/50",
     modules: [
       { key: PERMISSIONS.LEADS_READ_ALL,    label: "Todos os Leads - Ver" },
       { key: PERMISSIONS.LEADS_READ_BRANCH, label: "Leads da Filial - Ver" },
@@ -170,10 +170,10 @@ export const SYSTEM_MODULES = [
     ]
   },
   {
-    category: "Kanban",
-    color: "text-sky-400",
-    borderColor: "border-sky-500/20",
-    bgColor: "bg-sky-500/5",
+    category: "Operação Kanban",
+    color: "text-sky-700",
+    borderColor: "border-sky-200",
+    bgColor: "bg-sky-50/50",
     modules: [
       { key: PERMISSIONS.KANBAN_READ_ALL,    label: "Ver todos os Kanbans" },
       { key: PERMISSIONS.KANBAN_READ_BRANCH, label: "Ver Kanban da Filial" },
@@ -184,10 +184,10 @@ export const SYSTEM_MODULES = [
     ]
   },
   {
-    category: "Tarefas",
-    color: "text-amber-400",
-    borderColor: "border-amber-500/20",
-    bgColor: "bg-amber-500/5",
+    category: "Gestão de Tarefas",
+    color: "text-amber-700",
+    borderColor: "border-amber-200",
+    bgColor: "bg-amber-50/50",
     modules: [
       { key: PERMISSIONS.TASKS_MANAGE_ALL,    label: "Gerenciar Todas as Tarefas" },
       { key: PERMISSIONS.TASKS_MANAGE_BRANCH, label: "Gerenciar Tarefas da Filial" },
@@ -195,10 +195,10 @@ export const SYSTEM_MODULES = [
     ]
   },
   {
-    category: "Relatórios",
-    color: "text-violet-400",
-    borderColor: "border-violet-500/20",
-    bgColor: "bg-violet-500/5",
+    category: "Business Intelligence",
+    color: "text-violet-700",
+    borderColor: "border-violet-200",
+    bgColor: "bg-violet-50/50",
     modules: [
       { key: PERMISSIONS.REPORTS_READ_ALL,    label: "Ver Relatórios de Todas as Filiais" },
       { key: PERMISSIONS.REPORTS_READ_BRANCH, label: "Ver Relatórios da Filial" },
@@ -206,10 +206,10 @@ export const SYSTEM_MODULES = [
     ]
   },
   {
-    category: "Comunicação & Agenda",
-    color: "text-rose-400",
-    borderColor: "border-rose-500/20",
-    bgColor: "bg-rose-500/5",
+    category: "Comunicação & Mensageria",
+    color: "text-rose-700",
+    borderColor: "border-rose-200",
+    bgColor: "bg-rose-50/50",
     modules: [
       { key: PERMISSIONS.AGENDA_FULL,            label: "Agenda Google - Acesso Total" },
       { key: PERMISSIONS.NOTIFICATIONS_SEND,     label: "Notificações - Enviar" },
@@ -217,12 +217,12 @@ export const SYSTEM_MODULES = [
     ]
   },
   {
-    category: "Configurações",
-    color: "text-zinc-400",
-    borderColor: "border-zinc-500/20",
-    bgColor: "bg-zinc-500/5",
+    category: "Painel Administrativo",
+    color: "text-slate-700",
+    borderColor: "border-slate-200",
+    bgColor: "bg-slate-50/50",
     modules: [
-      { key: PERMISSIONS.CONFIG_MANAGE, label: "Configurações do Sistema" },
+      { key: PERMISSIONS.CONFIG_MANAGE, label: "Configurações Globais do Sistema" },
     ]
   },
 ];

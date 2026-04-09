@@ -1,30 +1,68 @@
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import { env } from './env.js';
+
+/**
+ * Parse simples de cookies a partir do header (evita dependência extra).
+ */
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  cookieHeader.split(';').forEach(pair => {
+    const [name, ...rest] = pair.trim().split('=');
+    if (name) cookies[name.trim()] = decodeURIComponent(rest.join('=').trim());
+  });
+  return cookies;
+}
 
 let io;
+
+const allowedOrigins = env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+const LOCAL_NET_REGEX = /^https?:\/\/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
 
 export function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: true,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin) || LOCAL_NET_REGEX.test(origin)) {
+          return callback(null, true);
+        }
+        callback(new Error('Bloqueado pelo CORS'));
+      },
       credentials: true
     }
   });
 
-  io.on('connection', (socket) => {
-    // console.log(`Novo cliente conectado via WebSocket: ${socket.id}`);
+  // Middleware de autenticação JWT — valida antes de permitir conexão
+  io.use((socket, next) => {
+    try {
+      const cookies = parseCookies(socket.handshake.headers.cookie || '');
+      const token = cookies.accessToken;
 
-    // Cliente avisa que quer escutar eventos de uma filial específica
+      if (!token) {
+        return next(new Error('Autenticação necessária.'));
+      }
+
+      const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET, { algorithms: ['HS256'] });
+
+      if (decoded.refresh === true) {
+        return next(new Error('Token inválido.'));
+      }
+
+      socket.user = decoded;
+      next();
+    } catch {
+      next(new Error('Token inválido ou expirado.'));
+    }
+  });
+
+  io.on('connection', (socket) => {
     socket.on('join_branch', (branchId) => {
       socket.join(`branch_${branchId}`);
-      // console.log(`Socket ${socket.id} joined room branch_${branchId}`);
     });
 
     socket.on('leave_branch', (branchId) => {
       socket.leave(`branch_${branchId}`);
-    });
-
-    socket.on('disconnect', () => {
-      // console.log(`Cliente desconectado: ${socket.id}`);
     });
   });
 
@@ -39,7 +77,7 @@ export function getIO() {
 }
 
 /**
- * Helper to emit a queue update to everyone observing a branch
+ * Helper to emit a queue update to everyone observing a branch.
  */
 export function emitQueueUpdate(branchId) {
   if (io) {

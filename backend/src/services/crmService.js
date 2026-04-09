@@ -13,7 +13,9 @@ export async function getAllOrcamentos(filters = {}) {
     parceria,
     userId, // Responsável
     dataInicio,
-    dataFim
+    dataFim,
+    page = 1,
+    limit = 50
   } = filters;
 
   const where = {};
@@ -22,7 +24,7 @@ export async function getAllOrcamentos(filters = {}) {
     where.nome = { contains: nome, mode: 'insensitive' };
   }
   if (telefone) {
-    where.telefone = { contains: telefone };
+    where.celular = { contains: telefone };
   }
   if (status) {
     where.status = status;
@@ -43,7 +45,7 @@ export async function getAllOrcamentos(filters = {}) {
     where.parceria = parceria;
   }
   if (userId) {
-    where.userId = parseInt(userId, 10);
+    where.vendedorId = parseInt(userId, 10);
   }
   
   if (dataInicio || dataFim) {
@@ -58,20 +60,35 @@ export async function getAllOrcamentos(filters = {}) {
     }
   }
 
-  const clients = await prisma.client.findMany({
-    where,
-    include: {
-      user: {
-        select: { id: true, nome: true, email: true }
-      },
-      filial: {
-        select: { id: true, nome: true }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  });
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const take = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+  const skip = (pageNum - 1) * take;
 
-  return clients;
+  where.deletedAt = null;
+
+  const [rawData, total] = await Promise.all([
+    prisma.lead.findMany({
+      where,
+      include: {
+        vendedor: {
+          select: { id: true, nome: true, email: true }
+        },
+        filial: {
+          select: { id: true, nome: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.lead.count({ where }),
+  ]);
+
+  const data = rawData.map((item) => ({
+    ...item,
+    telefone: item.celular,
+    user: item.vendedor,
+  }));
+
+  return { data, total, page: pageNum, limit: take, totalPages: Math.ceil(total / take) };
 }

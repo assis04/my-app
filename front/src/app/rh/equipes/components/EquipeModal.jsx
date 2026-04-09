@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
-import { Loader2, Users as UsersIcon, AlertTriangle } from 'lucide-react';
+import { Loader2, Users as UsersIcon, AlertTriangle, Search } from 'lucide-react';
+import PremiumSelect from '@/components/ui/PremiumSelect';
 
 export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
   const isEditing = !!equipe;
@@ -30,8 +31,8 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
           api('/users'),
           api('/filiais'),
         ]);
-        setUsers(usersData);
-        setFiliais(filiaisData);
+        setUsers(usersData?.data ?? (Array.isArray(usersData) ? usersData : []));
+        setFiliais(filiaisData?.data ?? (Array.isArray(filiaisData) ? filiaisData : []));
       } catch (err) {
         setError('Erro ao carregar usuários e filiais.');
       } finally {
@@ -85,44 +86,46 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#1a1a1a] border border-zinc-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white/95 backdrop-blur-xl border border-white/40 w-full max-w-4xl rounded-2xl shadow-floating flex flex-col max-h-[92vh] overflow-hidden translate-y-0 transform transition-all page-transition">
 
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-zinc-800 shrink-0">
-          <h2 className="text-xl font-bold flex items-center gap-3 text-zinc-100">
-            <div className="w-9 h-9 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
-              <UsersIcon size={18} className="text-[#0ea5e9]" />
+        <div className="flex justify-between items-center p-8 border-b border-slate-100 shrink-0">
+          <h2 className="text-xl sm:text-3xl font-black tracking-tight flex items-center gap-4 text-slate-900">
+            <div className="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm">
+              <UsersIcon size={24} className="text-sky-600" />
             </div>
-            {isEditing ? 'Editar Equipe' : 'Nova Equipe'}
+            {isEditing ? 'Ajustar Equipe' : 'Estruturar Equipe'}
           </h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors hover:bg-zinc-800 p-1.5 rounded-full cursor-pointer text-xl leading-none">&times;</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-900 transition-all bg-slate-50 hover:bg-slate-100 p-2.5 rounded-full cursor-pointer border border-slate-100 flex items-center justify-center active:scale-90">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 p-6 space-y-5 custom-scrollbar">
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 p-8 space-y-8 bg-white custom-scrollbar">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3.5 rounded-xl text-sm flex items-start gap-2.5">
-              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-sm font-bold flex items-start gap-3 shadow-sm">
+              <AlertTriangle size={18} className="shrink-0 mt-0.5" />
               <p>{error}</p>
             </div>
           )}
 
           {/* Nome e Descrição */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-400">Nome da Equipe *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
+              <label className="text-xs font-bold text-slate-400 ml-1">Identificação da Equipe *</label>
               <input
-                required type="text" placeholder="Ex: Equipe Comercial Alpha"
-                className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9]/50 transition-all placeholder:text-zinc-600 text-sm"
+                required type="text" placeholder="Ex: Comercial Sul"
+                className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm"
                 value={formData.nome}
                 onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-400">Descricao</label>
+            <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
+              <label className="text-xs font-bold text-slate-400 ml-1">Objetivo / Descrição</label>
               <input
-                type="text" placeholder="Breve descrição..."
-                className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9]/50 transition-all placeholder:text-zinc-600 text-sm"
+                type="text" placeholder="Foco em prospecção..."
+                className="w-full bg-slate-50 text-slate-900 p-4 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-sm"
                 value={formData.descricao}
                 onChange={e => setFormData(p => ({ ...p, descricao: e.target.value }))}
               />
@@ -130,92 +133,89 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
           </div>
 
           {/* Líder, Filial, e Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-400">Líder da Equipe</label>
-              <select
-                disabled={loadingDeps}
-                className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] transition-all text-sm disabled:opacity-50"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 ml-1">Liderança</label>
+              <PremiumSelect 
+                placeholder="Nenhum líder"
+                options={users}
                 value={formData.liderId}
                 onChange={e => setFormData(p => ({ ...p, liderId: e.target.value }))}
-              >
-                <option value="">Selecione o líder...</option>
-                {users.map(u => (
-                  <option key={u.id} value={u.id}>{u.nome}</option>
-                ))}
-              </select>
+                className={loadingDeps ? 'opacity-50 pointer-events-none' : ''}
+              />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-400">Filial</label>
-              <select
-                disabled={loadingDeps}
-                className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] transition-all text-sm disabled:opacity-50"
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 ml-1">Unidade</label>
+              <PremiumSelect 
+                placeholder="Unidade Global"
+                options={filiais}
                 value={formData.filialId}
                 onChange={e => setFormData(p => ({ ...p, filialId: e.target.value }))}
-              >
-                <option value="">Selecione a filial...</option>
-                {filiais.map(f => (
-                  <option key={f.id} value={f.id}>{f.nome}</option>
-                ))}
-              </select>
+                className={loadingDeps ? 'opacity-50 pointer-events-none' : ''}
+              />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-400">Status</label>
-              <select
-                className="w-full bg-[#242424] text-white p-3 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] transition-all text-sm"
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 ml-1">Operante</label>
+              <PremiumSelect 
+                options={[
+                  { id: 'true', nome: 'Sim (Ativa)' },
+                  { id: 'false', nome: 'Não (Backup)' }
+                ]}
                 value={formData.ativo.toString()}
                 onChange={e => setFormData(p => ({ ...p, ativo: e.target.value === 'true' }))}
-              >
-                <option value="true">Ativo</option>
-                <option value="false">Inativo</option>
-              </select>
+              />
             </div>
           </div>
 
           {/* Membros */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-zinc-400">Membros da Equipe</label>
-              <span className="text-xs bg-zinc-800 text-zinc-400 px-2.5 py-1 rounded-full border border-zinc-700">
-                {formData.membroIds.length} selecionado{formData.membroIds.length !== 1 ? 's' : ''}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <label className="text-sm font-bold text-slate-800">Contingente da Equipe</label>
+              <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-100 shadow-sm">
+                {formData.membroIds.length} Ativos
               </span>
             </div>
 
-            <input
-              type="text" placeholder="Buscar membro..."
-              className="w-full bg-[#242424] text-sm text-zinc-300 p-2.5 rounded-xl border border-zinc-700 outline-none focus:border-[#0ea5e9] transition-all placeholder:text-zinc-600"
-              value={searchMembro}
-              onChange={e => setSearchMembro(e.target.value)}
-            />
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-sky-500 transition-colors" size={16} />
+              <input
+                type="text" placeholder="Filtrar por nome..."
+                className="w-full bg-slate-50 text-sm text-slate-900 pl-12 pr-6 py-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300"
+                value={searchMembro}
+                onChange={e => setSearchMembro(e.target.value)}
+              />
+            </div>
 
-            <div className="max-h-48 overflow-y-auto custom-scrollbar rounded-xl border border-zinc-800 bg-[#242424] divide-y divide-zinc-800">
+            <div className="max-h-56 overflow-y-auto custom-scrollbar rounded-2xl border border-slate-200 bg-slate-50/50 p-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
               {loadingDeps ? (
-                <div className="flex justify-center py-6">
-                  <Loader2 size={20} className="animate-spin text-zinc-500" />
+                <div className="col-span-full flex justify-center py-10">
+                  <Loader2 size={32} className="animate-spin text-sky-500" />
                 </div>
               ) : filteredUsers.length === 0 ? (
-                <p className="text-center text-zinc-600 text-sm py-6">Nenhum usuário encontrado.</p>
+                <div className="col-span-full text-center py-10">
+                   <p className="text-slate-400 font-medium text-sm">Nenhum colaborador localizado.</p>
+                </div>
               ) : filteredUsers.map(u => {
                 const selected = formData.membroIds.includes(u.id);
                 return (
                   <label
                     key={u.id}
                     onClick={() => toggleMembro(u.id)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors select-none ${selected ? 'bg-sky-500/10' : 'hover:bg-zinc-800/50'}`}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all rounded-xl select-none border border-transparent group ${selected ? 'bg-white shadow-sm border-slate-100' : 'hover:bg-white/60'}`}
                   >
-                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all ${selected ? 'bg-[#0ea5e9] border-[#0ea5e9]' : 'border-zinc-600'}`}>
+                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${selected ? 'bg-sky-500 border-sky-500 shadow-sky-100 shadow-sm' : 'bg-white border-slate-200 group-hover:border-slate-300'}`}>
                       {selected && (
                         <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-xs text-zinc-300 shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center text-[10px] text-slate-600 font-black shrink-0 transition-transform group-hover:scale-110">
                       {u.nome.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <p className="text-sm text-zinc-200 font-medium">{u.nome}</p>
-                      <p className="text-xs text-zinc-500">{u.email}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs text-slate-800 font-black truncate">{u.nome}</p>
+                      <p className="text-[10px] text-slate-400 font-bold truncate">{u.email}</p>
                     </div>
                   </label>
                 );
@@ -225,14 +225,16 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
         </form>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-zinc-800 shrink-0">
+        <div className="flex gap-4 p-8 border-t border-slate-100 shrink-0 bg-slate-50/50">
           <button type="button" onClick={onClose}
-            className="flex-1 py-3 font-medium border border-zinc-700 text-zinc-400 rounded-xl hover:bg-zinc-800 hover:text-zinc-200 transition-colors text-sm">
-            Cancelar
+            className="flex-1 py-3 font-bold text-xs border border-slate-200 text-slate-400 rounded-2xl hover:bg-white hover:text-slate-600 transition-all active:scale-95 shadow-sm">
+            Retornar
           </button>
           <button type="button" disabled={loading} onClick={handleSubmit}
-            className="flex-1 bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] text-white py-3 rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-sky-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-sm">
-            {loading ? <><Loader2 size={16} className="animate-spin" /> Salvando...</> : (isEditing ? 'Salvar Alterações' : 'Criar Equipe')}
+            className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap">
+            {loading ? <><Loader2 size={18} className="animate-spin" /> Processando...</> : (
+              <>{isEditing ? 'Confirmar Atualização' : 'Efetivar Estrutura'}</>
+            )}
           </button>
         </div>
       </div>

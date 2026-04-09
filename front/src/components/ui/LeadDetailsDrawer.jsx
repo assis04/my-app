@@ -29,48 +29,48 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-100 transition-opacity duration-300 ease-in-out backdrop-blur-sm"
+        className="fixed inset-0 bg-slate-900/40 z-100 transition-opacity duration-300 ease-in-out backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Drawer */}
-      <div className={`fixed inset-y-0 right-0 z-101 w-full max-w-md bg-[#1a1a1a] shadow-2xl border-l border-zinc-800 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 z-101 w-full max-w-md bg-white shadow-2xl border-l border-slate-200 flex flex-col transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-zinc-800 bg-[#1c1c1c] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#0ea5e9] to-[#0284c7] flex items-center justify-center text-white shadow-lg shadow-sky-900/20">
-              <User size={20} />
+        <div className="flex items-center justify-between p-8 border-b border-slate-100 bg-white shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white shadow-xl shadow-sky-200">
+              <User size={24} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-zinc-100 truncate max-w-[250px]">{lead?.nome || 'Lead Sem Nome'}</h2>
-              <p className="text-xs text-zinc-500 font-medium tracking-wide">
-                CRIADO EM {formatDate(lead?.createdAt)}
+              <h2 className="text-xl font-black text-slate-900 truncate max-w-[250px] tracking-tight">{lead?.nome || 'Lead Sem Nome'}</h2>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
+                Criado em {formatDate(lead?.createdAt)}
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
           >
-            <X size={20} />
+            <X size={24} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 select-text">
+        <div className="flex-1 overflow-y-auto p-8 space-y-10 select-text bg-white">
           
           {/* Status & Etapa Flags */}
           <div className="flex items-center gap-3">
-            <span className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                lead?.status === 'Ativo' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+            <span className={`px-4 py-2 rounded-full text-xs font-semibold border flex items-center gap-2 shadow-sm ${
+                lead?.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
               }`}>
               <ShieldCheck size={14} />
               {lead?.status || 'Ativo'}
             </span>
-            <span className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-zinc-800/50 text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5">
-              <Info size={14} className="text-[#0ea5e9]"/>
-              {lead?.etapa || '—'}
+            <span className="px-4 py-2 rounded-full text-xs font-semibold bg-slate-50 text-slate-500 border border-slate-100 flex items-center gap-2 shadow-sm">
+              <Info size={14} className="text-sky-500"/>
+              {lead?.etapa || 'Novo'}
             </span>
           </div>
 
@@ -78,39 +78,39 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
           
           {/* Contato Principal */}
           <div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Phone size={14} /> Contato
+            <h3 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2">
+              <Phone size={14} className="text-sky-500" /> Contato Direto
             </h3>
-            <div className="bg-[#242424] rounded-2xl p-4 border border-zinc-800/80 space-y-3">
+            <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 space-y-4 shadow-inner">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-400">Telefone</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.telefone ? formatPhone(lead.telefone) : '—'}</span>
+                <span className="text-sm font-bold text-slate-500">Telefone</span>
+                <span className="text-base font-black text-slate-900">{(lead?.celular || lead?.telefone) ? formatPhone(lead.celular || lead.telefone) : '—'}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-zinc-800/50 pt-3">
-                <span className="text-sm text-zinc-400">Email (Se houver)</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.email || '—'}</span>
+              <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+                <span className="text-sm font-bold text-slate-500">E-mail</span>
+                <span className="text-sm font-bold text-sky-600 underline decoration-sky-200 underline-offset-4">{lead?.email || '—'}</span>
               </div>
             </div>
           </div>
 
           {/* Atribuição */}
           <div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <MapPin size={14} /> Atribuição
+            <h3 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2">
+              <MapPin size={14} className="text-sky-500" /> Distribuição e Posse
             </h3>
-            <div className="bg-[#242424] rounded-2xl p-4 border border-zinc-800/80 space-y-3">
+            <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 space-y-4 shadow-inner">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-400">Filial</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.filial?.nome || '—'}</span>
+                <span className="text-sm font-bold text-slate-500">Filial</span>
+                <span className="text-sm font-black text-slate-800">{lead?.filial?.nome || '—'}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-zinc-800/50 pt-3">
-                <span className="text-sm text-zinc-400">Responsável</span>
-                <span className="text-sm font-medium text-[#0ea5e9] bg-[#0ea5e9]/10 px-2 py-0.5 rounded-lg">{lead?.user?.nome || '—'}</span>
+              <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+                <span className="text-sm font-bold text-slate-500">Responsável Atual</span>
+                <span className="text-sm font-black text-sky-600 bg-sky-50 px-3 py-1 rounded-xl border border-sky-100 shadow-sm">{lead?.vendedor?.nome || lead?.user?.nome || '—'}</span>
               </div>
               {lead?.gerente && (
-                <div className="flex justify-between items-center border-t border-zinc-800/50 pt-3">
-                  <span className="text-sm text-zinc-400">Gerente do Lead</span>
-                  <span className="text-sm font-medium text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-lg">{lead.gerente.nome}</span>
+                <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+                  <span className="text-sm font-bold text-slate-500">Gerente Responsável</span>
+                  <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-100 shadow-sm">{lead.gerente.nome}</span>
                 </div>
               )}
             </div>
@@ -118,38 +118,40 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
 
           {/* Interesse */}
           <div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Building2 size={14} /> Perfil do Imóvel Buscado
+            <h3 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2">
+              <Building2 size={14} className="text-sky-500" /> Perfil de Interesse
             </h3>
-            <div className="bg-[#242424] rounded-2xl p-4 border border-zinc-800/80 space-y-3">
+            <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 space-y-4 shadow-inner">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-400">Tipo de Imóvel</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.tipoImovel || 'Não Informado'}</span>
+                <span className="text-sm font-bold text-slate-500">Tipo de Ativo</span>
+                <span className="text-sm font-black text-slate-800">{lead?.tipoImovel || 'Não Informado'}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-zinc-800/50 pt-3">
-                <span className="text-sm text-zinc-400">Status Preferencial</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.statusImovel || '—'}</span>
+              <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+                <span className="text-sm font-bold text-slate-500">Status Desejado</span>
+                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">{lead?.statusImovel || '—'}</span>
               </div>
             </div>
           </div>
 
           {/* Marketing & Aquisição */}
-          <div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Globe size={14} /> Marketing e Aquisição
+          <div className="pb-10">
+            <h3 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2">
+              <Globe size={14} className="text-sky-500" /> Inteligência de Marketing
             </h3>
-            <div className="bg-[#242424] rounded-2xl p-4 border border-zinc-800/80 space-y-3">
+            <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 space-y-4 shadow-inner">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-400 flex items-center gap-1.5"><Megaphone size={14}/> Canal</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.canal || '—'}</span>
+                <span className="text-sm font-bold text-slate-500 flex items-center gap-2"><Megaphone size={14} className="text-slate-400"/> Canal</span>
+                <span className="text-xs font-semibold text-slate-700 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">{lead?.canal || '—'}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-zinc-800/50 pt-3">
-                <span className="text-sm text-zinc-400 flex items-center gap-1.5"><Tag size={14}/> Origem</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.origem || '—'}</span>
+              <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+                <span className="text-sm font-bold text-slate-500 flex items-center gap-2"><Tag size={14} className="text-slate-400"/> Origem</span>
+                <span className="text-sm font-bold text-slate-600 italic">“{lead?.origem || 'Direto'}”</span>
               </div>
-              <div className="flex justify-between items-center border-t border-zinc-800/50 pt-3">
-                <span className="text-sm text-zinc-400 flex items-center gap-1.5"><Handshake size={14}/> Parceria</span>
-                <span className="text-sm font-medium text-zinc-200">{lead?.parceria || 'Não'}</span>
+              <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+                <span className="text-sm font-bold text-slate-500 flex items-center gap-2"><Handshake size={14} className="text-slate-400"/> Parceria</span>
+                <span className={`text-xs font-semibold px-2 py-1 rounded border ${lead?.parceria === 'Sim' ? 'bg-sky-50 text-sky-600 border-sky-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                  {lead?.parceria || 'Não'}
+                </span>
               </div>
             </div>
           </div>
@@ -157,12 +159,12 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-zinc-800 bg-[#1c1c1c] shrink-0">
+        <div className="p-8 border-t border-slate-100 bg-white shrink-0">
           <button 
             onClick={onClose}
-            className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded-xl transition-colors text-sm shadow-sm"
+            className="w-full py-4 bg-slate-900 hover:bg-black text-white font-bold text-sm rounded-2xl transition-all shadow-lg active:scale-95"
           >
-            Fechar Aba
+            Fechar Painel
           </button>
         </div>
       </div>

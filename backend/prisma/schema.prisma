@@ -30,9 +30,10 @@ model User {
   role      Role?    @relation(fields: [roleId], references: [id])
   filialId  Int?     @map("filial_id")
   filial    Filial?  @relation(fields: [filialId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ativo     Boolean  @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  ativo      Boolean   @default(true)
+  deletedAt  DateTime? @map("deleted_at")
 
   // Audit Log: Who created this user?
   createdById  Int?    @map("created_by_id")
@@ -45,10 +46,14 @@ model User {
   equipeLiderada  Equipe[] @relation("EquipeLider")
   managedBranch   Filial[] @relation("BranchManager")
 
-  // ERP Specific: A user (Vendedor) might be responsible for many clients
-  clients      Client[]
-  managedLeads Client[] @relation("GerenteLeads")
-  salesQueues  SalesQueue[]
+  // Tasks (Lista de Tarefas)
+  tasksCreated Task[] @relation("TaskCreator")
+  tasksAssigned Task[] @relation("AssignedTasks")
+
+  salesQueues     SalesQueue[]
+  leadsAssigned   Lead[]       @relation("LeadPreVendedor")
+  leadsVendedor   Lead[]       @relation("LeadVendedor")
+  leadsGerente    Lead[]       @relation("LeadGerente")
 
   @@map("users")
 }
@@ -58,7 +63,7 @@ model Filial {
   nome        String       @unique
   endereco    String?
   users       User[]
-  clients     Client[]
+  leads       Lead[]
   equipes     Equipe[]
   salesQueues SalesQueue[]
   
@@ -89,49 +94,13 @@ model Equipe {
   // Membros da equipe
   membros   User[]   @relation("EquipeMembros")
 
+  // Tarefas da Equipe
+  tasks     Task[]   @relation("EquipeTasks")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("equipes")
-}
-
-model Client {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String?  @unique
-  telefone  String?
-  endereco  String?
-  cpf_cnpj  String?  @unique @map("cpf_cnpj")
-  
-  // Novos CamposSolicitados
-  etapa         String   @default("Novo")             // Etapa do Kanban
-  status        String   @default("Ativo")            // Ativo ou Desativado
-  tipoImovel    String?  @map("tipo_imovel")          // Casa, Apto, etc
-  statusImovel  String?  @map("status_imovel")        // Pronto, Reforma, Construção
-  plantaPath    String?  @map("planta_path")          // Caminho do arquivo da planta
-  pedidosContratos String? @map("pedidos_contratos")   // Texto para pedidos/contratos
-  
-  // Marketing / Origem
-  canal         String?
-  origem        String?
-  parceria      String?
-
-  // Relationship with the user who created/manages the client (Vendedor)
-  userId    Int?     @map("user_id")
-  user      User?    @relation(fields: [userId], references: [id])
-  
-  // Relationship with the manager (Gerente)
-  gerenteId Int?     @map("gerente_id")
-  gerente   User?    @relation("GerenteLeads", fields: [gerenteId], references: [id])
-
-  // Relationship with filial (branch)
-  filialId  Int?     @map("filial_id")
-  filial    Filial?  @relation(fields: [filialId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("clients")
 }
 
 model SalesQueue {
@@ -146,4 +115,124 @@ model SalesQueue {
 
   @@id([filialId, userId]) // Composite Key
   @@map("branch_sales_queues")
+}
+
+model Lead {
+  id              Int       @id @default(autoincrement())
+
+  // === Identidade ===
+  nome            String
+  sobrenome       String?
+  celular         String
+  email           String?
+  cpfCnpj         String?   @map("cpf_cnpj")
+  cep             String?
+  endereco        String?
+
+  // === CRM / Pipeline ===
+  idKanban        String?   @map("id_kanban")
+  status          String    @default("Novo")
+  etapa           String?
+
+  // === Imóvel (domínio imobiliário) ===
+  tipoImovel      String?   @map("tipo_imovel")
+  statusImovel    String?   @map("status_imovel")
+  plantaPath      String?   @map("planta_path")
+  pedidosContratos String?  @map("pedidos_contratos")
+
+  // === Marketing / Origem ===
+  canal           String?
+  origem          String?
+  parceria        String?
+  origemCanal     String?   @map("origem_canal")
+  origemExterna   Boolean   @default(false) @map("origem_externa")
+
+  // === Cônjuge ===
+  conjugeNome      String?  @map("conjuge_nome")
+  conjugeSobrenome String?  @map("conjuge_sobrenome")
+  conjugeCelular   String?  @map("conjuge_celular")
+  conjugeEmail     String?  @map("conjuge_email")
+
+  // === Vendedor (atribuição via fila) ===
+  vendedorId      Int?      @map("vendedor_id")
+  vendedor        User?     @relation("LeadVendedor", fields: [vendedorId], references: [id])
+
+  // === Pré-vendedor (CRM) ===
+  preVendedorId   Int?      @map("pre_vendedor_id")
+  preVendedor     User?     @relation("LeadPreVendedor", fields: [preVendedorId], references: [id])
+
+  // === Gerente ===
+  gerenteId       Int?      @map("gerente_id")
+  gerente         User?     @relation("LeadGerente", fields: [gerenteId], references: [id])
+
+  // === Filial ===
+  filialId        Int?      @map("filial_id")
+  filial          Filial?   @relation(fields: [filialId], references: [id])
+
+  // === Conta (nullable — fila pode não ter dados suficientes) ===
+  contaId         Int?      @map("conta_id")
+  conta           Account?  @relation("AccountLeads", fields: [contaId], references: [id])
+
+  // === Origem do registro ===
+  fonte           String?   @default("crm")
+
+  // === Timestamps ===
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? @map("deleted_at")
+
+  @@index([vendedorId])
+  @@index([preVendedorId])
+  @@index([gerenteId])
+  @@index([filialId])
+  @@index([contaId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+model Account {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  sobrenome String
+  celular   String
+  cep       String
+
+  // 1:N — Uma Conta pode ter muitos Leads
+  leads     Lead[]   @relation("AccountLeads")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Índice composto para a regra de identificação cruzada (nome + celular + cep)
+  @@unique([celular, nome, cep], name: "account_identity")
+  @@map("accounts")
+}
+
+model Task {
+  id                 Int       @id @default(autoincrement())
+  titulo             String
+  descricao          String?
+  status             String    @default("PENDENTE") // PENDENTE, CONCLUIDA
+  dataVencimento     DateTime?
+  
+  // Criador da tarefa
+  createdById        Int       @map("created_by_id")
+  createdBy          User      @relation("TaskCreator", fields: [createdById], references: [id])
+
+  // Atribuição
+  assignedToUserId   Int?      @map("assigned_to_user_id")
+  assignedToUser     User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
+  
+  assignedToEquipeId Int?      @map("assigned_to_equipe_id")
+  assignedToEquipe   Equipe?   @relation("EquipeTasks", fields: [assignedToEquipeId], references: [id])
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([assignedToUserId])
+  @@index([createdById])
+  @@index([assignedToEquipeId])
+  @@index([status])
+  @@map("tasks")
 }

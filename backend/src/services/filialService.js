@@ -2,7 +2,6 @@ import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 
 export async function listFiliais() {
-  console.log('[DEBUG] listFiliais called with manager include');
   try {
     return await prisma.filial.findMany({
       orderBy: { nome: 'asc' },

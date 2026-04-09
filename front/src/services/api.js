@@ -4,26 +4,67 @@
 */
 const getApiUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  // No navegador (Client-side)
   if (typeof window !== 'undefined') {
-    // Se a URL base tiver 'localhost', trocamos pro IP que o celular está usando
-    if (envUrl && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-      return envUrl.replace(/localhost|127\.0\.0\.1/, window.location.hostname);
+    // 1. Se houver variável de ambiente, usamos ela (com ajuste dinâmico apenas se for localhost)
+    if (envUrl) {
+      if (envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+        return envUrl.replace(/localhost|127\.0\.0\.1/, window.location.hostname);
+      }
+      return envUrl;
     }
-    if (envUrl) return envUrl;
-    return `${window.location.protocol}//${window.location.hostname}:3002`;
+    // 2. Se não houver variável, tentamos o mesmo host da página na porta 3001 (novo padrão)
+    return `${window.location.protocol}//${window.location.hostname}:3001`;
   }
-  // Se for código rodando no Node do Servidor
-  return envUrl || 'http://localhost:3002';
+  
+  // No servidor (Server-side / SSR)
+  return envUrl || 'http://localhost:3001';
 };
 
 const API_URL = getApiUrl();
 
-export const api = async (endpoint, { body, ...customConfig } = {}) => {
+/**
+ * Retorna a URL base para conexão WebSocket (Socket.IO).
+ * Usa a mesma lógica dinâmica do getApiUrl, mas na porta do Socket (3002).
+ */
+export const getSocketUrl = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    return `${protocol}//${hostname}:3002`;
+  }
+  return 'http://localhost:3002';
+};
+
+let isRefreshing = false;
+let refreshPromise = null;
+
+async function tryRefreshToken() {
+  if (isRefreshing) return refreshPromise;
+
+  isRefreshing = true;
+  refreshPromise = fetch(`${API_URL}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Refresh failed');
+      return true;
+    })
+    .finally(() => {
+      isRefreshing = false;
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
+export const api = async (endpoint, { body, ...customConfig } = {}, _isRetry = false) => {
   const isFormData = typeof window !== 'undefined' && body instanceof FormData;
-  
+
   const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
-  
-  // Inclui cookies nas requisições (importante para o refresh token)
+
   const config = {
     method: body ? 'POST' : 'GET',
     ...customConfig,
@@ -38,21 +79,14 @@ export const api = async (endpoint, { body, ...customConfig } = {}) => {
     config.body = isFormData ? body : JSON.stringify(body);
   }
 
-  // Se houver um token no localStorage, adiciona no header
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
-    
+
     let data = {};
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       data = await response.json();
     } else {
-      // Se não for JSON (ex: erro 500 com HTML do Express), pegamos como texto ou usamos um padrão
       const text = await response.text();
       data = { message: text || 'Erro desconhecido no servidor' };
     }
@@ -61,10 +95,18 @@ export const api = async (endpoint, { body, ...customConfig } = {}) => {
       return data;
     }
 
-    // Token expirado ou inválido → limpa sessão e redireciona para login
-    if (response.status === 401 && endpoint !== '/auth/login') {
+    // Token expirado → tenta refresh uma vez antes de redirecionar
+    if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/refresh') {
+      if (!_isRetry) {
+        try {
+          await tryRefreshToken();
+          return api(endpoint, { body, ...customConfig }, true);
+        } catch {
+          // Refresh falhou — redirecionar para login
+        }
+      }
+
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }

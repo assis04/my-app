@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Building2, Plus, Edit, Trash2, Menu, Search, Loader2, RefreshCw, MapPin, Users } from 'lucide-react';
+import { Building2, Plus, Edit, Trash2, Search, Loader2, RefreshCw, MapPin, Users, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sidebar } from '@/components/ui/Sidebar';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import FilialModal from './components/FilialModal';
 import { usePermissions } from '@/hooks/usePermissions';
+import { ADMIN_ROLES, HR_ROLES } from '@/lib/roles';
 
-const ALLOWED_ROLES = ['ADM', 'Administrador', 'admin', 'RH', 'rh'];
+const ALLOWED_ROLES = [...ADMIN_ROLES, ...HR_ROLES];
 
 export default function FiliaisPage() {
   const { user, loading: authLoading } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const { isAdmin } = usePermissions();
 
@@ -76,36 +75,17 @@ export default function FiliaisPage() {
   );
 
   return (
-    <div className="flex h-screen bg-[#212121] text-zinc-100 font-sans relative">
-      <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-[#1c1c1c] p-2 rounded-xl border border-zinc-800 text-zinc-300"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu size={24} />
-      </button>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
-
-      <div className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-        <Sidebar />
-      </div>
-
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0 pt-16 md:pt-8">
-        <header className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
+    <>
+        <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl font-light text-zinc-100">Gerenciar Filiais</h1>
-            <p className="text-sm text-zinc-500 mt-0.5">{filiais.length} filial{filiais.length !== 1 ? 'is' : ''} cadastrada{filiais.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Filiais</h1>
+            <p className="text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-wider">{filiais.length} filial{filiais.length !== 1 ? 'is' : ''} estratégica{filiais.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={loadFiliais} className="p-2.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-xl transition-colors" title="Recarregar">
-              <RefreshCw size={16} />
-            </button>
             {isAdmin && (
               <button
                 onClick={() => setModalData({})}
-                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-full font-bold shadow-lg shadow-amber-900/20 transition-all text-sm"
+                className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-xs active:scale-95 whitespace-nowrap"
               >
                 Nova Filial <Plus size={16} />
               </button>
@@ -114,52 +94,44 @@ export default function FiliaisPage() {
         </header>
 
         {/* Cards stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
-              <Building2 size={18} className="text-amber-400" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-premium hover:shadow-floating transition-all active:scale-[0.98] cursor-pointer group">
+            <div className="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm group-hover:bg-sky-500 group-hover:text-white transition-colors">
+              <Building2 size={24} className="text-sky-500 group-hover:text-white transition-colors" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-100">{filiais.length}</p>
-              <p className="text-xs text-zinc-500">Total de Filiais</p>
+              <p className="text-2xl font-black text-slate-900 tracking-tighter">{filiais.length}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Unidades Ativas</p>
             </div>
           </div>
-          <div className="bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center border border-sky-500/20">
-              <Users size={18} className="text-sky-400" />
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-premium hover:shadow-floating transition-all active:scale-[0.98] cursor-pointer group">
+            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+              <Users size={24} className="text-emerald-500 group-hover:text-white transition-colors" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-100">
+              <p className="text-2xl font-black text-slate-900 tracking-tighter">
                 {filiais.reduce((acc, f) => acc + (f._count?.users || 0), 0)}
               </p>
-              <p className="text-xs text-zinc-500">Usuários cadastrados</p>
-            </div>
-          </div>
-          <div className="bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
-              <MapPin size={18} className="text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-zinc-100">
-                {filiais.filter(f => f.endereco).length}
-              </p>
-              <p className="text-xs text-zinc-500">Com endereço cadastrado</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Colaboradores</p>
             </div>
           </div>
         </div>
 
         {/* Tabela */}
-        <div className="bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h2 className="text-lg font-medium text-zinc-300 flex items-center gap-3">
-              <Building2 size={20} className="text-amber-400" /> Lista de Filiais
+        <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-6 shadow-floating mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+            <h2 className="text-base font-black text-slate-800 flex items-center gap-3">
+              <div className="w-8 h-8 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-sm">
+                <Building2 size={18} className="text-sky-500" />
+              </div>
+              Filiais
             </h2>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
+            <div className="relative w-full lg:w-72 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={16} />
               <input
                 type="text"
-                placeholder="Buscar filial..."
-                className="w-full bg-[#2a2a2a] text-sm text-zinc-200 pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 outline-none transition-all placeholder:text-zinc-600"
+                placeholder="Localizar unidade..."
+                className="w-full bg-slate-50 text-xs text-slate-900 pl-11 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold placeholder:text-slate-300 placeholder:font-medium"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -167,94 +139,93 @@ export default function FiliaisPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 size={28} className="animate-spin text-amber-400" />
+            <div className="flex justify-center items-center py-20 bg-slate-50/10 rounded-2xl border border-dashed border-slate-100">
+              <Loader2 size={32} className="animate-spin text-sky-500" />
             </div>
           ) : error ? (
-            <div className="text-center py-16 text-red-400 text-sm">{error}</div>
+            <div className="text-center py-16 bg-rose-50 rounded-2xl border border-rose-100 text-rose-600 font-bold flex items-center justify-center gap-3 text-xs">
+              <AlertTriangle size={18} /> {error}
+            </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <Building2 size={40} className="mx-auto text-zinc-700 mb-4" />
-              <p className="text-zinc-500 text-sm">
-                {search ? 'Nenhuma filial corresponde à busca.' : 'Nenhuma filial cadastrada ainda.'}
+            <div className="text-center py-20 bg-slate-50/10 rounded-2xl border border-dashed border-slate-100 group">
+              <Building2 size={40} className="mx-auto text-slate-200 mb-4 group-hover:text-sky-200 transition-colors" />
+              <p className="text-slate-400 font-bold text-[10px] uppercase">
+                {search ? 'Nenhum resultado encontrado.' : 'Nenhuma unidade cadastrada.'}
               </p>
-              {!search && (
-                <button onClick={() => setModalData({})} className="mt-4 text-amber-400 hover:underline text-sm">
-                  Criar primeira filial
-                </button>
-              )}
             </div>
           ) : (
-            <div className="w-full overflow-x-auto">
-              <table className="w-full text-left text-sm text-zinc-400 border-collapse">
-                <thead className="border-b border-zinc-800 text-zinc-100">
+            <div className="w-full overflow-hidden rounded-2xl border border-slate-100">
+              <table className="w-full text-left text-xs whitespace-nowrap text-slate-600 border-collapse">
+                <thead className="bg-slate-50/80 text-slate-500 font-black text-[10px] uppercase border-b border-slate-100 italic tracking-tighter">
                   <tr>
-                    <th className="pb-4 font-semibold px-2 text-base">Filial</th>
-                    <th className="pb-4 font-semibold px-2 text-base">Gerente</th>
-                    <th className="pb-4 font-semibold px-2 text-base text-center">Usuários</th>
-                    <th className="pb-4 font-semibold px-2 text-base text-center">Equipes</th>
-                    <th className="pb-4 font-semibold px-2 text-base">Criação</th>
-                    <th className="pb-4 font-semibold px-2 text-base text-center">Ações</th>
+                    <th className="py-2 px-4 italic">Unidade</th>
+                    <th className="py-2 px-4 italic">Gerente</th>
+                    <th className="py-2 px-4 text-center italic">Usuários</th>
+                    <th className="py-2 px-4 text-center italic">Células</th>
+                    <th className="py-2 px-4 italic">Fundação</th>
+                    <th className="py-2 px-4 text-right italic">Ações</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-50">
                   {filtered.map((f) => (
-                    <tr key={f.id} className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors">
-                      <td className="py-4 px-2">
+                    <tr key={f.id} className="hover:bg-slate-50 transition-all group">
+                      <td className="py-2 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                            <Building2 size={14} className="text-amber-400" />
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 group-hover:bg-sky-50 group-hover:border-sky-100 transition-colors shadow-xs">
+                            <Building2 size={14} className="text-slate-400 group-hover:text-sky-500 transition-colors" />
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-zinc-100 text-[15px]">{f.nome}</span>
-                            <span className="text-[11px] text-zinc-500 truncate max-w-[180px]">{f.endereco || 'Sem endereço'}</span>
+                          <div className="flex flex-col leading-tight">
+                            <span className="font-black text-slate-900 tracking-tight group-hover:text-sky-700 transition-colors uppercase">{f.nome}</span>
+                            <span className="text-[10px] font-bold text-slate-400 truncate max-w-[150px] uppercase tracking-tighter">{f.endereco || 'N/A'}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-2">
+                      <td className="py-2 px-4">
                         {f.manager ? (
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] text-amber-400 font-bold">
-                              {f.manager.nome.charAt(0)}
+                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[9px] text-white font-black group-hover:from-sky-400 group-hover:to-sky-600 transition-all shadow-sm uppercase">
+                              {f.manager.nome.charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-zinc-300 font-medium">{f.manager.nome}</span>
+                            <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors uppercase tracking-tighter">{f.manager.nome}</span>
                           </div>
                         ) : (
-                          <span className="text-zinc-600 text-xs italic">Não atribuído</span>
+                          <span className="text-slate-300 font-bold text-[10px] uppercase italic tracking-widest">Vago</span>
                         )}
                       </td>
-                      <td className="py-4 px-2 text-center">
-                        <span className="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-1 rounded-lg text-xs font-medium">
+                      <td className="py-2 px-4 text-center">
+                        <span className="bg-sky-50 text-sky-400 border border-sky-100 px-3 py-0.5 rounded-xl text-[9px] font-black group-hover:bg-sky-500 group-hover:text-white transition-all shadow-xs uppercase">
                           {f._count?.users ?? 0}
                         </span>
                       </td>
-                      <td className="py-4 px-2 text-center">
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-medium">
+                      <td className="py-2 px-4 text-center">
+                        <span className="bg-emerald-50 text-emerald-400 border border-emerald-100 px-3 py-0.5 rounded-xl text-[9px] font-black group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xs uppercase">
                           {f._count?.equipes ?? 0}
                         </span>
                       </td>
-                      <td className="py-4 px-2 text-xs text-zinc-500">
-                        {new Date(f.createdAt).toLocaleDateString('pt-BR')}
+                      <td className="py-2 px-4">
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">
+                          {new Date(f.createdAt).toLocaleDateString('pt-BR')}
+                        </span>
                       </td>
-                      <td className="py-4 px-2">
-                        <div className="flex justify-center gap-2">
+                      <td className="py-2 px-4">
+                        <div className="flex justify-end gap-1">
                           <button
                             onClick={() => handleViewTeam(f.id)}
-                            className="bg-zinc-800/50 text-zinc-400 hover:text-sky-400 hover:bg-sky-500/10 border border-zinc-700 hover:border-sky-500/30 px-3 py-1.5 rounded-lg transition-all text-[11px] font-bold uppercase tracking-wider flex items-center gap-2"
+                            className="bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 px-3 py-1.5 rounded-xl transition-all text-[10px] font-black flex items-center gap-1.5 shadow-xs active:scale-95 uppercase"
                           >
-                            <Users size={12} /> Equipe
+                            <Users size={12} /> Ver
                           </button>
                           {isAdmin && (
                             <>
                               <button
                                 onClick={() => setModalData(f)}
-                                className="text-zinc-500 hover:text-amber-400 transition-colors p-1.5 hover:bg-zinc-800 rounded-lg" title="Editar">
-                                <Edit size={16} />
+                                className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95" title="Configurar">
+                                <Edit size={14} />
                               </button>
                               <button
                                 onClick={() => handleDelete(f.id, f.nome)}
-                                className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 hover:bg-zinc-800 rounded-lg" title="Remover">
-                                <Trash2 size={16} />
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100 shadow-sm active:scale-95" title="Remover">
+                                <Trash2 size={14} />
                               </button>
                             </>
                           )}
@@ -267,8 +238,6 @@ export default function FiliaisPage() {
             </div>
           )}
         </div>
-      </main>
-
       {modalData !== null && (
         <FilialModal
           filial={modalData?.id ? modalData : null}
@@ -279,49 +248,56 @@ export default function FiliaisPage() {
 
       {/* Modal de Visualizar Equipe */}
       {viewTeamData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#1a1a1a] border border-zinc-800 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="flex justify-between items-center p-6 border-b border-zinc-800 shrink-0">
-              <h2 className="text-xl font-bold flex items-center gap-3 text-zinc-100">
-                <div className="w-9 h-9 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
-                  <Users size={18} className="text-sky-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden">
+            <div className="flex justify-between items-center p-8 border-b border-slate-100 shrink-0">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-4 text-slate-900">
+                <div className="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-sm">
+                  <Users size={20} className="text-sky-600" />
                 </div>
-                Equipe: {viewTeamData.nome}
+                {viewTeamData.nome}
               </h2>
-              <button onClick={() => setViewTeamData(null)} className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-1.5 rounded-full cursor-pointer text-xl leading-none transition-colors">&times;</button>
+              <button onClick={() => setViewTeamData(null)} className="text-slate-400 hover:text-slate-900 transition-all bg-slate-50 hover:bg-slate-100 p-2.5 rounded-full cursor-pointer border border-slate-100 flex items-center justify-center active:scale-90">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+            <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-slate-50/20 custom-scrollbar">
               {viewTeamData.users?.length === 0 ? (
-                <p className="text-center text-zinc-500 py-10 italic">Nenhum usuário vinculado a esta filial.</p>
+                <div className="text-center py-16 group">
+                   <Users size={48} className="mx-auto text-slate-100 mb-4 group-hover:text-sky-100 transition-colors" />
+                   <p className="text-slate-300 font-medium text-sm">Unidade sem efetivo vinculado.</p>
+                </div>
               ) : (
-                viewTeamData.users.map(u => (
-                  <div key={u.id} className="bg-[#242424] border border-zinc-700/50 p-3.5 rounded-xl flex items-center justify-between group hover:border-[#0ea5e9]/30 transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-sm font-bold text-zinc-400 group-hover:text-[#0ea5e9] transition-colors">
-                        {u.nome.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-zinc-100">{u.nome}</p>
-                        <p className="text-xs text-zinc-500">{u.email}</p>
+                <div className="grid grid-cols-1 gap-3">
+                  {viewTeamData.users.map(u => (
+                    <div key={u.id} className="bg-white border border-slate-200 p-4 rounded-2xl flex items-center justify-between group hover:border-sky-200 hover:shadow-sm transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-600 group-hover:border-sky-100 transition-all shadow-xs">
+                          {u.nome.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-black text-slate-800 text-sm tracking-tight truncate">{u.nome}</p>
+                          <p className="text-xs font-medium text-slate-400 truncate">{u.email}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
             
-            <div className="p-6 border-t border-zinc-800 flex justify-end shrink-0">
+            <div className="p-8 border-t border-slate-100 flex justify-end shrink-0 bg-slate-50/50">
               <button 
                 onClick={() => setViewTeamData(null)}
-                className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-all text-sm font-medium"
+                className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-900 border border-slate-200 rounded-2xl transition-all text-sm font-bold shadow-sm active:scale-95 whitespace-nowrap"
               >
-                Fechar
+                Retornar ao Painel
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
