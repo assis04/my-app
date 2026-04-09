@@ -3,17 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, Plus, Edit, Menu, RefreshCw } from 'lucide-react';
-import { Sidebar } from '@/components/ui/Sidebar';
-import NovoLeadModal from '../../captacao/fila/components/NovoLeadModal';
+import { Search, Plus, Edit, RefreshCw } from 'lucide-react';
+import NovoLeadModal from '../fila-da-vez/components/NovoLeadModal';
 import LeadDetailsDrawer from '@/components/ui/LeadDetailsDrawer';
 import PremiumSelect from '@/components/ui/PremiumSelect';
 
-export default function SolicitacaoOrcamentoPage() {
+export default function OportunidadeDeNegocioPage() {
   const { user } = useAuth();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
 
@@ -29,12 +27,11 @@ export default function SolicitacaoOrcamentoPage() {
           api('/filiais'),
           api('/users')
         ]);
-        if (Array.isArray(resBranches)) setBranches(resBranches);
-        if (Array.isArray(resUsers)) {
-          // Filtrar somente Vendedores
-          const vendedores = resUsers.filter(u => String(u.perfil).toLowerCase() === 'vendedor');
-          setUsers(vendedores);
-        }
+        const branches = resBranches?.data ?? (Array.isArray(resBranches) ? resBranches : []);
+        setBranches(branches);
+        const usersList = resUsers?.data ?? (Array.isArray(resUsers) ? resUsers : []);
+        const vendedores = usersList.filter(u => String(u.perfil).toLowerCase() === 'vendedor');
+        setUsers(vendedores);
       } catch (err) {
         console.error('Erro ao carregar dados dos filtros:', err);
       }
@@ -81,10 +78,12 @@ export default function SolicitacaoOrcamentoPage() {
         }
       });
 
-      const data = await api(`/api/crm/orcamentos?${queryParams.toString()}`);
-      
-      if (Array.isArray(data)) {
-        setLeads(data);
+      const result = await api(`/api/crm/orcamentos?${queryParams.toString()}`);
+
+      if (result?.data && Array.isArray(result.data)) {
+        setLeads(result.data);
+      } else if (Array.isArray(result)) {
+        setLeads(result);
       } else {
         setLeads([]);
       }
@@ -120,7 +119,7 @@ export default function SolicitacaoOrcamentoPage() {
 
   const handleSaveLead = async (formDataInputs) => {
     try {
-      await api('/api/captacao/lead/manual', {
+      await api('/api/crm/lead/manual', {
         method: 'POST',
         body: formDataInputs
       });
@@ -131,23 +130,7 @@ export default function SolicitacaoOrcamentoPage() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
-      <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu size={24} />
-      </button>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
-
-      <div className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-        <Sidebar />
-      </div>
-
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 pt-16 md:pt-6 bg-slate-50">
+    <>
         <div className="max-w-[1600px] mx-auto">
           
           {/* Container de Filtros */}
@@ -327,9 +310,9 @@ export default function SolicitacaoOrcamentoPage() {
                       <Edit size={14} />
                     </div>
                     <div className="truncate font-black text-slate-900 group-hover:text-sky-700 uppercase tracking-tighter" title={lead.nome}>{lead.nome || '—'}</div>
-                    <div className="truncate text-slate-500 font-bold tracking-tighter uppercase">{lead.telefone || '—'}</div>
-                    <div className="truncate" title={lead.user?.nome}>
-                      <span className="bg-slate-50 px-2 py-0.5 rounded-xl text-[9px] font-black text-slate-400 border border-slate-100 group-hover:bg-white group-hover:text-slate-600 group-hover:border-slate-200 transition-all uppercase tracking-tighter">{lead.user?.nome || '—'}</span>
+                    <div className="truncate text-slate-500 font-bold tracking-tighter uppercase">{lead.celular || lead.telefone || '—'}</div>
+                    <div className="truncate" title={(lead.vendedor || lead.user)?.nome}>
+                      <span className="bg-slate-50 px-2 py-0.5 rounded-xl text-[9px] font-black text-slate-400 border border-slate-100 group-hover:bg-white group-hover:text-slate-600 group-hover:border-slate-200 transition-all uppercase tracking-tighter">{(lead.vendedor || lead.user)?.nome || '—'}</span>
                     </div>
                     <div className="truncate text-slate-600 font-bold uppercase tracking-tighter" title={lead.filial?.nome}>{lead.filial?.nome || '—'}</div>
                     <div className="truncate">
@@ -365,7 +348,6 @@ export default function SolicitacaoOrcamentoPage() {
           lead={selectedLead}
           onClose={() => setSelectedLead(null)}
         />
-      </main>
-    </div>
+    </>
   );
 }

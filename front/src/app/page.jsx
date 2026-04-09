@@ -1,23 +1,17 @@
 'use client'
 
-import {
-  BarChart2,
-  Brain,
-  Target,
-  CheckSquare,
-  Flag,
-  Users,
-  Bell,
-  User,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  LogOut
-} from 'lucide-react';
+import { Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '@/contexts/AuthContext';
-import { PermissionGate } from '@/components/PermissionGate';
-import { Sidebar } from '@/components/ui/Sidebar';
+
+const COLOR_MAP = {
+  sky: { bar: 'bg-sky-500', dot: 'bg-sky-500' },
+  emerald: { bar: 'bg-emerald-500', dot: 'bg-emerald-500' },
+  rose: { bar: 'bg-rose-500', dot: 'bg-rose-500' },
+  amber: { bar: 'bg-amber-500', dot: 'bg-amber-500' },
+  violet: { bar: 'bg-violet-500', dot: 'bg-violet-500' },
+  indigo: { bar: 'bg-indigo-500', dot: 'bg-indigo-500' },
+};
 
 const barData = [
   { name: '9\n6.0%', uv: 10 },
@@ -52,11 +46,7 @@ export default function Home() {
   if (loading) return null;
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans page-transition">
-      <Sidebar />
-
-      {/* Main Content */}
-      <main className="flex-1 p-4 overflow-y-auto min-w-0 bg-slate-50">
+    <>
         <header className="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
           <div className="flex items-center gap-4 text-slate-400">
             <button className="hover:text-slate-900 transition-all p-2 hover:bg-white rounded-xl border border-transparent hover:border-slate-200 shadow-sm active:scale-90"><ChevronLeft size={18} /></button>
@@ -74,6 +64,12 @@ export default function Home() {
           </div>
         </header>
 
+        {/* Banner — dados ilustrativos */}
+        <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-2.5 mb-4 flex items-center gap-2">
+          <span className="text-amber-500 text-sm">⚠</span>
+          <p className="text-[10px] text-amber-600 font-bold">Os dados exibidos abaixo são <strong>ilustrativos</strong>. Métricas reais serão integradas em breve.</p>
+        </div>
+
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
           {[
@@ -84,7 +80,7 @@ export default function Home() {
             { label: 'ROI Estimado', value: '4.2x', trend: '+18%', color: 'violet' }
           ].map((kpi, i) => (
             <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-premium hover:shadow-floating transition-all group cursor-pointer overflow-hidden relative active:scale-[0.98]">
-              <div className={`absolute top-0 left-0 w-1 h-full bg-${kpi.color}-500 opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <div className={`absolute top-0 left-0 w-1 h-full ${COLOR_MAP[kpi.color]?.bar || 'bg-slate-500'} opacity-0 group-hover:opacity-100 transition-opacity`} />
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">{kpi.label}</p>
               <p className="text-xl font-black text-slate-900 tracking-tighter">{kpi.value}</p>
               <div className="mt-2 flex items-center gap-2">
@@ -206,14 +202,13 @@ export default function Home() {
                 { label: 'SOCIAL', color: 'violet' }
               ].map((item, i) => (
                 <div key={i} className="flex flex-col items-center p-2 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className={`w-1.5 h-1.5 rounded-full bg-${item.color}-500 mb-1.5`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${COLOR_MAP[item.color]?.dot || 'bg-slate-500'} mb-1.5`} />
                   <span className="text-[9px] font-black text-slate-500 uppercase">{item.label}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </>
   );
 }

@@ -17,8 +17,8 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const data = await api('/users');
-        // Filtrar apenas gerentes/admins e formatar para o Select
+        const raw = await api('/users');
+        const data = raw?.data ?? (Array.isArray(raw) ? raw : []);
         const filtered = data
           .filter(u => ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(u.perfil))
           .map(u => ({ id: u.id, nome: `${u.nome} (${u.perfil})` }));

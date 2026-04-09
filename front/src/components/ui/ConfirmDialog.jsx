@@ -1,0 +1,91 @@
+'use client';
+
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+
+/**
+ * Diálogo de confirmação visual (substitui window.confirm / window.alert).
+ * Props:
+ *  - open: boolean
+ *  - onClose: () => void
+ *  - onConfirm: async () => void  (pode ser async — mostra spinner)
+ *  - title: string
+ *  - message: string
+ *  - confirmLabel: string (default "Confirmar")
+ *  - cancelLabel: string (default "Cancelar")
+ *  - variant: 'danger' | 'warning' | 'info' (default 'danger')
+ */
+export default function ConfirmDialog({
+  open,
+  onClose,
+  onConfirm,
+  title = 'Confirmar ação',
+  message = 'Tem certeza que deseja continuar?',
+  confirmLabel = 'Confirmar',
+  cancelLabel = 'Cancelar',
+  variant = 'danger',
+}) {
+  const [loading, setLoading] = useState(false);
+
+  if (!open) return null;
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm();
+    } finally {
+      setLoading(false);
+      onClose();
+    }
+  };
+
+  const variantStyles = {
+    danger: {
+      icon: 'bg-rose-50 text-rose-500 border-rose-100',
+      button: 'bg-linear-to-r from-rose-500 to-rose-600 text-white shadow-xl shadow-rose-900/10 hover:shadow-rose-500/40 hover:shadow-2xl',
+    },
+    warning: {
+      icon: 'bg-amber-50 text-amber-500 border-amber-100',
+      button: 'bg-linear-to-r from-amber-500 to-amber-600 text-white shadow-xl shadow-amber-900/10 hover:shadow-amber-500/40 hover:shadow-2xl',
+    },
+    info: {
+      icon: 'bg-sky-50 text-sky-500 border-sky-100',
+      button: 'bg-linear-to-r from-sky-500 to-sky-600 text-white shadow-xl shadow-sky-900/10 hover:shadow-sky-500/40 hover:shadow-2xl',
+    },
+  };
+
+  const styles = variantStyles[variant] || variantStyles.danger;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-3xl shadow-floating w-full max-w-sm border border-slate-100 animate-in fade-in zoom-in-95 duration-200"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="p-6 text-center">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 border ${styles.icon}`}>
+            <AlertTriangle size={22} />
+          </div>
+          <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-2">{title}</h3>
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">{message}</p>
+        </div>
+        <div className="flex gap-3 p-6 pt-0">
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="flex-1 py-2.5 font-black text-[10px] text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-xs uppercase tracking-tight disabled:opacity-50"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={loading}
+            className={`flex-1 py-2.5 font-black text-[10px] rounded-2xl transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50 flex items-center justify-center gap-2 ${styles.button}`}
+          >
+            {loading ? <Loader2 size={14} className="animate-spin" /> : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

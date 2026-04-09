@@ -31,8 +31,8 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
           api('/users'),
           api('/filiais'),
         ]);
-        setUsers(usersData);
-        setFiliais(filiaisData);
+        setUsers(usersData?.data ?? (Array.isArray(usersData) ? usersData : []));
+        setFiliais(filiaisData?.data ?? (Array.isArray(filiaisData) ? filiaisData : []));
       } catch (err) {
         setError('Erro ao carregar usuários e filiais.');
       } finally {

@@ -18,6 +18,6 @@ router.get('/', authMiddleware, authorizePermission('rh:perfis:read'), roleContr
 router.put('/:id', authMiddleware, authorizePermission('rh:perfis:update'), roleController.updateRole);
 
 // Remover um Role
-router.delete('/:id', authMiddleware, authorizePermission('rh:perfis:update'), roleController.deleteRole);
+router.delete('/:id', authMiddleware, authorizePermission('rh:perfis:delete'), roleController.deleteRole);
 
 export default router;
