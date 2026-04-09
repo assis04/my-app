@@ -2,16 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  BarChart2,
-  Brain,
-  Target,
-  CheckSquare,
-  Flag,
   Users,
-  Bell,
-  User,
-  Settings,
-  LogOut,
   Plus,
   Edit,
   Loader2,
@@ -22,8 +13,6 @@ import { PermissionGate } from "@/components/PermissionGate";
 import { usePermissions } from "@/hooks/usePermissions";
 import UserModal from "./components/UserModal";
 
-import { Sidebar } from "@/components/ui/Sidebar";
-import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/services/api";
 
@@ -32,7 +21,6 @@ export default function GerenciarUsuarios() {
   const [modalData, setModalData] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [usersList, setUsersList] = useState([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { can, isAdmin } = usePermissions();
 
   const router = useRouter();
@@ -40,8 +28,8 @@ export default function GerenciarUsuarios() {
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
-      const data = await api("/users");
-      setUsersList(data);
+      const raw = await api("/users");
+      setUsersList(raw?.data ?? (Array.isArray(raw) ? raw : []));
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
     } finally {
@@ -82,32 +70,7 @@ export default function GerenciarUsuarios() {
   if (!user) return null; // Prevenção extra enquanto a AuthContext redireciona
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
-      {/* Botão Mobile */}
-      <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm transition-all hover:bg-slate-50"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu size={24} />
-      </button>
-
-      {/* Backdrop Mobile */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar Envolto com lógica mobile */}
-      <div
-        className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}
-      >
-        <Sidebar />
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 w-full pt-16 md:pt-6 bg-slate-50">
+    <>
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -217,8 +180,6 @@ export default function GerenciarUsuarios() {
             )}
           </div>
         </div>
-      </main>
-
       {modalData !== null && (
         <UserModal
           userObj={modalData?.id ? modalData : null}
@@ -226,6 +187,6 @@ export default function GerenciarUsuarios() {
           onRefresh={fetchUsers}
         />
       )}
-    </div>
+    </>
   );
 }

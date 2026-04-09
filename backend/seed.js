@@ -39,7 +39,18 @@ async function seed() {
   }
 
   // 3. Criar usuário Administrador
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const adminPassword = process.env.ADMIN_SEED_PASSWORD;
+  if (!adminPassword) {
+    console.error('❌ ADMIN_SEED_PASSWORD não definida. Defina a variável de ambiente antes de rodar o seed.');
+    process.exit(1);
+  }
+
+  if (adminPassword.length < 8) {
+    console.error('❌ ADMIN_SEED_PASSWORD deve ter pelo menos 8 caracteres.');
+    process.exit(1);
+  }
+
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@ambisistem.com' },
@@ -52,10 +63,8 @@ async function seed() {
     },
   });
 
-  console.log(`\n✅ Usuário Admin criado:`);
+  console.log(`\n✅ Usuário Admin criado (ID: ${adminUser.id})`);
   console.log(`   📧 Email: admin@ambisistem.com`);
-  console.log(`   🔑 Senha: 123456`);
-  console.log(`   👤 ID: ${adminUser.id}`);
   console.log('\n🌱 Seed concluído com sucesso!');
 }
 

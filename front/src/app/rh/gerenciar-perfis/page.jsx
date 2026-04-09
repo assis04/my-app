@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Edit, Menu, Loader2, Trash2 } from 'lucide-react';
+import { Shield, Plus, Edit, Loader2, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sidebar } from '@/components/ui/Sidebar';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import RoleModal from './components/RoleModal';
@@ -14,7 +13,6 @@ export default function GerenciarPerfis() {
   const { user, loading: authLoading } = useAuth();
   const [modalData, setModalData] = useState(null); // null = fechado, {} = novo, { id, ... } = editar
   const [rolesList, setRolesList] = useState([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const { can, isAdmin } = usePermissions();
 
@@ -60,26 +58,7 @@ export default function GerenciarPerfis() {
   if (authLoading || !user) return null;
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
-      <button 
-        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm transition-all hover:bg-slate-50"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu size={24} />
-      </button>
-
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      <div className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-         <Sidebar />
-      </div>
-
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 w-full pt-16 md:pt-6 bg-slate-50">
+    <>
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gestão de Perfis</h1>
@@ -138,22 +117,26 @@ export default function GerenciarPerfis() {
                         <td className="py-2 px-4">
                           <div className="flex justify-end gap-1 text-center">
                             {!((role.nome === 'ADM' || role.nome === 'RH') && !isAdmin) && (
-                              <PermissionGate permission="rh:perfis:update">
-                                <button
-                                  onClick={() => setModalData(role)}
-                                  className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95"
-                                  title="Configurar"
-                                >
-                                  <Edit size={14} />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(role.id, role.nome)}
-                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100 shadow-sm active:scale-95"
-                                  title="Deletar"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </PermissionGate>
+                              <>
+                                <PermissionGate permission="rh:perfis:update">
+                                  <button
+                                    onClick={() => setModalData(role)}
+                                    className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95"
+                                    title="Configurar"
+                                  >
+                                    <Edit size={14} />
+                                  </button>
+                                </PermissionGate>
+                                <PermissionGate permission="rh:perfis:delete">
+                                  <button
+                                    onClick={() => handleDelete(role.id, role.nome)}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100 shadow-sm active:scale-95"
+                                    title="Deletar"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </PermissionGate>
+                              </>
                             )}
                           </div>
                         </td>
@@ -165,15 +148,13 @@ export default function GerenciarPerfis() {
             )}
           </div>
         </div>
-      </main>
-
       {modalData !== null && (
         <RoleModal
           role={modalData?.id ? modalData : null}
-          onClose={() => setModalData(null)} 
-          onRefresh={fetchRoles} 
+          onClose={() => setModalData(null)}
+          onRefresh={fetchRoles}
         />
       )}
-    </div>
+    </>
   );
 }

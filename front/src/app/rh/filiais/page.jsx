@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Building2, Plus, Edit, Trash2, Menu, Search, Loader2, RefreshCw, MapPin, Users, AlertTriangle } from 'lucide-react';
+import { Building2, Plus, Edit, Trash2, Search, Loader2, RefreshCw, MapPin, Users, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sidebar } from '@/components/ui/Sidebar';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import FilialModal from './components/FilialModal';
 import { usePermissions } from '@/hooks/usePermissions';
+import { ADMIN_ROLES, HR_ROLES } from '@/lib/roles';
 
-const ALLOWED_ROLES = ['ADM', 'Administrador', 'admin', 'RH', 'rh'];
+const ALLOWED_ROLES = [...ADMIN_ROLES, ...HR_ROLES];
 
 export default function FiliaisPage() {
   const { user, loading: authLoading } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const { isAdmin } = usePermissions();
 
@@ -76,23 +75,7 @@ export default function FiliaisPage() {
   );
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
-      <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm transition-all hover:bg-slate-50"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu size={24} />
-      </button>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
-
-      <div className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-        <Sidebar />
-      </div>
-
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 pt-16 md:pt-6 bg-slate-50">
+    <>
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Filiais</h1>
@@ -255,8 +238,6 @@ export default function FiliaisPage() {
             </div>
           )}
         </div>
-      </main>
-
       {modalData !== null && (
         <FilialModal
           filial={modalData?.id ? modalData : null}
@@ -317,6 +298,6 @@ export default function FiliaisPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

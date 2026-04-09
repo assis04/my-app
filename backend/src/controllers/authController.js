@@ -4,18 +4,30 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { findUserByEmail } from "../services/userService.js";
 import { loginSchema } from "../validators/authValidator.js";
+import { env } from "../config/env.js";
+
+const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 1000; // 1h — alinhado com o expiresIn do JWT
+
+const setAccessTokenCookie = (res, token) => {
+  res.cookie("accessToken", token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: ACCESS_TOKEN_MAX_AGE,
+  });
+};
 
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
     {
       id: user.id,
       email: user.email,
-      roleId: user.roleId || user.role_id, // Incluído para corrigir erro no Controller
+      roleId: user.roleId || user.role_id,
       role: user.role_nome || "user",
-      permissions: user.role?.permissions || [], // 🔐 Permissões RBAC inclusas no token
+      permissions: user.role?.permissions || [],
     },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    env.JWT_ACCESS_SECRET,
+    { algorithm: 'HS256', expiresIn: "1h" }
   );
 
   const refreshToken = jwt.sign(
@@ -24,8 +36,8 @@ const generateTokens = (user) => {
       email: user.email,
       refresh: true,
     },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    env.JWT_REFRESH_SECRET,
+    { algorithm: 'HS256', expiresIn: "7d" }
   );
 
   return { accessToken, refreshToken };
@@ -59,21 +71,23 @@ export class AuthController {
 
       const { accessToken, refreshToken } = generateTokens(user);
 
-      // Envia o refresh token num cookie HttpOnly
+      // Ambos os tokens via cookies httpOnly — sem exposição ao JS
+      setAccessTokenCookie(res, accessToken);
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/auth",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.json({
-        token: accessToken,
         user: {
           id: user.id,
           nome: user.nome,
           email: user.email,
           role: user.role_nome,
+          permissions: user.role?.permissions || [],
         },
       });
     } catch (err) {
@@ -90,7 +104,7 @@ export class AuthController {
     }
 
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+      const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
       const user = await findUserByEmail(decoded.email);
 
       if (!user) {
@@ -99,21 +113,24 @@ export class AuthController {
 
       const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
+      setAccessTokenCookie(res, accessToken);
       res.cookie("refreshToken", newRefreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/auth",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ token: accessToken });
+      return res.json({ message: "Token renovado com sucesso" });
     } catch (err) {
       return res.status(401).json({ message: "Refresh token inválido ou expirado" });
     }
   }
 
   static async logout(req, res) {
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken", { path: "/auth" });
     return res.json({ message: "Logout realizado com sucesso" });
   }
 

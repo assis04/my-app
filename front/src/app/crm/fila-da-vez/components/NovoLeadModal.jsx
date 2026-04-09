@@ -16,14 +16,16 @@ export default function NovoLeadModal({
 }) {
   const [formData, setFormData] = useState({
     nome: '',
+    sobrenome: '',
     telefone: initialPhone,
+    cep: '',
     etapa: 'Novo',
     status: 'Ativo',
     tipoImovel: '',
     statusImovel: 'Pronto',
     canal: '',
     origem: '',
-    filialId: branchId || '', // Inicia com a branch passada (se houver)
+    filialId: branchId || '',
     parceria: 'Não',
   });
 
@@ -46,18 +48,15 @@ export default function NovoLeadModal({
           api('/filiais')
         ]);
         
-        if (Array.isArray(resUsers)) {
-          // Extrair Gerentes
-          const gerentes = resUsers
-            .filter(u => ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(String(u.perfil)))
-            .map(u => ({ id: u.id, nome: `${u.nome} (${u.perfil})` }));
-          setManagers(gerentes);
-          setAllUsers(resUsers);
-        }
+        const usersList = resUsers?.data ?? (Array.isArray(resUsers) ? resUsers : []);
+        const gerentes = usersList
+          .filter(u => ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(String(u.perfil)))
+          .map(u => ({ id: u.id, nome: `${u.nome} (${u.perfil})` }));
+        setManagers(gerentes);
+        setAllUsers(usersList);
 
-        if (Array.isArray(resBranches)) {
-          setBranches(resBranches);
-        }
+        const branchesList = resBranches?.data ?? (Array.isArray(resBranches) ? resBranches : []);
+        setBranches(branchesList);
       } catch (err) {
         console.error('Erro ao carregar dados no Modal:', err);
       }
@@ -99,7 +98,9 @@ export default function NovoLeadModal({
       data.append('branch_id', formData.filialId);
       data.append('assigned_user_id', selectedAgentId);
       data.append('nome', formData.nome);
+      data.append('sobrenome', formData.sobrenome);
       data.append('telefone', formData.telefone);
+      data.append('cep', formData.cep);
       data.append('etapa', formData.etapa);
       data.append('status', formData.status);
       data.append('tipoImovel', formData.tipoImovel);
@@ -156,12 +157,12 @@ export default function NovoLeadModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
-                  Nome Completo *
+                  Nome *
                 </label>
                 <input
-                  required 
-                  type="text" 
-                  placeholder="Nome do cliente..."
+                  required
+                  type="text"
+                  placeholder="Nome..."
                   className="premium-input h-9 px-4 text-sm bg-white"
                   value={formData.nome}
                   onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
@@ -169,15 +170,43 @@ export default function NovoLeadModal({
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
-                  Telefone Principal *
+                  Sobrenome
                 </label>
                 <input
-                  required 
-                  type="text" 
+                  type="text"
+                  placeholder="Sobrenome..."
+                  className="premium-input h-9 px-4 text-sm bg-white"
+                  value={formData.sobrenome}
+                  onChange={e => setFormData(p => ({ ...p, sobrenome: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                  Celular *
+                </label>
+                <input
+                  required
+                  type="text"
                   placeholder="(00) 00000-0000"
                   className="premium-input h-9 px-4 text-sm bg-white"
                   value={formData.telefone}
                   onChange={e => setFormData(p => ({ ...p, telefone: formatPhone(e.target.value) }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                  CEP *
+                </label>
+                <input
+                  required
+                  type="text"
+                  placeholder="00000-000"
+                  className="premium-input h-9 px-4 text-sm bg-white"
+                  maxLength={9}
+                  value={formData.cep}
+                  onChange={e => setFormData(p => ({ ...p, cep: e.target.value }))}
                 />
               </div>
             </div>

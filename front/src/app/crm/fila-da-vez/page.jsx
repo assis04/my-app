@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, FolderOpen, Menu, X, FileUp, Edit, RefreshCw, Calendar } from 'lucide-react';
+import { Search, Plus, FolderOpen, X, FileUp, Edit, RefreshCw, Calendar } from 'lucide-react';
 import { useSalesQueue } from '@/hooks/useSalesQueue';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
-import { Sidebar } from '@/components/ui/Sidebar';
 import { useRouter } from 'next/navigation';
+import { isAdmin } from '@/lib/roles';
 import NovoLeadModal from './components/NovoLeadModal';
 import LeadDetailsDrawer from '@/components/ui/LeadDetailsDrawer';
 import { formatPhone } from '@/lib/utils';
@@ -29,7 +29,6 @@ function timeAgo(dateString) {
 
 export default function CaptacaoFilaPage() {
   const { user, loading: authLoading } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   
   const [branches, setBranches] = useState([]);
@@ -78,7 +77,7 @@ export default function CaptacaoFilaPage() {
   } = useSalesQueue(selectedBranchId);
 
   const canToggleOthers = useMemo(() => {
-    const isAdm = ['ADM', 'Administrador', 'admin'].includes(user?.role);
+    const isAdm = isAdmin(user);
     const isGerente = ['Gerente', 'GERENTE'].includes(user?.role);
     const sameBranch = Number(user?.filialId) === Number(selectedBranchId);
     return isAdm || (isGerente && sameBranch);
@@ -87,8 +86,9 @@ export default function CaptacaoFilaPage() {
   const uniqueVendedores = useMemo(() => {
     const map = new Map();
     history.forEach(lead => {
-      if (lead.user?.id && lead.user?.nome) {
-        map.set(String(lead.user.id), lead.user.nome);
+      const responsavel = lead.vendedor || lead.user;
+      if (responsavel?.id && responsavel?.nome) {
+        map.set(String(responsavel.id), responsavel.nome);
       }
     });
     return Array.from(map, ([id, nome]) => ({ id, nome }));
@@ -102,8 +102,8 @@ export default function CaptacaoFilaPage() {
       const term = searchTerm.toLowerCase();
       items = items.filter(lead =>
         (lead.nome && lead.nome.toLowerCase().includes(term)) ||
-        (lead.telefone && lead.telefone.includes(term)) ||
-        (lead.user?.nome && lead.user.nome.toLowerCase().includes(term)) ||
+        ((lead.celular || lead.telefone) && (lead.celular || lead.telefone).includes(term)) ||
+        ((lead.vendedor || lead.user)?.nome && (lead.vendedor || lead.user).nome.toLowerCase().includes(term)) ||
         (String(lead.id).includes(term))
       );
     }
@@ -229,24 +229,7 @@ export default function CaptacaoFilaPage() {
   if (authLoading) return null;
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
-      <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm transition-all hover:bg-slate-50"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu size={24} />
-      </button>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
-
-      <div className={`fixed inset-y-0 left-0 z-40 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-        <Sidebar />
-      </div>
-
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 pt-16 md:pt-6 bg-slate-50">
-        
+    <>
         <div className="mb-4 max-w-[1600px] mx-auto">
           <div className="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
             <div>
@@ -420,11 +403,11 @@ export default function CaptacaoFilaPage() {
                       <td className="py-1.5 px-3">
                         <div className="flex flex-col leading-tight">
                           <span className="text-slate-900 text-xs font-black group-hover:text-sky-700 transition-colors uppercase tracking-tight truncate max-w-[150px]">{lead.nome || '—'}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">{lead.telefone || '—'}</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">{lead.celular || lead.telefone || '—'}</span>
                         </div>
                       </td>
                       <td className="py-1.5 px-3">
-                        <span className="text-slate-400 text-[9px] font-black bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">{lead.user?.nome || '???'}</span>
+                        <span className="text-slate-400 text-[9px] font-black bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">{(lead.vendedor || lead.user)?.nome || '???'}</span>
                       </td>
                       <td className="py-1.5 px-3">
                         <div className="flex flex-col leading-none">
@@ -434,8 +417,8 @@ export default function CaptacaoFilaPage() {
                       </td>
                       <td className="py-1.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                         {lead.plantaPath ? (
-                          <a 
-                            href={`http://localhost:3002/${lead.plantaPath}`} 
+                          <a
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/${lead.plantaPath}`}
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="inline-flex p-1 text-sky-400 hover:text-sky-600 transition-all active:scale-90"
@@ -457,8 +440,6 @@ export default function CaptacaoFilaPage() {
             </div>
           </div>
         </div>
-
-      </main>
 
       {isModalOpen && modalData && (
         <NovoLeadModal
@@ -482,6 +463,6 @@ export default function CaptacaoFilaPage() {
         lead={selectedLead}
         onClose={() => setSelectedLead(null)}
       />
-    </div>
+    </>
   );
 }

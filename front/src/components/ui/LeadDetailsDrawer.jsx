@@ -84,7 +84,7 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
             <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 space-y-4 shadow-inner">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-bold text-slate-500">Telefone</span>
-                <span className="text-base font-black text-slate-900">{lead?.telefone ? formatPhone(lead.telefone) : '—'}</span>
+                <span className="text-base font-black text-slate-900">{(lead?.celular || lead?.telefone) ? formatPhone(lead.celular || lead.telefone) : '—'}</span>
               </div>
               <div className="flex justify-between items-center border-t border-slate-100 pt-4">
                 <span className="text-sm font-bold text-slate-500">E-mail</span>
@@ -105,7 +105,7 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
               </div>
               <div className="flex justify-between items-center border-t border-slate-100 pt-4">
                 <span className="text-sm font-bold text-slate-500">Responsável Atual</span>
-                <span className="text-sm font-black text-sky-600 bg-sky-50 px-3 py-1 rounded-xl border border-sky-100 shadow-sm">{lead?.user?.nome || '—'}</span>
+                <span className="text-sm font-black text-sky-600 bg-sky-50 px-3 py-1 rounded-xl border border-sky-100 shadow-sm">{lead?.vendedor?.nome || lead?.user?.nome || '—'}</span>
               </div>
               {lead?.gerente && (
                 <div className="flex justify-between items-center border-t border-slate-100 pt-4">
