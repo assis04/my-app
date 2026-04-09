@@ -4,7 +4,8 @@ import { z } from 'zod';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.string().transform(Number).default('3001'),
-  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
+  JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
+  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   POSTGRE_HOST: z.string().min(1, 'POSTGRE_HOST is required'),
   POSTGRE_PORT: z.string().transform(Number).default('5432'),

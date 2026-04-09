@@ -11,7 +11,8 @@ export async function createUserByAdminOrHR(req, res, next) {
 
 export async function listUsers(req, res, next) {
   try {
-    const users = await userService.listUsers();
+    const { page, limit } = req.query;
+    const users = await userService.listUsers({ page, limit });
     return res.status(200).json(users);
   } catch (error) {
     next(error);

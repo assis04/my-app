@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { getQueue, getLeadHistory, toggleAvailability, createQuickLead, createManualLead } from '@/services/captacaoApi';
+import { getQueue, getLeadHistory, toggleAvailability, createQuickLead, createManualLead } from '@/services/crmApi';
+import { getSocketUrl } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useSalesQueue(branchId) {
@@ -36,18 +37,15 @@ export function useSalesQueue(branchId) {
     fetchData();
 
     // Inicia conexão websocket
-    const socket = io('http://localhost:3002', {
+    const socket = io(getSocketUrl(), {
       withCredentials: true
     });
 
     socket.on('connect', () => {
-      // console.log('WebSocket conectado, ID:', socket.id);
       socket.emit('join_branch', branchId);
     });
 
-    // Quando o backend avisar que a fila mudou, recarregamos
-    socket.on('queue_update', (data) => {
-      // console.log('Queue update recebido via WS:', data);
+    socket.on('queue_update', () => {
       fetchData();
     });
 
