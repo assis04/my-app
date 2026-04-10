@@ -21,6 +21,7 @@ import { authMiddleware } from './src/config/authMiddleware.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Middlewares de Segurança
 app.use(helmet());
