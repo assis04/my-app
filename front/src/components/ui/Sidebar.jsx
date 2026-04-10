@@ -40,25 +40,25 @@ export function Sidebar() {
                   {pathname === '/' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
                   Dashboard
                 </Link>
+                <Link href="/crm/conta-pessoa" className={`text-sm ${pathname === '/crm/conta-pessoa' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
+                  {pathname === '/crm/conta-pessoa' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
+                  Conta/Pessoa
+                </Link>
                 <Link href="/crm/leads" className={`text-sm ${pathname === '/crm/leads' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
                   {pathname === '/crm/leads' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
                   Leads
                 </Link>
                 <Link href="/crm/fila-da-vez" className={`text-sm ${pathname === '/crm/fila-da-vez' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
                   {pathname === '/crm/fila-da-vez' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Fila da Vez
+                  Lista da Vez
                 </Link>
                 <Link href="/crm/oportunidade-de-negocio" className={`text-sm ${pathname === '/crm/oportunidade-de-negocio' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
                   {pathname === '/crm/oportunidade-de-negocio' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Oportunidades de Negócio
+                  Oport. de Negócio
                 </Link>
                 <Link href="/crm/vendas" className={`text-sm ${pathname === '/crm/vendas' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
                   {pathname === '/crm/vendas' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
                   Vendas
-                </Link>
-                <Link href="/crm/conta-pessoa" className={`text-sm ${pathname === '/crm/conta-pessoa' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/conta-pessoa' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Conta/Pessoa
                 </Link>
                 <Link href="/crm/construtoras" className={`text-sm ${pathname === '/crm/construtoras' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
                   {pathname === '/crm/construtoras' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
