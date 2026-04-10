@@ -2,7 +2,7 @@ import * as roleService from '../services/roleService.js';
 
 export async function createRole(req, res, next) {
   try {
-    const role = await roleService.createRole(req.body);
+    const role = await roleService.createRole(req.body, req.user?.role);
     res.status(201).json(role);
   } catch (error) {
     next(error);
@@ -30,7 +30,7 @@ export async function getAllRoles(req, res, next) {
 
 export async function updateRole(req, res, next) {
   try {
-    const role = await roleService.updateRole(req.params.id, req.body);
+    const role = await roleService.updateRole(req.params.id, req.body, req.user?.role);
     res.json(role);
   } catch (error) {
     next(error);

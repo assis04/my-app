@@ -1,7 +1,11 @@
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 
-export async function getAllOrcamentos(filters = {}) {
+function isAdm(user) {
+  return user?.role === 'ADM' || user?.permissions?.includes('*');
+}
+
+export async function getAllOrcamentos(filters = {}, user) {
   const {
     nome,
     telefone,
@@ -11,7 +15,7 @@ export async function getAllOrcamentos(filters = {}) {
     canal,
     origem,
     parceria,
-    userId, // Responsável
+    userId,
     dataInicio,
     dataFim,
     page = 1,
@@ -29,7 +33,10 @@ export async function getAllOrcamentos(filters = {}) {
   if (status) {
     where.status = status;
   }
-  if (filialId) {
+  // Scoping por filial: non-ADM só vê sua filial
+  if (!isAdm(user) && user?.filialId) {
+    where.filialId = user.filialId;
+  } else if (filialId) {
     where.filialId = parseInt(filialId, 10);
   }
   if (etapa) {

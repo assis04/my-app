@@ -47,10 +47,15 @@ export async function findOrMatchAccount({ nome, sobrenome, celular, cep }, tx) 
   return { account: newAccount, isNew: true };
 }
 
+function isAdm(user) {
+  return user?.role === 'ADM' || user?.permissions?.includes('*');
+}
+
 /**
  * Listagem de contas — somente leitura, para a tela de visualização.
+ * Non-ADM: só vê contas que tenham leads na sua filial.
  */
-export async function listAccounts({ search, page = 1, limit = 50 }) {
+export async function listAccounts({ search, page = 1, limit = 50 }, user) {
   const where = {};
 
   if (search) {
@@ -60,6 +65,11 @@ export async function listAccounts({ search, page = 1, limit = 50 }) {
       { celular: { contains: search } },
       { cep: { contains: search } },
     ];
+  }
+
+  // Scoping: non-ADM só vê accounts com leads na sua filial
+  if (!isAdm(user) && user?.filialId) {
+    where.leads = { some: { filialId: user.filialId } };
   }
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -86,7 +96,7 @@ export async function listAccounts({ search, page = 1, limit = 50 }) {
   return { data, total, page: pageNum, limit: take, totalPages: Math.ceil(total / take) };
 }
 
-export async function getAccountById(id) {
+export async function getAccountById(id, user) {
   const account = await prisma.account.findUnique({
     where: { id: parseInt(id, 10) },
     include: {
@@ -101,5 +111,12 @@ export async function getAccountById(id) {
   });
 
   if (!account) throw new AppError('Conta não encontrada.', 404);
+
+  // Scoping: non-ADM só vê account se tiver lead na sua filial
+  if (!isAdm(user) && user?.filialId) {
+    const hasAccessibleLead = account.leads.some(l => l.filialId === user.filialId);
+    if (!hasAccessibleLead) throw new AppError('Conta não encontrada.', 404);
+  }
+
   return account;
 }

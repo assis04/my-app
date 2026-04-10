@@ -13,6 +13,8 @@ const envSchema = z.object({
   POSTGRE_PASSWORD: z.string().min(1, 'POSTGRE_PASSWORD is required'),
   POSTGRE_DATABASE: z.string().min(1, 'POSTGRE_DATABASE is required'),
   CORS_ORIGIN: z.string().optional().default('http://localhost:3000'),
+  REDIS_HOST: z.string().optional().default('redis'),
+  REDIS_PORT: z.string().transform(Number).optional().default('6379'),
 });
 
 const _env = envSchema.safeParse(process.env);

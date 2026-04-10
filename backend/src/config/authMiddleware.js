@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { env } from './env.js';
+import { isTokenBlacklisted } from '../utils/tokenBlacklist.js';
 
-export function authMiddleware(req, res, next) {
-  // Prioridade: cookie httpOnly > Authorization header (fallback p/ clientes legados)
+export async function authMiddleware(req, res, next) {
   let token = req.cookies?.accessToken;
 
   if (!token) {
@@ -19,9 +19,18 @@ export function authMiddleware(req, res, next) {
   try {
     const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET, { algorithms: ['HS256'] });
 
-    // Rejeitar refresh tokens usados como access tokens
     if (decoded.refresh === true) {
       return res.status(401).json({ message: 'Token inválido: refresh token não pode ser usado como access token.' });
+    }
+
+    // Verificar se o token foi invalidado (logout)
+    try {
+      const blacklisted = await isTokenBlacklisted(token);
+      if (blacklisted) {
+        return res.status(401).json({ message: 'Token revogado' });
+      }
+    } catch {
+      // Redis indisponível — aceita o token (fail-open para não derrubar o sistema)
     }
 
     req.user = decoded;
