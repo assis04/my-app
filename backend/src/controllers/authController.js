@@ -1,10 +1,14 @@
-// import da lib de criptografar senha
 import bcrypt from "bcryptjs";
-// import da lib de token jwt
 import jwt from "jsonwebtoken";
 import { findUserByEmail } from "../services/userService.js";
 import { loginSchema } from "../validators/authValidator.js";
 import { env } from "../config/env.js";
+import {
+  blacklistAccessToken,
+  storeRefreshToken,
+  isRefreshTokenValid,
+  revokeRefreshToken,
+} from "../utils/tokenBlacklist.js";
 
 const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 1000; // 1h — alinhado com o expiresIn do JWT
 
@@ -25,6 +29,7 @@ const generateTokens = (user) => {
       roleId: user.roleId || user.role_id,
       role: user.role_nome || "user",
       permissions: user.role?.permissions || [],
+      filialId: user.filialId || null,
     },
     env.JWT_ACCESS_SECRET,
     { algorithm: 'HS256', expiresIn: "1h" }
@@ -81,6 +86,8 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
+      await storeRefreshToken(user.id, refreshToken);
+
       return res.json({
         user: {
           id: user.id,
@@ -105,6 +112,13 @@ export class AuthController {
 
     try {
       const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
+
+      // Verificar se este refresh token ainda é válido (não foi rotacionado/revogado)
+      const isValid = await isRefreshTokenValid(decoded.id, refreshToken);
+      if (!isValid) {
+        return res.status(401).json({ message: "Refresh token revogado" });
+      }
+
       const user = await findUserByEmail(decoded.email);
 
       if (!user) {
@@ -112,6 +126,9 @@ export class AuthController {
       }
 
       const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+      // Armazenar novo refresh token (invalida o anterior automaticamente)
+      await storeRefreshToken(user.id, newRefreshToken);
 
       setAccessTokenCookie(res, accessToken);
       res.cookie("refreshToken", newRefreshToken, {
@@ -129,6 +146,22 @@ export class AuthController {
   }
 
   static async logout(req, res) {
+    try {
+      // Blacklist access token
+      const accessToken = req.cookies?.accessToken;
+      if (accessToken) {
+        try {
+          const decoded = jwt.verify(accessToken, env.JWT_ACCESS_SECRET, { algorithms: ['HS256'] });
+          await blacklistAccessToken(accessToken, decoded);
+          await revokeRefreshToken(decoded.id);
+        } catch {
+          // Token inválido/expirado — não precisa blacklistar
+        }
+      }
+    } catch {
+      // Redis indisponível — continua o logout normalmente
+    }
+
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken", { path: "/auth" });
     return res.json({ message: "Logout realizado com sucesso" });

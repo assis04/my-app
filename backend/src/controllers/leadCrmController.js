@@ -2,7 +2,7 @@ import * as leadCrmService from '../services/leadCrmService.js';
 
 export async function create(req, res, next) {
   try {
-    const lead = await leadCrmService.createLead(req.body);
+    const lead = await leadCrmService.createLead(req.body, req.user);
     return res.status(201).json(lead);
   } catch (error) {
     next(error);
@@ -18,7 +18,7 @@ export async function list(req, res, next) {
       preVendedorId: pre_vendedor_id,
       page,
       limit,
-    });
+    }, req.user);
     return res.json(result);
   } catch (error) {
     next(error);
@@ -27,7 +27,7 @@ export async function list(req, res, next) {
 
 export async function getById(req, res, next) {
   try {
-    const lead = await leadCrmService.getLeadById(req.params.id);
+    const lead = await leadCrmService.getLeadById(req.params.id, req.user);
     return res.json(lead);
   } catch (error) {
     next(error);
@@ -36,7 +36,7 @@ export async function getById(req, res, next) {
 
 export async function update(req, res, next) {
   try {
-    const lead = await leadCrmService.updateLead(req.params.id, req.body);
+    const lead = await leadCrmService.updateLead(req.params.id, req.body, req.user);
     return res.json(lead);
   } catch (error) {
     next(error);
@@ -45,7 +45,7 @@ export async function update(req, res, next) {
 
 export async function remove(req, res, next) {
   try {
-    await leadCrmService.deleteLead(req.params.id);
+    await leadCrmService.deleteLead(req.params.id, req.user);
     return res.json({ message: 'Lead removido com sucesso.' });
   } catch (error) {
     next(error);
@@ -58,7 +58,7 @@ export async function transfer(req, res, next) {
     if (!leadIds?.length || !preVendedorId) {
       return res.status(400).json({ message: 'leadIds e preVendedorId são obrigatórios.' });
     }
-    const result = await leadCrmService.transferLeads(leadIds, preVendedorId);
+    const result = await leadCrmService.transferLeads(leadIds, preVendedorId, req.user);
     return res.json({ message: `${result.count} lead(s) transferido(s).`, count: result.count });
   } catch (error) {
     next(error);
@@ -72,7 +72,7 @@ export async function updateEtapa(req, res, next) {
     if (!leadIds?.length || !stage) {
       return res.status(400).json({ message: 'leadIds e etapa são obrigatórios.' });
     }
-    const result = await leadCrmService.updateEtapaLote(leadIds, stage);
+    const result = await leadCrmService.updateEtapaLote(leadIds, stage, req.user);
     return res.json({ message: `${result.count} lead(s) atualizado(s).`, count: result.count });
   } catch (error) {
     next(error);

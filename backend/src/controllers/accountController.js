@@ -7,7 +7,7 @@ import * as accountService from '../services/accountService.js';
 export async function list(req, res, next) {
   try {
     const { search, page, limit } = req.query;
-    const result = await accountService.listAccounts({ search, page, limit });
+    const result = await accountService.listAccounts({ search, page, limit }, req.user);
     return res.json(result);
   } catch (error) {
     next(error);
@@ -20,7 +20,7 @@ export async function list(req, res, next) {
  */
 export async function getById(req, res, next) {
   try {
-    const account = await accountService.getAccountById(req.params.id);
+    const account = await accountService.getAccountById(req.params.id, req.user);
     return res.json(account);
   } catch (error) {
     next(error);

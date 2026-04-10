@@ -2,6 +2,28 @@ import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 import { findOrMatchAccount } from './accountService.js';
 
+function isAdm(user) {
+  return user?.role === 'ADM' || user?.permissions?.includes('*');
+}
+
+function enforceFilialScope(where, user) {
+  if (!isAdm(user) && user?.filialId) {
+    where.filialId = user.filialId;
+  }
+  return where;
+}
+
+async function assertLeadAccess(leadId, user) {
+  const lead = await prisma.lead.findFirst({
+    where: { id: parseInt(leadId, 10), deletedAt: null },
+  });
+  if (!lead) throw new AppError('Lead não encontrado.', 404);
+  if (!isAdm(user) && user?.filialId && lead.filialId !== user.filialId) {
+    throw new AppError('Acesso negado: lead de outra filial.', 403);
+  }
+  return lead;
+}
+
 /**
  * Cria um Lead com a regra transacional obrigatória da Conta.
  *
@@ -65,8 +87,9 @@ export async function createLead(data) {
  * Lista todos os Leads com filtros opcionais.
  * Ordenação padrão: dataCadastro DESC (mais recente primeiro).
  */
-export async function listLeads({ search, status, preVendedorId, page = 1, limit = 50 }) {
+export async function listLeads({ search, status, preVendedorId, page = 1, limit = 50 }, user) {
   const where = { deletedAt: null };
+  enforceFilialScope(where, user);
 
   if (status) where.status = status;
   if (preVendedorId) where.preVendedorId = parseInt(preVendedorId, 10);
@@ -112,9 +135,12 @@ export async function listLeads({ search, status, preVendedorId, page = 1, limit
 /**
  * Busca um Lead por ID com todas as relações.
  */
-export async function getLeadById(id) {
+export async function getLeadById(id, user) {
+  const where = { id: parseInt(id, 10), deletedAt: null };
+  enforceFilialScope(where, user);
+
   const lead = await prisma.lead.findFirst({
-    where: { id: parseInt(id, 10), deletedAt: null },
+    where,
     include: {
       preVendedor: { select: { id: true, nome: true, email: true } },
       conta: true,
@@ -134,8 +160,9 @@ export async function getLeadById(id) {
  * Atualiza um Lead existente.
  * Não permite alterar contaId (o vínculo com Conta é imutável após criação).
  */
-export async function updateLead(id, data) {
+export async function updateLead(id, data, user) {
   const idNum = parseInt(id, 10);
+  await assertLeadAccess(idNum, user);
 
   const existing = await prisma.lead.findFirst({ where: { id: idNum, deletedAt: null } });
   if (!existing) throw new AppError('Lead não encontrado.', 404);
@@ -176,8 +203,10 @@ export async function updateLead(id, data) {
 /**
  * Remove um Lead.
  */
-export async function deleteLead(id) {
+export async function deleteLead(id, user) {
   const idNum = parseInt(id, 10);
+  await assertLeadAccess(idNum, user);
+
   const existing = await prisma.lead.findFirst({ where: { id: idNum, deletedAt: null } });
   if (!existing) throw new AppError('Lead não encontrado.', 404);
 
@@ -190,14 +219,17 @@ export async function deleteLead(id) {
 /**
  * Transferência de responsável (individual ou em lote).
  */
-export async function transferLeads(leadIds, newPreVendedorId) {
+export async function transferLeads(leadIds, newPreVendedorId, caller) {
   const preVendedorId = parseInt(newPreVendedorId, 10);
 
-  const user = await prisma.user.findUnique({ where: { id: preVendedorId } });
-  if (!user) throw new AppError('Pré-vendedor de destino não encontrado.', 404);
+  const targetUser = await prisma.user.findUnique({ where: { id: preVendedorId } });
+  if (!targetUser) throw new AppError('Pré-vendedor de destino não encontrado.', 404);
+
+  const where = { id: { in: leadIds.map(id => parseInt(id, 10)) }, deletedAt: null };
+  enforceFilialScope(where, caller);
 
   return prisma.lead.updateMany({
-    where: { id: { in: leadIds.map(id => parseInt(id, 10)) }, deletedAt: null },
+    where,
     data: { preVendedorId },
   });
 }
@@ -205,9 +237,12 @@ export async function transferLeads(leadIds, newPreVendedorId) {
 /**
  * Atualiza a etapa em lote.
  */
-export async function updateEtapaLote(leadIds, etapa) {
+export async function updateEtapaLote(leadIds, etapa, caller) {
+  const where = { id: { in: leadIds.map(id => parseInt(id, 10)) }, deletedAt: null };
+  enforceFilialScope(where, caller);
+
   return prisma.lead.updateMany({
-    where: { id: { in: leadIds.map(id => parseInt(id, 10)) }, deletedAt: null },
+    where,
     data: { etapa },
   });
 }

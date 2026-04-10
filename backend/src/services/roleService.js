@@ -1,13 +1,45 @@
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 
-export async function createRole({ nome, descricao, permissions }) {
+const VALID_PERMISSIONS = [
+  'rh:usuarios:create', 'rh:usuarios:read', 'rh:usuarios:update', 'rh:usuarios:delete',
+  'rh:perfis:create', 'rh:perfis:read', 'rh:perfis:update', 'rh:perfis:delete',
+  'rh:equipes:create', 'rh:equipes:read', 'rh:equipes:update', 'rh:equipes:delete',
+  'rh:filiais:create', 'rh:filiais:read', 'rh:filiais:update', 'rh:filiais:delete',
+  'crm:leads:create', 'crm:leads:read', 'crm:leads:update', 'crm:leads:delete',
+  'crm:leads:transfer', 'crm:leads:read:branch', 'crm:leads:read:all',
+  'crm:accounts:create', 'crm:accounts:read', 'crm:accounts:update', 'crm:accounts:delete',
+  'crm:orcamentos:create', 'crm:orcamentos:read', 'crm:orcamentos:update', 'crm:orcamentos:delete',
+  'crm:fila:read', 'crm:fila:manage',
+];
+
+function validatePermissions(permissions, isCallerAdm) {
+  if (!Array.isArray(permissions)) return [];
+
+  if (permissions.includes('*') && !isCallerAdm) {
+    throw new AppError("Apenas administradores podem atribuir permissão wildcard.", 403);
+  }
+
+  if (!permissions.includes('*')) {
+    const invalid = permissions.filter(p => !VALID_PERMISSIONS.includes(p));
+    if (invalid.length > 0) {
+      throw new AppError(`Permissões inválidas: ${invalid.join(', ')}`, 400);
+    }
+  }
+
+  return permissions;
+}
+
+export async function createRole({ nome, descricao, permissions }, callerRole) {
+  const isCallerAdm = callerRole === 'ADM' || callerRole === 'admin' || callerRole === 'Administrador';
+  const validatedPerms = validatePermissions(permissions, isCallerAdm);
+
   try {
     const newRole = await prisma.role.create({
       data: {
         nome: nome.toUpperCase().trim(),
         descricao: descricao || null,
-        permissions: Array.isArray(permissions) ? permissions : [],
+        permissions: validatedPerms,
       },
     });
     return newRole;
@@ -34,10 +66,20 @@ export async function getAllRoles() {
   return await prisma.role.findMany({ orderBy: { id: 'asc' } });
 }
 
-export async function updateRole(id, { nome, descricao, permissions }) {
-  if (nome === 'ADM') {
-    throw new AppError("Não é permitido alterar o nome do perfil ADM.", 403);
+export async function updateRole(id, { nome, descricao, permissions }, callerRole) {
+  const existingRole = await prisma.role.findUnique({ where: { id: Number(id) } });
+  if (!existingRole) {
+    throw new AppError("Perfil não encontrado.", 404);
   }
+
+  if (existingRole.nome === 'ADM') {
+    throw new AppError("Não é permitido alterar o perfil ADM.", 403);
+  }
+
+  const isCallerAdm = callerRole === 'ADM' || callerRole === 'admin' || callerRole === 'Administrador';
+  const validatedPerms = permissions !== undefined
+    ? validatePermissions(permissions, isCallerAdm)
+    : undefined;
 
   try {
     const updatedRole = await prisma.role.update({
@@ -45,7 +87,7 @@ export async function updateRole(id, { nome, descricao, permissions }) {
       data: {
         nome: nome ? nome.toUpperCase().trim() : undefined,
         descricao,
-        permissions: Array.isArray(permissions) ? permissions : undefined,
+        permissions: validatedPerms,
       },
     });
     return updatedRole;
