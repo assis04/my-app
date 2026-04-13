@@ -14,8 +14,12 @@ export function DashboardShell({ children }) {
   // Páginas sem sidebar (login, register, etc.)
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/alterar-senha');
 
-  if (isAuthPage || loading || !user) {
+  if (isAuthPage) {
     return children;
+  }
+
+  if (loading || !user) {
+    return null;
   }
 
   return (
