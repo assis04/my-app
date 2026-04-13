@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { api } from '@/services/api';
 
 const AuthContext = createContext({});
@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   const logout = useCallback(async () => {
     try {
@@ -63,12 +64,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (user?.mustChangePassword && !loading) {
-      const path = window.location.pathname;
-      if (path !== '/alterar-senha') {
-        router.push('/alterar-senha');
+      if (pathname !== '/alterar-senha') {
+        router.replace('/alterar-senha');
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   const clearMustChangePassword = useCallback(() => {
     setUser(prev => {
