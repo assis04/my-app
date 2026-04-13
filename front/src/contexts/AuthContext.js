@@ -45,6 +45,10 @@ export const AuthProvider = ({ children }) => {
 
       setUser(freshUser);
       localStorage.setItem('user', JSON.stringify(freshUser));
+
+      if (freshUser.mustChangePassword && window.location.pathname !== '/alterar-senha') {
+        router.push('/alterar-senha');
+      }
     } catch (err) {
       console.error('Erro ao validar sessão:', err);
       logout();
@@ -57,6 +61,23 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [checkAuth]);
 
+  useEffect(() => {
+    if (user?.mustChangePassword && !loading) {
+      const path = window.location.pathname;
+      if (path !== '/alterar-senha') {
+        router.push('/alterar-senha');
+      }
+    }
+  }, [user, loading, router]);
+
+  const clearMustChangePassword = useCallback(() => {
+    setUser(prev => {
+      const updated = { ...prev, mustChangePassword: false };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const login = async (email, password) => {
     const data = await api('/auth/login', {
       body: { email, password }
@@ -67,12 +88,12 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem('user', JSON.stringify(userWithPermissions));
     setUser(userWithPermissions);
-    router.push('/');
+    router.push(userWithPermissions.mustChangePassword ? '/alterar-senha' : '/');
     return data;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, isAuthenticated: !!user, clearMustChangePassword }}>
       {children}
     </AuthContext.Provider>
   );

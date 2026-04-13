@@ -12,7 +12,7 @@ export function DashboardShell({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Páginas sem sidebar (login, register, etc.)
-  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register');
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/alterar-senha');
 
   if (isAuthPage || loading || !user) {
     return children;

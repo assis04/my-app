@@ -54,12 +54,13 @@ async function seed() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@ambisistem.com' },
-    update: {},
+    update: { mustChangePassword: false },
     create: {
       nome: 'Administrador',
       email: 'admin@ambisistem.com',
       password: hashedPassword,
       roleId: admRole.id,
+      mustChangePassword: false,
     },
   });
 

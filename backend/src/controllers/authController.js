@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { findUserByEmail } from "../services/userService.js";
-import { loginSchema } from "../validators/authValidator.js";
+import { findUserByEmail, changeFirstPassword } from "../services/userService.js";
+import { loginSchema, changePasswordSchema } from "../validators/authValidator.js";
 import { env } from "../config/env.js";
 import {
   blacklistAccessToken,
@@ -95,6 +95,7 @@ export class AuthController {
           email: user.email,
           role: user.role_nome,
           permissions: user.role?.permissions || [],
+          mustChangePassword: !!user.mustChangePassword,
         },
       });
     } catch (err) {
@@ -181,11 +182,35 @@ export class AuthController {
         email: user.email,
         role: user.role_nome,
         roleId: user.role_id,
-        permissions: user.role?.permissions || []
+        permissions: user.role?.permissions || [],
+        mustChangePassword: !!user.mustChangePassword,
       });
     } catch (err) {
       console.error("ERRO EM /auth/me:", err);
       return res.status(500).json({ message: "Erro interno ao buscar sessão." });
+    }
+  }
+  static async forceChangePassword(req, res) {
+    try {
+      const result = changePasswordSchema.safeParse(req.body);
+
+      if (!result.success) {
+        const firstErrorMessage = result.error.errors[0]?.message || "Dados inválidos";
+        return res.status(400).json({
+          message: firstErrorMessage,
+          errors: result.error.errors.map(err => ({ field: err.path[0], message: err.message })),
+        });
+      }
+
+      await changeFirstPassword(req.user.id, result.data);
+
+      return res.json({ message: "Senha alterada com sucesso" });
+    } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ message: err.message });
+      }
+      console.error("ERRO EM /auth/change-password:", err);
+      return res.status(500).json({ message: "Erro interno ao alterar senha." });
     }
   }
 }

@@ -56,7 +56,8 @@ export async function createUserByAdminOrHR({ nome, email, password, roleId, fil
       password: hashedPassword,
       roleId: targetRole.id,
       filialId: filialId ? parseInt(filialId) : null,
-      createdById: invokerUser.id
+      createdById: invokerUser.id,
+      mustChangePassword: true
     }
   });
 
@@ -134,6 +135,9 @@ export async function updateUser(id, data, invokerUser) {
 
   if (password) {
     updateData.password = await bcrypt.hash(password, 10);
+    if (numId !== invokerUser.id) {
+      updateData.mustChangePassword = true;
+    }
   }
 
   return prisma.$transaction(async (tx) => {
@@ -156,6 +160,28 @@ export async function updateUser(id, data, invokerUser) {
     }
 
     return updatedUser;
+  });
+}
+
+export async function changeFirstPassword(userId, { currentPassword, newPassword }) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError('Usuário não encontrado.', 404);
+
+  if (!user.mustChangePassword) {
+    throw new AppError('Troca de senha não é necessária.', 403);
+  }
+
+  const isCurrentValid = await bcrypt.compare(currentPassword, user.password);
+  if (!isCurrentValid) throw new AppError('Senha atual incorreta.', 401);
+
+  const isSamePassword = await bcrypt.compare(newPassword, user.password);
+  if (isSamePassword) throw new AppError('A nova senha não pode ser igual à atual.', 400);
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword, mustChangePassword: false },
   });
 }
 
