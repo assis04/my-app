@@ -22,7 +22,7 @@ export function Sidebar() {
               <span className="text-xl font-bold text-white">{`}`}</span>
             </div>
           </div>
-          <span className="text-xl font-bold text-slate-900 tracking-wide">Ambi<span className="text-[#0ea5e9]">sistem</span></span>
+          <span className="text-xl font-bold text-slate-900 tracking-wide">Moveis <span className="text-[#0ea5e9]">Valcenter</span></span>
         </div>
         
         <nav className="flex flex-col gap-1 px-4">

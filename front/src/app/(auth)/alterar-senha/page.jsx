@@ -167,7 +167,7 @@ export default function AlterarSenha() {
           </form>
 
           <p className="mt-12 text-center text-slate-400 font-medium text-xs">
-            Ambi<span className="text-sky-500">Sistem</span> &copy; {new Date().getFullYear()} &bull; Versão 4.0
+            Moveis <span className="text-sky-500">Valcenter</span> &copy; {new Date().getFullYear()} &bull; Versão 4.0
           </p>
         </div>
       </div>

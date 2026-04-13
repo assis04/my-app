@@ -42,7 +42,7 @@ export default function Login() {
                  <span className="text-4xl font-black text-white select-none">{`}`}</span>
                </div>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight text-center">Ambisistem</h1>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight text-center">Moveis Valcenter</h1>
             <p className="text-slate-400 mt-2 font-medium text-center text-xs">Autenticação Segura</p>
           </div>
           
@@ -124,7 +124,7 @@ export default function Login() {
           </form>
 
           <p className="mt-12 text-center text-slate-400 font-medium text-xs">
-            Ambi<span className="text-sky-500">Sistem</span> &copy; {new Date().getFullYear()} • Versão 4.0
+            Moveis <span className="text-sky-500">Valcenter</span> &copy; {new Date().getFullYear()} • Versão 4.0
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 /**
- * RBAC - Permissions Master Library (Ambisistem ERP)
+ * RBAC - Permissions Master Library (Moveis Valcenter ERP)
  * 
  * Format: resource:action:scope
  * Special: '*' = full access (ADM only)
