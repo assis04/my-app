@@ -1,0 +1,49 @@
+services:
+  crm-backend-stg:
+    build:
+      context: /home/app/my-app-staging/backend
+      dockerfile: Dockerfile
+    container_name: crm-backend-stg
+    restart: always
+    env_file:
+      - /home/app/my-app-staging/backend/.env
+    volumes:
+      - /home/app/my-app-staging/backend/uploads:/app/uploads
+    depends_on:
+      - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.crm-api-stg.rule=Host(`staging-api.moveisvalcenter.com.br`)"
+      - "traefik.http.routers.crm-api-stg.entrypoints=websecure"
+      - "traefik.http.routers.crm-api-stg.tls.certresolver=le"
+      - "traefik.http.services.crm-api-stg.loadbalancer.server.port=3001"
+    networks:
+      app_network:
+        ipv4_address: 172.24.0.30
+
+  crm-frontend-stg:
+    build:
+      context: /home/app/my-app-staging/front
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://staging-api.moveisvalcenter.com.br
+    container_name: crm-frontend-stg
+    restart: always
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - crm-backend-stg
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.crm-front-stg.rule=Host(`staging.moveisvalcenter.com.br`)"
+      - "traefik.http.routers.crm-front-stg.entrypoints=websecure"
+      - "traefik.http.routers.crm-front-stg.tls.certresolver=le"
+      - "traefik.http.services.crm-front-stg.loadbalancer.server.port=3000"
+    networks:
+      app_network:
+        ipv4_address: 172.24.0.31
+
+networks:
+  app_network:
+    external: true
+    name: n8n-traefik_app_network
