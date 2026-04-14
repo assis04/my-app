@@ -26,15 +26,11 @@ const API_URL = getApiUrl();
 
 /**
  * Retorna a URL base para conexão WebSocket (Socket.IO).
- * Usa a mesma lógica dinâmica do getApiUrl, mas na porta do Socket (3002).
+ * Em produção/staging usa a mesma API_URL (Traefik faz proxy do WebSocket).
+ * Em dev local usa a mesma lógica dinâmica com porta do backend.
  */
 export const getSocketUrl = () => {
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    return `${protocol}//${hostname}:3002`;
-  }
-  return 'http://localhost:3002';
+  return API_URL;
 };
 
 let isRefreshing = false;
