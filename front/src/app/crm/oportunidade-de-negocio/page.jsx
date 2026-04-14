@@ -137,7 +137,7 @@ export default function OportunidadeDeNegocioPage() {
           <div className="glass-card rounded-2xl p-4 mb-6 relative border border-white/60 shadow-floating bg-white/40 backdrop-blur-xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-base font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-                Filtros Inteligentes
+                Oportunidade de Negócio
               </h2>
               <button 
                 onClick={fetchLeads} 
