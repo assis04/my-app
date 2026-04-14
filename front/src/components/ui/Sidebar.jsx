@@ -2,15 +2,63 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { PermissionGate } from '@/components/PermissionGate';
-import { BarChart2, Brain, CheckSquare, Flag, Users, Bell, User, Settings, LogOut } from 'lucide-react';
+import {
+  Brain,
+  Users,
+  Settings,
+  LogOut,
+  Building2,
+  Wallet,
+  KanbanSquare,
+  CalendarDays,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
+const activePill = 'bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white shadow-lg shadow-sky-900/10';
+const inactivePill = 'text-slate-500 hover:text-slate-900 hover:bg-slate-50';
+const activeSubItem = 'text-sky-600 font-medium flex items-center gap-2';
+const inactiveSubItem = 'text-slate-400 hover:text-slate-600 transition-colors';
+
+function SubLink({ href, label, pathname }) {
+  const isActive = pathname === href;
+  return (
+    <Link href={href} className={`text-sm ${isActive ? activeSubItem : inactiveSubItem}`}>
+      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />}
+      {label}
+    </Link>
+  );
+}
+
+function SectionToggle({ href, icon: Icon, label, isActive, pathname }) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${isActive ? activePill : inactivePill}`}
+    >
+      <Icon size={20} className={isActive ? 'text-white' : ''} />
+      {label}
+      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+    </Link>
+  );
+}
+
+function SubMenu({ children }) {
+  return (
+    <div className="pl-12 flex flex-col gap-2 mt-2 border-l border-slate-100 ml-6 py-1">
+      {children}
+    </div>
+  );
+}
 
 export function Sidebar() {
   const { logout } = useAuth();
   const pathname = usePathname();
 
+  const isCrmActive = pathname === '/' || pathname.startsWith('/crm');
+  const isCaptacaoActive = pathname.startsWith('/captacao');
   const isRhActive = pathname.startsWith('/rh');
+  const isFinanceiroActive = pathname.startsWith('/financeiro');
 
   return (
     <aside className="w-64 bg-white flex flex-col justify-between py-6 shrink-0 h-screen sticky top-0 border-r border-slate-200 shadow-sm z-40">
@@ -24,111 +72,101 @@ export function Sidebar() {
           </div>
           <span className="text-xl font-bold text-slate-900 tracking-wide">Moveis <span className="text-[#0ea5e9]">Valcenter</span></span>
         </div>
-        
+
         <nav className="flex flex-col gap-1 px-4">
 
+          {/* ── CRM ── */}
           <div className="flex flex-col mb-1 mt-1">
-            <Link href="/" className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname === '/' || pathname.startsWith('/crm') ? 'bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white shadow-lg shadow-sky-900/10' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}>
-              <Brain size={20} className={pathname === '/' || pathname.startsWith('/crm') ? 'text-white' : ''} />
-              CRM {(pathname === '/' || pathname.startsWith('/crm')) && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
-            </Link>
+            <SectionToggle href="/" icon={Brain} label="CRM" isActive={isCrmActive} pathname={pathname} />
 
-            {/* Submenu do CRM */}
-            {(pathname === '/' || pathname.startsWith('/crm')) && (
-              <div className="pl-12 flex flex-col gap-2 mt-2 border-l border-slate-100 ml-6 py-1">
-                <Link href="/" className={`text-sm ${pathname === '/' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Dashboard
-                </Link>
-                <Link href="/crm/conta-pessoa" className={`text-sm ${pathname === '/crm/conta-pessoa' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/conta-pessoa' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Conta/Pessoa
-                </Link>
-                <Link href="/crm/leads" className={`text-sm ${pathname === '/crm/leads' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/leads' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Leads
-                </Link>
-                <Link href="/crm/fila-da-vez" className={`text-sm ${pathname === '/crm/fila-da-vez' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/fila-da-vez' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Lista da Vez
-                </Link>
-                <Link href="/crm/oportunidade-de-negocio" className={`text-sm ${pathname === '/crm/oportunidade-de-negocio' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/oportunidade-de-negocio' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Oport. de Negócio
-                </Link>
-                <Link href="/crm/vendas" className={`text-sm ${pathname === '/crm/vendas' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/vendas' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Vendas
-                </Link>
-                <Link href="/crm/construtoras" className={`text-sm ${pathname === '/crm/construtoras' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/construtoras' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Construtoras
-                </Link>
-                <Link href="/crm/especificadores" className={`text-sm ${pathname === '/crm/especificadores' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                  {pathname === '/crm/especificadores' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                  Especificadores
-                </Link>
-              </div>
+            {isCrmActive && (
+              <SubMenu>
+                <SubLink href="/crm/marketing" label="Marketing" pathname={pathname} />
+                <SubLink href="/" label="Dashboard" pathname={pathname} />
+                <SubLink href="/crm/conta-pessoa" label="Conta / Pessoa" pathname={pathname} />
+                <SubLink href="/crm/leads" label="Leads" pathname={pathname} />
+                <SubLink href="/crm/fila-da-vez" label="Lista de Vez" pathname={pathname} />
+                <SubLink href="/crm/oportunidade-de-negocio" label="Oportunidade de Negócio" pathname={pathname} />
+                <SubLink href="/crm/vendas" label="Vendas" pathname={pathname} />
+              </SubMenu>
             )}
           </div>
 
-          <Link href="/tarefas" className={`flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 font-medium ${pathname.startsWith('/tarefas') ? 'bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white shadow-lg shadow-sky-900/10' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}>
-            <CheckSquare size={20} className={pathname.startsWith('/tarefas') ? 'text-white' : ''} />
-            Lista de Tarefas {pathname.startsWith('/tarefas') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
-          </Link>
-          
-          {/* Somente Administradores e Gerentes veem Marketing */}
-          <PermissionGate allowedRoles={['ADM', 'Administrador', 'Gerente']}>
-            <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-colors font-medium">
-              <Flag size={20} />
-              Marketing
-            </Link>
-          </PermissionGate>
+          {/* ── Captação ── */}
+          <div className="flex flex-col mb-1 mt-1">
+            <SectionToggle href="/captacao/construtoras" icon={Building2} label="Captação" isActive={isCaptacaoActive} pathname={pathname} />
 
-          {/* RH Module - Visible if they have any RH read permissions */}
+            {isCaptacaoActive && (
+              <SubMenu>
+                <SubLink href="/captacao/construtoras" label="Construtoras" pathname={pathname} />
+                <SubLink href="/captacao/especificadores" label="Especificadores" pathname={pathname} />
+              </SubMenu>
+            )}
+          </div>
+
+          {/* ── RH ── */}
           <PermissionGate permissions={['rh:usuarios:read', 'rh:perfis:read', 'rh:equipes:read', 'rh:filiais:read']}>
             <div className="flex flex-col mb-1 mt-1">
-              <Link href="/rh/gerenciar-usuarios" className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${isRhActive ? 'bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white shadow-lg shadow-sky-900/10' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}>
-                <Users size={20} className={isRhActive ? 'text-white' : ''} />
-                RH {isRhActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
-              </Link>
-              
-              {/* Submenu do RH */}
+              <SectionToggle href="/rh/equipes" icon={Users} label="RH" isActive={isRhActive} pathname={pathname} />
+
               {isRhActive && (
-                <div className="pl-12 flex flex-col gap-2 mt-2 border-l border-slate-100 ml-6 py-1">
-                  <PermissionGate permission="rh:usuarios:read">
-                    <Link href="/rh/gerenciar-usuarios" className={`text-sm ${pathname === '/rh/gerenciar-usuarios' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                      {pathname === '/rh/gerenciar-usuarios' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                      Gerenciar Usuários
-                    </Link>
-                  </PermissionGate>
-                  <PermissionGate permission="rh:perfis:read">
-                    <Link href="/rh/gerenciar-perfis" className={`text-sm ${pathname === '/rh/gerenciar-perfis' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                      {pathname === '/rh/gerenciar-perfis' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                      Gerenciar Perfis
-                    </Link>
-                  </PermissionGate>
+                <SubMenu>
                   <PermissionGate permission="rh:equipes:read">
-                    <Link href="/rh/equipes" className={`text-sm ${pathname === '/rh/equipes' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                      {pathname === '/rh/equipes' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                      Equipes
-                    </Link>
+                    <SubLink href="/rh/equipes" label="Equipes" pathname={pathname} />
                   </PermissionGate>
-                  <PermissionGate permission="rh:filiais:read">
-                    <Link href="/rh/filiais" className={`text-sm ${pathname === '/rh/filiais' ? 'text-sky-600 font-medium flex items-center gap-2' : 'text-slate-400 hover:text-slate-600 transition-colors'}`}>
-                      {pathname === '/rh/filiais' && <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span>}
-                      Filiais
-                    </Link>
+                  <SubLink href="/rh/colaboradores" label="Colaboradores" pathname={pathname} />
+                  <PermissionGate permission="rh:usuarios:read">
+                    <SubLink href="/rh/gerenciar-usuarios" label="Usuários" pathname={pathname} />
                   </PermissionGate>
-                </div>
+                  <SubLink href="/rh/cargos-funcoes" label="Cargos e Funções" pathname={pathname} />
+                  <PermissionGate permission="rh:perfis:read">
+                    <SubLink href="/rh/gerenciar-perfis" label="Perfis de Acesso" pathname={pathname} />
+                  </PermissionGate>
+                  <SubLink href="/rh/controle-de-ponto" label="Controle de Ponto" pathname={pathname} />
+                  <SubLink href="/rh/metas" label="Metas" pathname={pathname} />
+                  <SubLink href="/rh/comissoes" label="Comissões" pathname={pathname} />
+                </SubMenu>
               )}
             </div>
           </PermissionGate>
+
+          {/* ── Financeiro ── */}
+          <div className="flex flex-col mb-1 mt-1">
+            <SectionToggle href="/financeiro/tesouraria" icon={Wallet} label="Financeiro" isActive={isFinanceiroActive} pathname={pathname} />
+
+            {isFinanceiroActive && (
+              <SubMenu>
+                <SubLink href="/financeiro/tesouraria" label="Tesouraria" pathname={pathname} />
+                <SubLink href="/financeiro/financiamento" label="Financiamento" pathname={pathname} />
+              </SubMenu>
+            )}
+          </div>
+
+          {/* ── Gráfico Kanban ── */}
+          <Link
+            href="/kanban"
+            className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname.startsWith('/kanban') ? activePill : inactivePill}`}
+          >
+            <KanbanSquare size={20} className={pathname.startsWith('/kanban') ? 'text-white' : ''} />
+            Gráfico Kanban
+            {pathname.startsWith('/kanban') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+          </Link>
+
+          {/* ── Agenda ── */}
+          <Link
+            href="/agenda"
+            className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname.startsWith('/agenda') ? activePill : inactivePill}`}
+          >
+            <CalendarDays size={20} className={pathname.startsWith('/agenda') ? 'text-white' : ''} />
+            Agenda
+            {pathname.startsWith('/agenda') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+          </Link>
+
         </nav>
       </div>
-      
+
       <div className="px-4 pb-4">
-        <div className="h-px w-full bg-slate-100 mb-4"></div>
+        <div className="h-px w-full bg-slate-100 mb-4" />
         <nav className="flex flex-col gap-1">
           <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-colors font-medium">
             <Settings size={20} />
