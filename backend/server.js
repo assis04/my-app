@@ -25,18 +25,16 @@ app.set('trust proxy', 1);
 
 // Middlewares de Segurança
 app.use(helmet());
-// CORS: aceita origens do .env + qualquer IP de rede local automaticamente
-const allowedOrigins = env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+// CORS: aceita origens do .env (CORS_ORIGIN + CORS_LOCAL_ORIGINS)
+const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
+const localOrigins = env.CORS_LOCAL_ORIGINS ? env.CORS_LOCAL_ORIGINS.split(',').map(o => o.trim()).filter(Boolean) : [];
+const allOrigins = [...allowedOrigins, ...localOrigins];
+
 app.use(cors({
   origin: (origin, callback) => {
     // Requests sem origin (ex: curl, mobile apps) — permitir
     if (!origin) return callback(null, true);
-    // Origens explícitas no .env
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Rede local: 192.168.x.x, 10.x.x.x, 172.16-31.x.x em qualquer porta
-    if (/^https?:\/\/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(origin)) {
-      return callback(null, true);
-    }
+    if (allOrigins.includes(origin)) return callback(null, true);
     callback(new Error('Bloqueado pelo CORS'));
   },
   credentials: true

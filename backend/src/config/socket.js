@@ -17,14 +17,15 @@ function parseCookies(cookieHeader) {
 
 let io;
 
-const allowedOrigins = env.CORS_ORIGIN.split(',').map(origin => origin.trim());
-const LOCAL_NET_REGEX = /^https?:\/\/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
+const localOrigins = env.CORS_LOCAL_ORIGINS ? env.CORS_LOCAL_ORIGINS.split(',').map(o => o.trim()).filter(Boolean) : [];
+const allOrigins = [...allowedOrigins, ...localOrigins];
 
 export function initSocket(server) {
   io = new Server(server, {
     cors: {
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || LOCAL_NET_REGEX.test(origin)) {
+        if (!origin || allOrigins.includes(origin)) {
           return callback(null, true);
         }
         callback(new Error('Bloqueado pelo CORS'));
