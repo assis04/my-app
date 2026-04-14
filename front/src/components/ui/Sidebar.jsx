@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { PermissionGate } from '@/components/PermissionGate';
 import {
+  Armchair,
   Brain,
   Users,
   Settings,
@@ -65,10 +66,7 @@ export function Sidebar() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-6 mb-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-linear-to-br from-[#0ea5e9] to-[#0284c7] rounded-xl flex items-center justify-center shadow-lg shadow-sky-100">
-            <div className="flex items-center gap-1 translate-x-px">
-              <span className="text-xl font-bold text-white">{`{`}</span>
-              <span className="text-xl font-bold text-white">{`}`}</span>
-            </div>
+            <Armchair size={22} className="text-white" strokeWidth={2.5} />
           </div>
           <span className="text-xl font-bold text-slate-900 tracking-wide">Moveis <span className="text-[#0ea5e9]">Valcenter</span></span>
         </div>

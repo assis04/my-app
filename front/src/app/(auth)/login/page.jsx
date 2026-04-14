@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, Armchair } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -37,10 +37,7 @@ export default function Login() {
         <div className="bg-white rounded-3xl p-10 sm:p-12 shadow-2xl shadow-sky-900/5 border border-slate-100">
           <div className="flex flex-col items-center mb-12">
             <div className="w-20 h-20 bg-linear-to-br from-sky-400 to-sky-600 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-sky-200 ring-8 ring-sky-50">
-               <div className="flex items-center gap-1.5 translate-x-0.5">
-                 <span className="text-4xl font-black text-white select-none">{`{`}</span>
-                 <span className="text-4xl font-black text-white select-none">{`}`}</span>
-               </div>
+              <Armchair size={40} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight text-center">Moveis Valcenter</h1>
             <p className="text-slate-400 mt-2 font-medium text-center text-xs">Autenticação Segura</p>
