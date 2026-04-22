@@ -1,6 +1,7 @@
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 import { findOrMatchAccount } from './accountService.js';
+import { requiresAdminToEdit } from '../domain/leadStatus.js';
 
 function isAdm(user) {
   return user?.role === 'ADM' || user?.permissions?.includes('*');
@@ -168,14 +169,53 @@ export async function getLeadById(id, user) {
 
 /**
  * Atualiza um Lead existente.
+ *
+ * Guards (plan §2.8 e §9.3):
+ *   - Rejeita tentativa de mutar `status`/`etapa` via esse endpoint — força
+ *     uso do PUT /leads/:id/status (que passa pela statusMachine, registra
+ *     história e move KanbanCard consistentemente).
+ *   - Bloqueia edição de Lead em Venda/Pós-venda exceto para usuários com
+ *     permissão explícita `crm:leads:edit-after-sale` (spec §9.14).
+ *
  * Não permite alterar contaId (o vínculo com Conta é imutável após criação).
  */
 export async function updateLead(id, data, user) {
   const idNum = parseInt(id, 10);
+
+  // Guard 1: mutação de status/etapa redireciona para o endpoint dedicado
+  if (data?.status !== undefined || data?.etapa !== undefined || data?.etapaJornada !== undefined) {
+    throw new AppError(
+      'Mudança de status/etapa não é permitida via PUT /leads/:id. Use PUT /leads/:id/status.',
+      400,
+    );
+  }
+
+  // Guard 2: campos gerenciados pelo orquestrador são read-only aqui
+  const MANAGED_FIELDS = ['temperatura', 'statusAntesCancelamento', 'canceladoEm', 'reativadoEm', 'kanbanCard'];
+  for (const field of MANAGED_FIELDS) {
+    if (data?.[field] !== undefined) {
+      throw new AppError(
+        `Campo "${field}" não é editável via PUT /leads/:id. Use o endpoint dedicado.`,
+        400,
+      );
+    }
+  }
+
   await assertLeadAccess(idNum, user);
 
   const existing = await prisma.lead.findFirst({ where: { id: idNum, deletedAt: null } });
   if (!existing) throw new AppError('Lead não encontrado.', 404);
+
+  // Guard 3: edição pós-venda exige permissão explícita
+  if (requiresAdminToEdit(existing.status)) {
+    const userPerms = Array.isArray(user?.permissions) ? user.permissions : [];
+    if (!userPerms.includes('crm:leads:edit-after-sale')) {
+      throw new AppError(
+        'Lead com venda concluída só pode ser editado por ADM com permissão crm:leads:edit-after-sale.',
+        403,
+      );
+    }
+  }
 
   const updated = await prisma.lead.update({
     where: { id: idNum },
@@ -190,8 +230,6 @@ export async function updateLead(id, data, user) {
       conjugeSobrenome: data.conjugeSobrenome,
       conjugeCelular: data.conjugeCelular,
       conjugeEmail: data.conjugeEmail,
-      status: data.status,
-      etapa: data.etapa ?? data.etapaJornada,
       origemCanal: data.origemCanal,
       preVendedorId: data.preVendedorId !== undefined
         ? (data.preVendedorId ? parseInt(data.preVendedorId, 10) : null)
