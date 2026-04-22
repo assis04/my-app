@@ -36,6 +36,15 @@ function logSection(title) {
   console.log(`\n─── ${title} ${'─'.repeat(Math.max(0, 60 - title.length))}`);
 }
 
+function logRows(label, rows) {
+  if (!rows || rows.length === 0) {
+    console.log(`${label}: (vazio)`);
+    return;
+  }
+  console.log(label);
+  console.table(rows);
+}
+
 async function snapshotStatusCounts() {
   const rows = await prisma.$queryRawUnsafe(`
     SELECT COALESCE(status, '<NULL>') AS status, COUNT(*)::int AS count
@@ -61,74 +70,88 @@ async function snapshotEtapaMismatch() {
   return rows;
 }
 
+/**
+ * Data-migration scripts usam SQL raw intencionalmente:
+ * - Prisma 7 rejeita `{ status: null }` em WHERE para campos non-nullable
+ *   (mesmo que o DB tenha nulls legados). SQL raw contorna isso.
+ * - Migrations devem ser declarativas e previsíveis — não dependem de
+ *   type-checking do client.
+ */
 async function normalizeStatus() {
   logSection('Passo 1: normalizar status legados');
 
   const before = await snapshotStatusCounts();
-  console.log('Distribuição atual de status:');
-  console.table(before);
+  logRows('Distribuição atual de status:', before);
+
+  // Usa $queryRaw/$executeRaw com parâmetros — protegido contra injection.
+  // Prisma.sql helper não é necessário para array simples de literais.
+  const target = LeadStatus.EM_PROSPECCAO;
 
   if (DRY_RUN) {
-    const affected = await prisma.lead.count({
-      where: {
-        OR: [
-          { status: { in: LEGACY_STATUS_VALUES } },
-          { status: null },
-        ],
-      },
-    });
-    console.log(`[DRY RUN] Atualizaria ${affected} leads para status="${LeadStatus.EM_PROSPECCAO}"`);
+    const [{ count }] = await prisma.$queryRaw`
+      SELECT COUNT(*)::int AS count
+      FROM leads
+      WHERE status IS NULL
+         OR status = ''
+         OR status = 'Novo'
+         OR status = 'Prospecção'
+         OR status = 'Ativo'
+    `;
+    console.log(`[DRY RUN] Atualizaria ${count} leads para status="${target}"`);
     return 0;
   }
 
-  const result = await prisma.lead.updateMany({
-    where: {
-      OR: [
-        { status: { in: LEGACY_STATUS_VALUES } },
-        { status: null },
-      ],
-    },
-    data: { status: LeadStatus.EM_PROSPECCAO },
-  });
+  const affected = await prisma.$executeRaw`
+    UPDATE leads
+    SET status = ${target}
+    WHERE status IS NULL
+       OR status = ''
+       OR status = 'Novo'
+       OR status = 'Prospecção'
+       OR status = 'Ativo'
+  `;
 
-  console.log(`Atualizados: ${result.count} leads → status="${LeadStatus.EM_PROSPECCAO}"`);
-  return result.count;
+  console.log(`Atualizados: ${affected} leads → status="${target}"`);
+  return affected;
 }
 
 async function normalizeEtapa() {
   logSection('Passo 2: derivar etapa a partir do status');
 
   const before = await snapshotEtapaMismatch();
-  console.log('Distribuição atual (status × etapa):');
-  console.table(before);
+  logRows('Distribuição atual (status × etapa):', before);
 
   let totalUpdated = 0;
 
   for (const status of getAllStatuses()) {
     const correctEtapa = STATUS_TO_ETAPA[status];
 
-    const where = {
-      status,
-      OR: [
-        { etapa: { not: correctEtapa } },
-        { etapa: null },
-      ],
-    };
-
     if (DRY_RUN) {
-      const affected = await prisma.lead.count({ where });
-      if (affected > 0) {
-        console.log(`[DRY RUN] ${affected} leads com status="${status}" teriam etapa corrigida → "${correctEtapa}"`);
+      const [{ count }] = await prisma.$queryRaw`
+        SELECT COUNT(*)::int AS count
+        FROM leads
+        WHERE deleted_at IS NULL
+          AND status = ${status}
+          AND (etapa IS NULL OR etapa <> ${correctEtapa})
+      `;
+      if (count > 0) {
+        console.log(`[DRY RUN] ${count} leads com status="${status}" teriam etapa corrigida → "${correctEtapa}"`);
       }
-      totalUpdated += affected;
+      totalUpdated += count;
       continue;
     }
 
-    const result = await prisma.lead.updateMany({ where, data: { etapa: correctEtapa } });
-    if (result.count > 0) {
-      console.log(`${result.count} leads status="${status}" → etapa="${correctEtapa}"`);
+    const affected = await prisma.$executeRaw`
+      UPDATE leads
+      SET etapa = ${correctEtapa}
+      WHERE deleted_at IS NULL
+        AND status = ${status}
+        AND (etapa IS NULL OR etapa <> ${correctEtapa})
+    `;
+    if (affected > 0) {
+      console.log(`${affected} leads status="${status}" → etapa="${correctEtapa}"`);
     }
-    totalUpdated += result.count;
+    totalUpdated += affected;
   }
 
   // Leads com status fora do enum canônico (não deveria acontecer após passo 1)
@@ -140,7 +163,7 @@ async function normalizeEtapa() {
     GROUP BY status
   `);
 
-  if (strangeStatus.length > 0) {
+  if (strangeStatus && strangeStatus.length > 0) {
     console.warn('⚠️  Leads com status fora do enum canônico (não foram normalizados):');
     console.table(strangeStatus);
     console.warn('   → Verificar manualmente antes de rodar novamente.');
@@ -164,7 +187,7 @@ async function main() {
 
   if (!DRY_RUN) {
     logSection('Snapshot final');
-    console.table(await snapshotStatusCounts());
+    logRows('Status por contagem:', await snapshotStatusCounts());
   }
 }
 
