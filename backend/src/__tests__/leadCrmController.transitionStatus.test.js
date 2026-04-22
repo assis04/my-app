@@ -1,0 +1,215 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const mockTransitionStatus = vi.fn();
+
+vi.mock('../services/leadTransitionService.js', () => ({
+  transitionStatus: mockTransitionStatus,
+}));
+
+vi.mock('../services/leadCrmService.js', () => ({
+  createLead: vi.fn(),
+  listLeads: vi.fn(),
+  getLeadById: vi.fn(),
+  updateLead: vi.fn(),
+  deleteLead: vi.fn(),
+  transferLeads: vi.fn(),
+  updateEtapaLote: vi.fn(),
+}));
+
+const { transitionStatus } = await import('../controllers/leadCrmController.js');
+const { LeadEventType } = await import('../domain/leadEvents.js');
+const { SideEffectType } = await import('../services/statusMachine.js');
+
+function mockRes() {
+  return {
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn().mockReturnThis(),
+  };
+}
+
+function mockReq({ params = { id: '10' }, body = {}, user = { id: 7, role: 'Vendedor' } } = {}) {
+  return { params, body, user };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe('leadCrmController.transitionStatus — controller', () => {
+  it('chama o serviço com os parâmetros corretos e retorna 200 com a resposta composta', async () => {
+    const serviceResult = {
+      lead: {
+        id: 10,
+        status: 'Agendado vídeo chamada',
+        etapa: 'Negociação',
+        kanbanCard: { id: 5, coluna: 'Negociação', posicao: 3 },
+      },
+      sideEffectsApplied: [SideEffectType.NON_OPEN_OR_CREATE, SideEffectType.AGENDA_OPEN],
+      history: [
+        { id: 101, eventType: LeadEventType.STATUS_CHANGED, payload: { from: 'Em prospecção', to: 'Agendado vídeo chamada' } },
+        { id: 102, eventType: LeadEventType.AGENDA_SCHEDULED, payload: { tipo: 'video_chamada', dataHora: '2026-05-01T14:00:00Z' } },
+      ],
+    };
+    mockTransitionStatus.mockResolvedValue(serviceResult);
+
+    const req = mockReq({
+      params: { id: '10' },
+      body: {
+        status: 'Agendado vídeo chamada',
+        contexto: { agendadoPara: '2026-05-01T14:00:00Z' },
+      },
+    });
+    const res = mockRes();
+    const next = vi.fn();
+
+    await transitionStatus(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(mockTransitionStatus).toHaveBeenCalledWith({
+      leadId: '10',
+      newStatus: 'Agendado vídeo chamada',
+      user: req.user,
+      reason: null,
+      context: { agendadoPara: '2026-05-01T14:00:00Z', dataHora: '2026-05-01T14:00:00Z' },
+    });
+
+    expect(res.json).toHaveBeenCalledTimes(1);
+    const body = res.json.mock.calls[0][0];
+    expect(body.lead).toEqual(serviceResult.lead);
+    expect(body.kanbanCard).toEqual(serviceResult.lead.kanbanCard);
+    expect(body.historyEvent).toEqual(serviceResult.history[0]); // status_changed
+    expect(body.outboxEvents).toEqual([
+      { eventType: SideEffectType.NON_OPEN_OR_CREATE, status: 'pending' },
+      { eventType: SideEffectType.AGENDA_OPEN, status: 'pending' },
+    ]);
+  });
+
+  it('traduz motivo → reason para o serviço', async () => {
+    mockTransitionStatus.mockResolvedValue({
+      lead: { id: 10, kanbanCard: {} },
+      sideEffectsApplied: [],
+      history: [{ id: 1, eventType: LeadEventType.STATUS_CHANGED }],
+    });
+
+    await transitionStatus(
+      mockReq({
+        body: { status: 'Cancelado', motivo: 'cliente desistiu' },
+      }),
+      mockRes(),
+      vi.fn(),
+    );
+
+    expect(mockTransitionStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'cliente desistiu' }),
+    );
+  });
+
+  it('reason padrão é null quando motivo ausente', async () => {
+    mockTransitionStatus.mockResolvedValue({
+      lead: { id: 10, kanbanCard: {} },
+      sideEffectsApplied: [],
+      history: [{ id: 1, eventType: LeadEventType.STATUS_CHANGED }],
+    });
+
+    await transitionStatus(
+      mockReq({ body: { status: 'Em Atendimento Loja' } }),
+      mockRes(),
+      vi.fn(),
+    );
+
+    expect(mockTransitionStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: null }),
+    );
+  });
+
+  it('contexto.agendadoPara vira context.dataHora', async () => {
+    mockTransitionStatus.mockResolvedValue({
+      lead: { id: 10, kanbanCard: {} },
+      sideEffectsApplied: [],
+      history: [{ id: 1, eventType: LeadEventType.STATUS_CHANGED }],
+    });
+
+    await transitionStatus(
+      mockReq({
+        body: {
+          status: 'Aguardando Planta/medidas',
+          contexto: { agendadoPara: '2026-06-10T09:00:00Z' },
+        },
+      }),
+      mockRes(),
+      vi.fn(),
+    );
+
+    expect(mockTransitionStatus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: expect.objectContaining({ dataHora: '2026-06-10T09:00:00Z' }),
+      }),
+    );
+  });
+
+  it('outboxEvents só inclui side-effects AGENDA_OPEN e NON_OPEN_OR_CREATE (não SET_CANCEL_FIELDS)', async () => {
+    mockTransitionStatus.mockResolvedValue({
+      lead: { id: 10, kanbanCard: {} },
+      sideEffectsApplied: [SideEffectType.SET_CANCEL_FIELDS],
+      history: [
+        { id: 1, eventType: LeadEventType.STATUS_CHANGED },
+        { id: 2, eventType: LeadEventType.LEAD_CANCELLED },
+      ],
+    });
+
+    const res = mockRes();
+    await transitionStatus(
+      mockReq({
+        body: { status: 'Cancelado', motivo: 'x' },
+      }),
+      res,
+      vi.fn(),
+    );
+
+    const body = res.json.mock.calls[0][0];
+    expect(body.outboxEvents).toEqual([]);
+  });
+
+  it('encaminha erro do serviço para next() — não vaza via json()', async () => {
+    const err = new Error('Transição inválida');
+    err.statusCode = 400;
+    mockTransitionStatus.mockRejectedValue(err);
+
+    const res = mockRes();
+    const next = vi.fn();
+
+    await transitionStatus(
+      mockReq({ body: { status: 'Venda' } }),
+      res,
+      next,
+    );
+
+    expect(next).toHaveBeenCalledWith(err);
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('historyEvent é o evento status_changed (não o primeiro cronologicamente)', async () => {
+    // edge: service pode retornar eventos em ordem arbitrária — controller deve
+    // filtrar pelo tipo, não pelo índice
+    mockTransitionStatus.mockResolvedValue({
+      lead: { id: 10, kanbanCard: {} },
+      sideEffectsApplied: [],
+      history: [
+        { id: 2, eventType: LeadEventType.LEAD_CANCELLED },
+        { id: 1, eventType: LeadEventType.STATUS_CHANGED },
+      ],
+    });
+
+    const res = mockRes();
+    await transitionStatus(
+      mockReq({ body: { status: 'Cancelado', motivo: 'x' } }),
+      res,
+      vi.fn(),
+    );
+
+    const body = res.json.mock.calls[0][0];
+    expect(body.historyEvent.eventType).toBe(LeadEventType.STATUS_CHANGED);
+    expect(body.historyEvent.id).toBe(1);
+  });
+});

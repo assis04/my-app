@@ -63,6 +63,22 @@ export const manualLeadSchema = quickLeadSchema.extend({
   ),
 });
 
+// ─── Transição de status (Task #9) ───────────────────────────────────────
+// Plan §4.1. Aceita os nomes do contrato público (status, motivo, contexto)
+// e traduz para o contrato interno do leadTransitionService (newStatus, reason, context).
+
+export const transitionStatusSchema = z.object({
+  status: z.string().min(1, 'status é obrigatório.').max(100),
+  motivo: z.string().max(1000).optional().nullable(),
+  contexto: z
+    .object({
+      agendadoPara: z.string().datetime({ offset: true }).optional().nullable(),
+    })
+    .passthrough()
+    .optional()
+    .default({}),
+});
+
 export const toggleStatusSchema = z.object({
   branch_id: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),

@@ -5,6 +5,7 @@ import {
   toggleStatusSchema,
   createLeadSchema,
   transferLeadsSchema,
+  transitionStatusSchema,
 } from '../validators/leadValidator.js';
 import { createTaskSchema, updateTaskStatusSchema } from '../validators/taskValidator.js';
 
@@ -186,5 +187,51 @@ describe('updateTaskStatusSchema', () => {
   it('should reject invalid status', () => {
     const result = updateTaskStatusSchema.safeParse({ status: 'INVALIDO' });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('transitionStatusSchema', () => {
+  it('aceita payload mínimo só com status', () => {
+    const r = transitionStatusSchema.safeParse({ status: 'Venda' });
+    expect(r.success).toBe(true);
+    expect(r.data.motivo).toBeUndefined();
+    expect(r.data.contexto).toEqual({});
+  });
+
+  it('rejeita status ausente ou vazio', () => {
+    expect(transitionStatusSchema.safeParse({}).success).toBe(false);
+    expect(transitionStatusSchema.safeParse({ status: '' }).success).toBe(false);
+  });
+
+  it('aceita motivo como string', () => {
+    const r = transitionStatusSchema.safeParse({ status: 'Cancelado', motivo: 'cliente desistiu' });
+    expect(r.success).toBe(true);
+    expect(r.data.motivo).toBe('cliente desistiu');
+  });
+
+  it('aceita contexto.agendadoPara como ISO 8601 com offset', () => {
+    const r = transitionStatusSchema.safeParse({
+      status: 'Agendado vídeo chamada',
+      contexto: { agendadoPara: '2026-05-01T14:00:00Z' },
+    });
+    expect(r.success).toBe(true);
+    expect(r.data.contexto.agendadoPara).toBe('2026-05-01T14:00:00Z');
+  });
+
+  it('rejeita agendadoPara com formato inválido', () => {
+    const r = transitionStatusSchema.safeParse({
+      status: 'Agendado vídeo chamada',
+      contexto: { agendadoPara: '01/05/2026' },
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('deixa passar campos extras em contexto (passthrough)', () => {
+    const r = transitionStatusSchema.safeParse({
+      status: 'Aguardando Planta/medidas',
+      contexto: { agendadoPara: '2026-05-01T14:00:00Z', obs: 'planta do apto 202' },
+    });
+    expect(r.success).toBe(true);
+    expect(r.data.contexto.obs).toBe('planta do apto 202');
   });
 });
