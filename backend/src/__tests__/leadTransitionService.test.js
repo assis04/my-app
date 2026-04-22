@@ -12,10 +12,12 @@ const mockPrisma = {
   lead: {
     findFirst: vi.fn(),
     update: vi.fn(),
+    create: vi.fn(),
   },
   kanbanCard: {
     aggregate: vi.fn(),
     update: vi.fn(),
+    create: vi.fn(),
   },
   leadHistory: {
     create: vi.fn(),
@@ -24,7 +26,7 @@ const mockPrisma = {
 
 vi.mock('../config/prisma.js', () => ({ default: mockPrisma }));
 
-const { transitionStatus, setTemperatura } = await import('../services/leadTransitionService.js');
+const { transitionStatus, setTemperatura, reactivateLead } = await import('../services/leadTransitionService.js');
 const { LeadStatus } = await import('../domain/leadStatus.js');
 const { LeadEventType } = await import('../domain/leadEvents.js');
 const { SideEffectType } = await import('../services/statusMachine.js');
@@ -37,6 +39,8 @@ beforeEach(() => {
   mockPrisma.kanbanCard.aggregate.mockResolvedValue({ _max: { posicao: 0 } });
   mockPrisma.leadHistory.create.mockImplementation(({ data }) => ({ id: 1, ...data }));
   mockPrisma.kanbanCard.update.mockImplementation(({ data }) => ({ id: 1, ...data }));
+  mockPrisma.kanbanCard.create.mockImplementation(({ data }) => ({ id: 10, ...data }));
+  mockPrisma.lead.create.mockImplementation(({ data }) => ({ id: 999, ...data }));
 });
 
 // ─── Fixtures ──────────────────────────────────────────────────────────────
@@ -62,6 +66,13 @@ const admUser = {
   role: 'ADM',
   filialId: null,
   permissions: ['*'],
+};
+
+const reactivatorUser = {
+  id: 55,
+  role: 'Gerente',
+  filialId: 1,
+  permissions: ['crm:leads:update', 'crm:leads:reactivate'],
 };
 
 function mockLeadLoad(lead) {
@@ -531,5 +542,288 @@ describe('setTemperatura — happy path', () => {
     expect(r).toHaveProperty('lead');
     expect(r).toHaveProperty('historyEvent');
     expect(r).toHaveProperty('changed');
+  });
+});
+
+// ─── reactivateLead ──────────────────────────────────────────────────────
+
+describe('reactivateLead — validações de entrada', () => {
+  it('rejeita params nulo', async () => {
+    await expect(reactivateLead(null)).rejects.toThrow(/Parâmetros inválidos/);
+  });
+
+  it('rejeita leadId inválido', async () => {
+    await expect(
+      reactivateLead({ leadId: 0, modo: 'reativar', user: reactivatorUser }),
+    ).rejects.toThrow(/leadId/);
+  });
+
+  it('rejeita user ausente', async () => {
+    await expect(
+      reactivateLead({ leadId: 10, modo: 'reativar' }),
+    ).rejects.toThrow(/Usuário autenticado/);
+  });
+
+  it('rejeita modo fora do enum', async () => {
+    await expect(
+      reactivateLead({ leadId: 10, modo: 'ressuscitar', user: reactivatorUser }),
+    ).rejects.toThrow(/modo/);
+  });
+
+  it('rejeita user sem permissão crm:leads:reactivate (403)', async () => {
+    await expect(
+      reactivateLead({ leadId: 10, modo: 'reativar', user: regularUser }),
+    ).rejects.toThrow(/crm:leads:reactivate/);
+  });
+});
+
+describe('reactivateLead — guards', () => {
+  it('retorna 404 se Lead não existe', async () => {
+    mockPrisma.lead.findFirst.mockResolvedValue(null);
+    await expect(
+      reactivateLead({ leadId: 99, modo: 'reativar', user: reactivatorUser }),
+    ).rejects.toThrow(/Lead não encontrado/);
+  });
+
+  it('bloqueia cross-filial (403) mesmo com permissão reactivate', async () => {
+    mockLeadLoad({ ...leadBase, status: LeadStatus.CANCELADO, filialId: 2 });
+    await expect(
+      reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser }),
+    ).rejects.toThrow(/outra filial/);
+  });
+
+  it('rejeita reativação de Lead que NÃO está Cancelado', async () => {
+    mockLeadLoad({ ...leadBase, status: LeadStatus.EM_PROSPECCAO });
+    await expect(
+      reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser }),
+    ).rejects.toThrow(/Cancelado/);
+  });
+
+  it('adquire FOR UPDATE antes do findFirst', async () => {
+    mockLeadLoad({ ...leadBase, status: LeadStatus.CANCELADO });
+    await reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser });
+    expect(mockPrisma.$executeRaw.mock.invocationCallOrder[0])
+      .toBeLessThan(mockPrisma.lead.findFirst.mock.invocationCallOrder[0]);
+  });
+});
+
+describe('reactivateLead — modo "reativar"', () => {
+  it('restaura para statusAntesCancelamento quando existe', async () => {
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+      statusAntesCancelamento: LeadStatus.AGENDADO_VIDEO,
+      canceladoEm: new Date('2026-04-01'),
+    });
+
+    const r = await reactivateLead({
+      leadId: 10, modo: 'reativar', user: reactivatorUser,
+    });
+
+    expect(r.modo).toBe('reativar');
+    const updateData = mockPrisma.lead.update.mock.calls[0][0].data;
+    expect(updateData.status).toBe(LeadStatus.AGENDADO_VIDEO);
+    expect(updateData.etapa).toBe('Negociação');
+    expect(updateData.reativadoEm).toBeInstanceOf(Date);
+    // canceladoEm é preservado — não aparece em data
+    expect(updateData).not.toHaveProperty('canceladoEm');
+  });
+
+  it('faz fallback para "Em prospecção" quando statusAntesCancelamento é null', async () => {
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+      statusAntesCancelamento: null,
+    });
+
+    await reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser });
+
+    const updateData = mockPrisma.lead.update.mock.calls[0][0].data;
+    expect(updateData.status).toBe(LeadStatus.EM_PROSPECCAO);
+    expect(updateData.etapa).toBe('Prospecção');
+  });
+
+  it('faz fallback quando statusAntesCancelamento é valor inválido (defensivo)', async () => {
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+      statusAntesCancelamento: 'Ativo', // legado
+    });
+
+    await reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser });
+
+    expect(mockPrisma.lead.update.mock.calls[0][0].data.status).toBe(LeadStatus.EM_PROSPECCAO);
+  });
+
+  it('move KanbanCard para a coluna do status restaurado', async () => {
+    mockPrisma.kanbanCard.aggregate.mockResolvedValue({ _max: { posicao: 7 } });
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+      statusAntesCancelamento: LeadStatus.EM_ATENDIMENTO_LOJA,
+    });
+
+    await reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser });
+
+    expect(mockPrisma.kanbanCard.update).toHaveBeenCalledWith({
+      where: { leadId: 10 },
+      data: { coluna: 'Negociação', posicao: 8 },
+    });
+  });
+
+  it('registra 2 eventos: status_changed + lead_reactivated', async () => {
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+      statusAntesCancelamento: LeadStatus.EM_PROSPECCAO,
+    });
+
+    await reactivateLead({
+      leadId: 10, modo: 'reativar', user: reactivatorUser, motivo: 'cliente voltou',
+    });
+
+    const events = mockPrisma.leadHistory.create.mock.calls.map((c) => c[0].data);
+    expect(events).toHaveLength(2);
+    expect(events[0]).toMatchObject({
+      eventType: LeadEventType.STATUS_CHANGED,
+      payload: { from: LeadStatus.CANCELADO, to: LeadStatus.EM_PROSPECCAO },
+    });
+    expect(events[1]).toMatchObject({
+      eventType: LeadEventType.LEAD_REACTIVATED,
+      payload: { motivo: 'cliente voltou' },
+    });
+  });
+
+  it('lead_reactivated.payload é {} (vazio) quando motivo não é passado', async () => {
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+    });
+    await reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser });
+    const reactivatedEvent = mockPrisma.leadHistory.create.mock.calls
+      .map((c) => c[0].data)
+      .find((e) => e.eventType === LeadEventType.LEAD_REACTIVATED);
+    expect(reactivatedEvent.payload).toEqual({});
+  });
+
+  it('retorna shape compatível com formatTransitionResponse', async () => {
+    mockLeadLoad({ ...leadBase, status: LeadStatus.CANCELADO });
+    const r = await reactivateLead({ leadId: 10, modo: 'reativar', user: reactivatorUser });
+    expect(r).toHaveProperty('modo', 'reativar');
+    expect(r).toHaveProperty('lead');
+    expect(r).toHaveProperty('sideEffectsApplied');
+    expect(r).toHaveProperty('history');
+    expect(r.sideEffectsApplied).toEqual([]);
+    expect(r.lead.kanbanCard).toBeDefined();
+  });
+});
+
+describe('reactivateLead — modo "novo"', () => {
+  const cancelledLead = {
+    ...leadBase,
+    id: 10,
+    status: LeadStatus.CANCELADO,
+    nome: 'João',
+    sobrenome: 'Silva',
+    celular: '11999999999',
+    email: 'joao@test.com',
+    cpfCnpj: '12345678900',
+    cep: '01000000',
+    endereco: 'Rua X, 100',
+    tipoImovel: 'Apartamento',
+    statusImovel: 'Pronto',
+    canal: 'indicacao',
+    origem: 'amigo',
+    contaId: 50,
+    filialId: 1,
+    preVendedorId: 7,
+    vendedorId: null,
+    gerenteId: 3,
+    conjugeNome: 'Maria',
+    conjugeEmail: 'maria@test.com',
+    canceladoEm: new Date('2026-04-01'),
+    statusAntesCancelamento: LeadStatus.EM_ATENDIMENTO_LOJA,
+    temperatura: 'Muito interessado',
+  };
+
+  it('cria novo Lead com identidade copiada e pipeline zerado', async () => {
+    mockLeadLoad(cancelledLead);
+
+    await reactivateLead({ leadId: 10, modo: 'novo', user: reactivatorUser });
+
+    const createData = mockPrisma.lead.create.mock.calls[0][0].data;
+    // Identidade copiada
+    expect(createData.nome).toBe('João');
+    expect(createData.celular).toBe('11999999999');
+    expect(createData.cpfCnpj).toBe('12345678900');
+    expect(createData.endereco).toBe('Rua X, 100');
+    // Relações preservadas
+    expect(createData.contaId).toBe(50);
+    expect(createData.filialId).toBe(1);
+    expect(createData.preVendedorId).toBe(7);
+    // Cônjuge preservado
+    expect(createData.conjugeNome).toBe('Maria');
+    // Pipeline zerado
+    expect(createData.status).toBe(LeadStatus.EM_PROSPECCAO);
+    expect(createData.etapa).toBe('Prospecção');
+    expect(createData.temperatura).toBeNull();
+    expect(createData.fonte).toBe('crm');
+  });
+
+  it('NÃO altera o Lead antigo (permanece Cancelado)', async () => {
+    mockLeadLoad(cancelledLead);
+    await reactivateLead({ leadId: 10, modo: 'novo', user: reactivatorUser });
+    expect(mockPrisma.lead.update).not.toHaveBeenCalled();
+  });
+
+  it('cria KanbanCard novo na coluna Prospecção', async () => {
+    mockLeadLoad(cancelledLead);
+    mockPrisma.kanbanCard.aggregate.mockResolvedValue({ _max: { posicao: 4 } });
+
+    await reactivateLead({ leadId: 10, modo: 'novo', user: reactivatorUser });
+
+    expect(mockPrisma.kanbanCard.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        leadId: 999, // id do novo lead (mock default)
+        coluna: 'Prospecção',
+        posicao: 5,
+      }),
+    });
+  });
+
+  it('registra reactivated_as_new_lead no Lead antigo com ponteiro pro novo', async () => {
+    mockLeadLoad(cancelledLead);
+    await reactivateLead({ leadId: 10, modo: 'novo', user: reactivatorUser, motivo: 'retornou após 6 meses' });
+
+    const events = mockPrisma.leadHistory.create.mock.calls.map((c) => c[0].data);
+    const oldLeadEvent = events.find((e) => e.eventType === LeadEventType.REACTIVATED_AS_NEW_LEAD);
+    expect(oldLeadEvent).toBeDefined();
+    expect(oldLeadEvent.leadId).toBe(10); // Lead antigo
+    expect(oldLeadEvent.payload.newLeadId).toBe(999);
+    expect(oldLeadEvent.payload.motivo).toBe('retornou após 6 meses');
+  });
+
+  it('registra created_from_reactivation no Lead novo com ponteiro pro antigo', async () => {
+    mockLeadLoad(cancelledLead);
+    await reactivateLead({ leadId: 10, modo: 'novo', user: reactivatorUser });
+
+    const events = mockPrisma.leadHistory.create.mock.calls.map((c) => c[0].data);
+    const newLeadEvent = events.find((e) => e.eventType === LeadEventType.CREATED_FROM_REACTIVATION);
+    expect(newLeadEvent).toBeDefined();
+    expect(newLeadEvent.leadId).toBe(999); // Lead novo
+    expect(newLeadEvent.payload.sourceLeadId).toBe(10);
+  });
+
+  it('retorna { modo, leadAntigo, leadNovo } (sem shape de transição)', async () => {
+    mockLeadLoad(cancelledLead);
+    const r = await reactivateLead({ leadId: 10, modo: 'novo', user: reactivatorUser });
+    expect(r.modo).toBe('novo');
+    expect(r.leadAntigo).toBeDefined();
+    expect(r.leadAntigo.id).toBe(10);
+    expect(r.leadNovo).toBeDefined();
+    expect(r.leadNovo.id).toBe(999);
+    expect(r.leadNovo.kanbanCard).toBeDefined();
+    expect(r).not.toHaveProperty('history');
+    expect(r).not.toHaveProperty('sideEffectsApplied');
   });
 });

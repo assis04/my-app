@@ -2,6 +2,7 @@ import * as leadCrmService from '../services/leadCrmService.js';
 import {
   transitionStatus as transitionStatusService,
   setTemperatura as setTemperaturaService,
+  reactivateLead as reactivateLeadService,
 } from '../services/leadTransitionService.js';
 import { LeadStatus } from '../domain/leadStatus.js';
 import { LeadEventType } from '../domain/leadEvents.js';
@@ -157,6 +158,41 @@ export async function cancelLead(req, res, next) {
       reason: req.body.motivo,
     });
     return res.json(formatTransitionResponse(result));
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PUT /api/crm/leads/:id/reactivate — Task #12
+ * Contrato: plan §4.3
+ *
+ * Body: { modo: "reativar" | "novo", motivo?: string }
+ *
+ * Response 200 (modo="reativar"): mesma shape de /status — Lead restaurado
+ *   para o status pré-cancelamento.
+ * Response 201 (modo="novo"): { leadAntigo, leadNovo } — status code 201
+ *   porque um novo recurso foi criado.
+ *
+ * Permissão role-gated: crm:leads:reactivate (checado no service).
+ */
+export async function reactivateLead(req, res, next) {
+  try {
+    const result = await reactivateLeadService({
+      leadId: req.params.id,
+      modo: req.body.modo,
+      motivo: req.body.motivo ?? '',
+      user: req.user,
+    });
+
+    if (result.modo === 'reativar') {
+      return res.json(formatTransitionResponse(result));
+    }
+    // modo === 'novo' → 201 Created (novo Lead nasceu)
+    return res.status(201).json({
+      leadAntigo: result.leadAntigo,
+      leadNovo: result.leadNovo,
+    });
   } catch (error) {
     next(error);
   }

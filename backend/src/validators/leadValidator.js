@@ -103,6 +103,18 @@ export const cancelLeadSchema = z.object({
     .max(1000),
 });
 
+// ─── Reativação (Task #12) ───────────────────────────────────────────────
+// Plan §4.3 / spec §6.5. Usuário decide na UI:
+//   - "reativar": restaura o Lead existente para o status anterior ao cancelamento
+//   - "novo": preserva o Lead cancelado e cria um novo Lead vinculado ao mesmo Account
+
+export const reactivateLeadSchema = z.object({
+  modo: z.enum(['reativar', 'novo'], {
+    message: 'modo deve ser "reativar" ou "novo".',
+  }),
+  motivo: z.string().trim().max(1000).optional().default(''),
+});
+
 export const toggleStatusSchema = z.object({
   branch_id: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),

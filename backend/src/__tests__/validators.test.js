@@ -8,6 +8,7 @@ import {
   transitionStatusSchema,
   temperaturaSchema,
   cancelLeadSchema,
+  reactivateLeadSchema,
 } from '../validators/leadValidator.js';
 import { createTaskSchema, updateTaskStatusSchema } from '../validators/taskValidator.js';
 
@@ -282,5 +283,29 @@ describe('cancelLeadSchema', () => {
   it('rejeita motivo acima do limite de 1000 chars', () => {
     const longText = 'x'.repeat(1001);
     expect(cancelLeadSchema.safeParse({ motivo: longText }).success).toBe(false);
+  });
+});
+
+describe('reactivateLeadSchema', () => {
+  it('aceita modo="reativar" com motivo', () => {
+    const r = reactivateLeadSchema.safeParse({ modo: 'reativar', motivo: 'cliente voltou' });
+    expect(r.success).toBe(true);
+    expect(r.data.modo).toBe('reativar');
+    expect(r.data.motivo).toBe('cliente voltou');
+  });
+
+  it('aceita modo="novo" sem motivo (motivo é opcional)', () => {
+    const r = reactivateLeadSchema.safeParse({ modo: 'novo' });
+    expect(r.success).toBe(true);
+    expect(r.data.motivo).toBe('');
+  });
+
+  it('rejeita modo inválido', () => {
+    expect(reactivateLeadSchema.safeParse({ modo: 'ressuscitar' }).success).toBe(false);
+    expect(reactivateLeadSchema.safeParse({ modo: '' }).success).toBe(false);
+  });
+
+  it('rejeita modo ausente', () => {
+    expect(reactivateLeadSchema.safeParse({}).success).toBe(false);
   });
 });

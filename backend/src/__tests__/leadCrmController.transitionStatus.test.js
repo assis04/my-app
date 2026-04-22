@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockTransitionStatus = vi.fn();
 const mockSetTemperatura = vi.fn();
+const mockReactivateLead = vi.fn();
 
 vi.mock('../services/leadTransitionService.js', () => ({
   transitionStatus: mockTransitionStatus,
   setTemperatura: mockSetTemperatura,
+  reactivateLead: mockReactivateLead,
 }));
 
 vi.mock('../services/leadCrmService.js', () => ({
@@ -18,7 +20,7 @@ vi.mock('../services/leadCrmService.js', () => ({
   updateEtapaLote: vi.fn(),
 }));
 
-const { transitionStatus, setTemperatura, cancelLead } = await import('../controllers/leadCrmController.js');
+const { transitionStatus, setTemperatura, cancelLead, reactivateLead } = await import('../controllers/leadCrmController.js');
 const { LeadEventType } = await import('../domain/leadEvents.js');
 const { SideEffectType } = await import('../services/statusMachine.js');
 
@@ -258,6 +260,104 @@ describe('leadCrmController.setTemperatura — controller', () => {
 
     expect(next).toHaveBeenCalledWith(err);
     expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe('leadCrmController.reactivateLead — controller', () => {
+  it('modo="reativar" retorna 200 com shape de transição', async () => {
+    const serviceResult = {
+      modo: 'reativar',
+      lead: {
+        id: 10,
+        status: 'Em prospecção',
+        kanbanCard: { coluna: 'Prospecção', posicao: 5 },
+      },
+      sideEffectsApplied: [],
+      history: [
+        { id: 1, eventType: LeadEventType.STATUS_CHANGED },
+        { id: 2, eventType: LeadEventType.LEAD_REACTIVATED },
+      ],
+    };
+    mockReactivateLead.mockResolvedValue(serviceResult);
+
+    const req = mockReq({
+      params: { id: '10' },
+      body: { modo: 'reativar', motivo: 'cliente voltou' },
+    });
+    const res = mockRes();
+    const next = vi.fn();
+
+    await reactivateLead(req, res, next);
+
+    expect(mockReactivateLead).toHaveBeenCalledWith({
+      leadId: '10',
+      modo: 'reativar',
+      motivo: 'cliente voltou',
+      user: req.user,
+    });
+    expect(res.status).not.toHaveBeenCalled(); // default 200
+    const body = res.json.mock.calls[0][0];
+    expect(body.lead).toBeDefined();
+    expect(body.kanbanCard).toBeDefined();
+    expect(body.historyEvent.eventType).toBe(LeadEventType.STATUS_CHANGED);
+  });
+
+  it('modo="novo" retorna 201 com { leadAntigo, leadNovo }', async () => {
+    const serviceResult = {
+      modo: 'novo',
+      leadAntigo: { id: 10, status: 'Cancelado' },
+      leadNovo: { id: 11, status: 'Em prospecção', kanbanCard: {} },
+    };
+    mockReactivateLead.mockResolvedValue(serviceResult);
+
+    const req = mockReq({
+      params: { id: '10' },
+      body: { modo: 'novo' },
+    });
+    const res = mockRes();
+    const next = vi.fn();
+
+    await reactivateLead(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      leadAntigo: serviceResult.leadAntigo,
+      leadNovo: serviceResult.leadNovo,
+    });
+  });
+
+  it('motivo padrão "" quando ausente', async () => {
+    mockReactivateLead.mockResolvedValue({
+      modo: 'reativar',
+      lead: { id: 10, kanbanCard: {} },
+      sideEffectsApplied: [],
+      history: [{ id: 1, eventType: LeadEventType.STATUS_CHANGED }],
+    });
+    await reactivateLead(
+      mockReq({ body: { modo: 'reativar' } }),
+      mockRes(),
+      vi.fn(),
+    );
+    expect(mockReactivateLead).toHaveBeenCalledWith(
+      expect.objectContaining({ motivo: '' }),
+    );
+  });
+
+  it('encaminha erro do serviço para next()', async () => {
+    const err = new Error('forbidden');
+    mockReactivateLead.mockRejectedValue(err);
+
+    const res = mockRes();
+    const next = vi.fn();
+    await reactivateLead(
+      mockReq({ body: { modo: 'reativar' } }),
+      res,
+      next,
+    );
+
+    expect(next).toHaveBeenCalledWith(err);
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
   });
 });
 

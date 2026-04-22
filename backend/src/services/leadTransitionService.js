@@ -26,7 +26,9 @@ import {
 import {
   getEtapaForStatus,
   requiresAdminToEdit,
+  isValidStatus,
   LeadStatus,
+  LeadEtapa,
 } from '../domain/leadStatus.js';
 import { isValidTemperatura } from '../domain/leadTemperatura.js';
 import { LeadEventType } from '../domain/leadEvents.js';
@@ -296,7 +298,199 @@ export async function setTemperatura(params) {
   });
 }
 
+/**
+ * Reativa um Lead cancelado. Dois modos:
+ *
+ *   modo = "reativar" → restaura o próprio Lead para statusAntesCancelamento
+ *                       (ou "Em prospecção" se nulo), preenche reativadoEm,
+ *                       move KanbanCard, grava history
+ *
+ *   modo = "novo"     → preserva o Lead cancelado intacto e cria um Lead NOVO
+ *                       vinculado ao mesmo Account, com campos de identidade
+ *                       copiados mas pipeline zerado (status "Em prospecção")
+ *
+ * NÃO usa validateTransition — a statusMachine bloqueia sair de "Cancelado"
+ * intencionalmente (spec §7.1). A reativação é um fluxo separado, role-gated,
+ * explícito por design.
+ *
+ * Permissão: crm:leads:reactivate (spec §3)
+ *
+ * @param {object} params
+ * @param {number|string} params.leadId
+ * @param {'reativar'|'novo'} params.modo
+ * @param {string} [params.motivo]
+ * @param {object} params.user
+ * @returns {Promise<object>} — shape depende do modo:
+ *   reativar: { modo, lead, sideEffectsApplied: [], history: [...] }
+ *   novo:     { modo, leadAntigo, leadNovo }
+ */
+export async function reactivateLead(params) {
+  if (!params || typeof params !== 'object') {
+    throw new AppError('Parâmetros inválidos para reactivateLead.', 400);
+  }
+
+  const { leadId, modo, motivo = '', user } = params;
+
+  const leadIdInt = Number(leadId);
+  if (!Number.isInteger(leadIdInt) || leadIdInt <= 0) {
+    throw new AppError('leadId deve ser um inteiro positivo.', 400);
+  }
+  if (!user || typeof user !== 'object') {
+    throw new AppError('Usuário autenticado é obrigatório.', 401);
+  }
+  if (modo !== 'reativar' && modo !== 'novo') {
+    throw new AppError('modo deve ser "reativar" ou "novo".', 400);
+  }
+  if (!hasPermission(user, 'crm:leads:reactivate')) {
+    throw new AppError('Permissão crm:leads:reactivate necessária para reativar Lead.', 403);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT id FROM leads WHERE id = ${leadIdInt} FOR UPDATE`;
+
+    const lead = await tx.lead.findFirst({
+      where: { id: leadIdInt, deletedAt: null },
+      include: { kanbanCard: true },
+    });
+    if (!lead) throw new AppError('Lead não encontrado.', 404);
+
+    assertFilialAccess(lead, user);
+
+    if (lead.status !== LeadStatus.CANCELADO) {
+      throw new AppError('Só é possível reativar Leads com status "Cancelado".', 400);
+    }
+
+    if (modo === 'reativar') {
+      // Restaura para statusAntesCancelamento (ou EM_PROSPECCAO se nulo/inválido)
+      const prior = lead.statusAntesCancelamento;
+      const targetStatus = (prior && isValidStatus(prior)) ? prior : LeadStatus.EM_PROSPECCAO;
+      const targetEtapa = getEtapaForStatus(targetStatus);
+
+      const updatedLead = await tx.lead.update({
+        where: { id: lead.id },
+        data: {
+          status: targetStatus,
+          etapa: targetEtapa,
+          reativadoEm: new Date(),
+          // canceladoEm é preservado (spec §4.1) — trilha de auditoria
+        },
+      });
+
+      const nextPosicao = await getNextPosicaoForColuna(targetEtapa, tx);
+      const updatedCard = await tx.kanbanCard.update({
+        where: { leadId: lead.id },
+        data: { coluna: targetEtapa, posicao: nextPosicao },
+      });
+
+      const history = [];
+      history.push(
+        await addHistoryEvent(
+          {
+            leadId: lead.id,
+            authorUserId: user.id ?? null,
+            eventType: LeadEventType.STATUS_CHANGED,
+            payload: { from: LeadStatus.CANCELADO, to: targetStatus },
+          },
+          tx,
+        ),
+      );
+      history.push(
+        await addHistoryEvent(
+          {
+            leadId: lead.id,
+            authorUserId: user.id ?? null,
+            eventType: LeadEventType.LEAD_REACTIVATED,
+            payload: motivo ? { motivo } : {},
+          },
+          tx,
+        ),
+      );
+
+      return {
+        modo: 'reativar',
+        lead: { ...updatedLead, kanbanCard: updatedCard },
+        sideEffectsApplied: [],
+        history,
+      };
+    }
+
+    // modo === 'novo'
+    const newLead = await tx.lead.create({
+      data: {
+        // Identidade — copiada do lead antigo
+        nome: lead.nome,
+        sobrenome: lead.sobrenome,
+        celular: lead.celular,
+        email: lead.email,
+        cpfCnpj: lead.cpfCnpj,
+        cep: lead.cep,
+        endereco: lead.endereco,
+        // Cônjuge — preserva contexto familiar
+        conjugeNome: lead.conjugeNome,
+        conjugeSobrenome: lead.conjugeSobrenome,
+        conjugeCelular: lead.conjugeCelular,
+        conjugeEmail: lead.conjugeEmail,
+        // Imóvel — contexto comercial vale carregar
+        tipoImovel: lead.tipoImovel,
+        statusImovel: lead.statusImovel,
+        // Marketing — origem original do contato
+        canal: lead.canal,
+        origem: lead.origem,
+        parceria: lead.parceria,
+        origemCanal: lead.origemCanal,
+        // Atribuições — preserva (ADM pode transferir depois)
+        contaId: lead.contaId,
+        filialId: lead.filialId,
+        preVendedorId: lead.preVendedorId,
+        vendedorId: lead.vendedorId,
+        gerenteId: lead.gerenteId,
+        // Pipeline — começa do zero
+        status: LeadStatus.EM_PROSPECCAO,
+        etapa: LeadEtapa.PROSPECCAO,
+        temperatura: null,
+        fonte: 'crm',
+      },
+    });
+
+    const nextPosicao = await getNextPosicaoForColuna(LeadEtapa.PROSPECCAO, tx);
+    const newCard = await tx.kanbanCard.create({
+      data: {
+        leadId: newLead.id,
+        coluna: LeadEtapa.PROSPECCAO,
+        posicao: nextPosicao,
+      },
+    });
+
+    // History cruzado — ambos os leads referenciam um ao outro para auditoria
+    await addHistoryEvent(
+      {
+        leadId: lead.id,
+        authorUserId: user.id ?? null,
+        eventType: LeadEventType.REACTIVATED_AS_NEW_LEAD,
+        payload: { newLeadId: newLead.id, ...(motivo ? { motivo } : {}) },
+      },
+      tx,
+    );
+    await addHistoryEvent(
+      {
+        leadId: newLead.id,
+        authorUserId: user.id ?? null,
+        eventType: LeadEventType.CREATED_FROM_REACTIVATION,
+        payload: { sourceLeadId: lead.id, ...(motivo ? { motivo } : {}) },
+      },
+      tx,
+    );
+
+    return {
+      modo: 'novo',
+      leadAntigo: lead,
+      leadNovo: { ...newLead, kanbanCard: newCard },
+    };
+  });
+}
+
 export const leadTransitionService = Object.freeze({
   transitionStatus,
   setTemperatura,
+  reactivateLead,
 });
