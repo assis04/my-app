@@ -3,8 +3,31 @@ import {
   transitionStatus as transitionStatusService,
   setTemperatura as setTemperaturaService,
 } from '../services/leadTransitionService.js';
+import { LeadStatus } from '../domain/leadStatus.js';
 import { LeadEventType } from '../domain/leadEvents.js';
 import { SideEffectType } from '../services/statusMachine.js';
+
+/**
+ * Formata o retorno do leadTransitionService para o contrato público
+ * dos endpoints que envolvem transição de status (/status, /cancel, /reactivate).
+ *
+ * Contrato: plan §4.1 — { lead, kanbanCard, historyEvent, outboxEvents[] }
+ */
+function formatTransitionResponse(result) {
+  const historyEvent = result.history.find(
+    (h) => h.eventType === LeadEventType.STATUS_CHANGED,
+  );
+  const outboxEvents = result.sideEffectsApplied
+    .filter((t) => t === SideEffectType.AGENDA_OPEN || t === SideEffectType.NON_OPEN_OR_CREATE)
+    .map((t) => ({ eventType: t, status: 'pending' }));
+
+  return {
+    lead: result.lead,
+    kanbanCard: result.lead.kanbanCard,
+    historyEvent,
+    outboxEvents,
+  };
+}
 
 export async function create(req, res, next) {
   try {
@@ -99,21 +122,41 @@ export async function transitionStatus(req, res, next) {
       },
     });
 
-    const historyEvent = result.history.find(
-      (h) => h.eventType === LeadEventType.STATUS_CHANGED,
-    );
+    return res.json(formatTransitionResponse(result));
+  } catch (error) {
+    next(error);
+  }
+}
 
-    // Side-effects que ainda dependem do outbox (Task #15) — por ora só declarados como pendentes.
-    const outboxEvents = result.sideEffectsApplied
-      .filter((t) => t === SideEffectType.AGENDA_OPEN || t === SideEffectType.NON_OPEN_OR_CREATE)
-      .map((t) => ({ eventType: t, status: 'pending' }));
-
-    return res.json({
-      lead: result.lead,
-      kanbanCard: result.lead.kanbanCard,
-      historyEvent,
-      outboxEvents,
+/**
+ * PUT /api/crm/leads/:id/cancel — Task #11
+ * Contrato: plan §4.2
+ *
+ * Body: { motivo: string } (obrigatório)
+ * Response 200: mesma shape de /status (via formatTransitionResponse)
+ *
+ * Wrapper fino em cima de transitionStatus — delega pro mesmo fluxo
+ * transacional com newStatus="Cancelado". O orquestrador (Task #8)
+ * cuida de:
+ *   - Preencher statusAntesCancelamento com o status anterior
+ *   - Preencher canceladoEm
+ *   - Mover KanbanCard para coluna "Cancelados"
+ *   - Registrar status_changed + lead_cancelled no histórico
+ *   - Validar a transição via statusMachine
+ *   - Aplicar guards (filial, edit-after-sale se aplicável)
+ *
+ * Cancelar é universal (§9.15 da spec) — qualquer responsável pode;
+ * só reativação é role-gated.
+ */
+export async function cancelLead(req, res, next) {
+  try {
+    const result = await transitionStatusService({
+      leadId: req.params.id,
+      newStatus: LeadStatus.CANCELADO,
+      user: req.user,
+      reason: req.body.motivo,
     });
+    return res.json(formatTransitionResponse(result));
   } catch (error) {
     next(error);
   }

@@ -18,7 +18,7 @@ vi.mock('../services/leadCrmService.js', () => ({
   updateEtapaLote: vi.fn(),
 }));
 
-const { transitionStatus, setTemperatura } = await import('../controllers/leadCrmController.js');
+const { transitionStatus, setTemperatura, cancelLead } = await import('../controllers/leadCrmController.js');
 const { LeadEventType } = await import('../domain/leadEvents.js');
 const { SideEffectType } = await import('../services/statusMachine.js');
 
@@ -252,6 +252,70 @@ describe('leadCrmController.setTemperatura — controller', () => {
     const next = vi.fn();
     await setTemperatura(
       mockReq({ body: { temperatura: 'Interessado' } }),
+      res,
+      next,
+    );
+
+    expect(next).toHaveBeenCalledWith(err);
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe('leadCrmController.cancelLead — controller', () => {
+  it('delega para transitionStatus com newStatus=Cancelado + reason', async () => {
+    const serviceResult = {
+      lead: {
+        id: 10,
+        status: 'Cancelado',
+        etapa: 'Cancelados',
+        statusAntesCancelamento: 'Em prospecção',
+        canceladoEm: new Date('2026-04-22T10:00:00Z'),
+        kanbanCard: { id: 5, coluna: 'Cancelados', posicao: 1 },
+      },
+      sideEffectsApplied: [SideEffectType.SET_CANCEL_FIELDS],
+      history: [
+        { id: 100, eventType: LeadEventType.STATUS_CHANGED, payload: { from: 'Em prospecção', to: 'Cancelado' } },
+        { id: 101, eventType: LeadEventType.LEAD_CANCELLED, payload: { reason: 'cliente sumiu' } },
+      ],
+    };
+    mockTransitionStatus.mockResolvedValue(serviceResult);
+
+    const req = mockReq({
+      params: { id: '10' },
+      body: { motivo: 'cliente sumiu' },
+    });
+    const res = mockRes();
+    const next = vi.fn();
+
+    await cancelLead(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(mockTransitionStatus).toHaveBeenCalledWith({
+      leadId: '10',
+      newStatus: 'Cancelado',
+      user: req.user,
+      reason: 'cliente sumiu',
+    });
+    // Não passa `context` porque cancelamento não depende de dataHora
+    expect(mockTransitionStatus.mock.calls[0][0]).not.toHaveProperty('context');
+
+    const body = res.json.mock.calls[0][0];
+    expect(body.lead.status).toBe('Cancelado');
+    expect(body.kanbanCard.coluna).toBe('Cancelados');
+    expect(body.historyEvent.eventType).toBe(LeadEventType.STATUS_CHANGED);
+    expect(body.outboxEvents).toEqual([]); // SET_CANCEL_FIELDS não é outbox
+  });
+
+  it('encaminha erro do serviço para next() (ex.: motivo vazio no service)', async () => {
+    const err = new Error('Motivo é obrigatório ao cancelar um Lead.');
+    err.statusCode = 400;
+    mockTransitionStatus.mockRejectedValue(err);
+
+    const res = mockRes();
+    const next = vi.fn();
+
+    await cancelLead(
+      mockReq({ body: { motivo: 'x' } }),
       res,
       next,
     );

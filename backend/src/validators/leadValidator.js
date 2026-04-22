@@ -90,6 +90,19 @@ export const temperaturaSchema = z.object({
   }),
 });
 
+// ─── Cancel (Task #11) ───────────────────────────────────────────────────
+// Plan §4.2. Endpoint dedicado que exige motivo — reforça a diferença
+// semântica entre "mudança de status qualquer" e "cancelamento" (que sempre
+// exige justificativa auditável).
+
+export const cancelLeadSchema = z.object({
+  motivo: z
+    .string()
+    .trim()
+    .min(1, 'motivo é obrigatório ao cancelar.')
+    .max(1000),
+});
+
 export const toggleStatusSchema = z.object({
   branch_id: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),

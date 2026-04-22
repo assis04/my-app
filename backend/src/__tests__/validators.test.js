@@ -7,6 +7,7 @@ import {
   transferLeadsSchema,
   transitionStatusSchema,
   temperaturaSchema,
+  cancelLeadSchema,
 } from '../validators/leadValidator.js';
 import { createTaskSchema, updateTaskStatusSchema } from '../validators/taskValidator.js';
 
@@ -253,5 +254,33 @@ describe('temperaturaSchema', () => {
 
   it('rejeita campo ausente', () => {
     expect(temperaturaSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('cancelLeadSchema', () => {
+  it('aceita motivo string válido', () => {
+    const r = cancelLeadSchema.safeParse({ motivo: 'Cliente desistiu' });
+    expect(r.success).toBe(true);
+    expect(r.data.motivo).toBe('Cliente desistiu');
+  });
+
+  it('aplica trim no motivo', () => {
+    const r = cancelLeadSchema.safeParse({ motivo: '  com espaço  ' });
+    expect(r.success).toBe(true);
+    expect(r.data.motivo).toBe('com espaço');
+  });
+
+  it('rejeita motivo ausente', () => {
+    expect(cancelLeadSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('rejeita motivo vazio ou só whitespace (após trim)', () => {
+    expect(cancelLeadSchema.safeParse({ motivo: '' }).success).toBe(false);
+    expect(cancelLeadSchema.safeParse({ motivo: '   ' }).success).toBe(false);
+  });
+
+  it('rejeita motivo acima do limite de 1000 chars', () => {
+    const longText = 'x'.repeat(1001);
+    expect(cancelLeadSchema.safeParse({ motivo: longText }).success).toBe(false);
   });
 });

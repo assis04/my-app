@@ -7,7 +7,7 @@ import * as leadController from '../controllers/leadController.js';
 import * as leadCrmController from '../controllers/leadCrmController.js';
 import * as accountController from '../controllers/accountController.js';
 import { uploadPlanta } from '../middlewares/uploadMiddleware.js';
-import { createLeadSchema, updateLeadSchema, transferLeadsSchema, updateEtapaSchema, quickLeadSchema, manualLeadSchema, toggleStatusSchema, transitionStatusSchema, temperaturaSchema } from '../validators/leadValidator.js';
+import { createLeadSchema, updateLeadSchema, transferLeadsSchema, updateEtapaSchema, quickLeadSchema, manualLeadSchema, toggleStatusSchema, transitionStatusSchema, temperaturaSchema, cancelLeadSchema } from '../validators/leadValidator.js';
 
 const router = Router();
 
@@ -28,6 +28,7 @@ router.post('/leads', authMiddleware, authorizeAnyPermission(['crm:leads:create'
 router.put('/leads/:id', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(updateLeadSchema), leadCrmController.update);
 router.put('/leads/:id/status', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(transitionStatusSchema), leadCrmController.transitionStatus);
 router.put('/leads/:id/temperatura', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(temperaturaSchema), leadCrmController.setTemperatura);
+router.put('/leads/:id/cancel', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(cancelLeadSchema), leadCrmController.cancelLead);
 router.delete('/leads/:id', authMiddleware, authorizeAnyPermission(['crm:leads:delete', 'ADM', 'Administrador']), leadCrmController.remove);
 router.put('/leads-transfer', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(transferLeadsSchema), leadCrmController.transfer);
 router.put('/leads-etapa', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(updateEtapaSchema), leadCrmController.updateEtapa);
