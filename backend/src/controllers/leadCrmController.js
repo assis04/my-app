@@ -1,5 +1,8 @@
 import * as leadCrmService from '../services/leadCrmService.js';
-import { transitionStatus as transitionStatusService } from '../services/leadTransitionService.js';
+import {
+  transitionStatus as transitionStatusService,
+  setTemperatura as setTemperaturaService,
+} from '../services/leadTransitionService.js';
 import { LeadEventType } from '../domain/leadEvents.js';
 import { SideEffectType } from '../services/statusMachine.js';
 
@@ -111,6 +114,28 @@ export async function transitionStatus(req, res, next) {
       historyEvent,
       outboxEvents,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PUT /api/crm/leads/:id/temperatura — Task #10
+ * Contrato: plan §4.4
+ *
+ * Body: { temperatura: "Muito interessado" | "Interessado" | "Sem interesse" }
+ * Response 200: { lead, historyEvent, changed }
+ *   - changed=false quando o valor era igual ao atual (no-op)
+ *   - historyEvent=null no mesmo caso
+ */
+export async function setTemperatura(req, res, next) {
+  try {
+    const result = await setTemperaturaService({
+      leadId: req.params.id,
+      temperatura: req.body.temperatura,
+      user: req.user,
+    });
+    return res.json(result);
   } catch (error) {
     next(error);
   }

@@ -28,6 +28,7 @@ import {
   requiresAdminToEdit,
   LeadStatus,
 } from '../domain/leadStatus.js';
+import { isValidTemperatura } from '../domain/leadTemperatura.js';
 import { LeadEventType } from '../domain/leadEvents.js';
 import { add as addHistoryEvent } from './leadHistoryService.js';
 
@@ -216,6 +217,86 @@ export async function transitionStatus(params) {
   });
 }
 
+/**
+ * Define (ou altera) a temperatura de um Lead.
+ *
+ * Temperatura é campo manual (§4.1 da spec) — só setado por usuário autenticado,
+ * nunca por integração externa nem cálculo automático. Guards aplicados:
+ *   - Filial isolation (gerente ≠ outra filial)
+ *   - Read-only pós-venda (Venda/Pós-venda exigem crm:leads:edit-after-sale)
+ *
+ * Registra evento `temperatura_changed` no LeadHistory com payload { from, to }.
+ * Se o valor enviado for igual ao atual, é no-op (nenhum evento registrado).
+ *
+ * @param {object} params
+ * @param {number|string} params.leadId
+ * @param {string} params.temperatura - um dos LeadTemperatura
+ * @param {object} params.user - { id, role, filialId, permissions }
+ * @returns {Promise<{ lead, historyEvent, changed }>}
+ */
+export async function setTemperatura(params) {
+  if (!params || typeof params !== 'object') {
+    throw new AppError('Parâmetros inválidos para setTemperatura.', 400);
+  }
+
+  const { leadId, temperatura, user } = params;
+
+  const leadIdInt = Number(leadId);
+  if (!Number.isInteger(leadIdInt) || leadIdInt <= 0) {
+    throw new AppError('leadId deve ser um inteiro positivo.', 400);
+  }
+  if (!user || typeof user !== 'object') {
+    throw new AppError('Usuário autenticado é obrigatório.', 401);
+  }
+  if (!isValidTemperatura(temperatura)) {
+    throw new AppError(`Temperatura inválida: "${temperatura}"`, 400);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    // Lock otimista da row — evita dois clicks sobrescreverem
+    await tx.$executeRaw`SELECT id FROM leads WHERE id = ${leadIdInt} FOR UPDATE`;
+
+    const lead = await tx.lead.findFirst({
+      where: { id: leadIdInt, deletedAt: null },
+      include: { kanbanCard: true },
+    });
+    if (!lead) throw new AppError('Lead não encontrado.', 404);
+
+    assertFilialAccess(lead, user);
+
+    if (requiresAdminToEdit(lead.status) && !hasPermission(user, 'crm:leads:edit-after-sale')) {
+      throw new AppError(
+        'Lead com venda concluída só pode ter a temperatura alterada por ADM com permissão crm:leads:edit-after-sale.',
+        403,
+      );
+    }
+
+    // No-op quando nada muda (evita evento fantasma no histórico)
+    if (lead.temperatura === temperatura) {
+      return { lead, historyEvent: null, changed: false };
+    }
+
+    const updatedLead = await tx.lead.update({
+      where: { id: lead.id },
+      data: { temperatura },
+      include: { kanbanCard: true },
+    });
+
+    const historyEvent = await addHistoryEvent(
+      {
+        leadId: lead.id,
+        authorUserId: user.id ?? null,
+        eventType: LeadEventType.TEMPERATURA_CHANGED,
+        payload: { from: lead.temperatura, to: temperatura },
+      },
+      tx,
+    );
+
+    return { lead: updatedLead, historyEvent, changed: true };
+  });
+}
+
 export const leadTransitionService = Object.freeze({
   transitionStatus,
+  setTemperatura,
 });

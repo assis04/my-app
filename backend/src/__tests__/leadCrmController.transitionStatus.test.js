@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockTransitionStatus = vi.fn();
+const mockSetTemperatura = vi.fn();
 
 vi.mock('../services/leadTransitionService.js', () => ({
   transitionStatus: mockTransitionStatus,
+  setTemperatura: mockSetTemperatura,
 }));
 
 vi.mock('../services/leadCrmService.js', () => ({
@@ -16,7 +18,7 @@ vi.mock('../services/leadCrmService.js', () => ({
   updateEtapaLote: vi.fn(),
 }));
 
-const { transitionStatus } = await import('../controllers/leadCrmController.js');
+const { transitionStatus, setTemperatura } = await import('../controllers/leadCrmController.js');
 const { LeadEventType } = await import('../domain/leadEvents.js');
 const { SideEffectType } = await import('../services/statusMachine.js');
 
@@ -211,5 +213,50 @@ describe('leadCrmController.transitionStatus — controller', () => {
     const body = res.json.mock.calls[0][0];
     expect(body.historyEvent.eventType).toBe(LeadEventType.STATUS_CHANGED);
     expect(body.historyEvent.id).toBe(1);
+  });
+});
+
+describe('leadCrmController.setTemperatura — controller', () => {
+  it('chama o serviço com params corretos e retorna 200 com o resultado', async () => {
+    const serviceResult = {
+      lead: { id: 10, temperatura: 'Muito interessado', kanbanCard: {} },
+      historyEvent: { id: 50, eventType: 'temperatura_changed' },
+      changed: true,
+    };
+    mockSetTemperatura.mockResolvedValue(serviceResult);
+
+    const req = mockReq({
+      params: { id: '10' },
+      body: { temperatura: 'Muito interessado' },
+    });
+    const res = mockRes();
+    const next = vi.fn();
+
+    await setTemperatura(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(mockSetTemperatura).toHaveBeenCalledWith({
+      leadId: '10',
+      temperatura: 'Muito interessado',
+      user: req.user,
+    });
+    expect(res.json).toHaveBeenCalledWith(serviceResult);
+  });
+
+  it('encaminha erro do serviço para next()', async () => {
+    const err = new Error('403');
+    err.statusCode = 403;
+    mockSetTemperatura.mockRejectedValue(err);
+
+    const res = mockRes();
+    const next = vi.fn();
+    await setTemperatura(
+      mockReq({ body: { temperatura: 'Interessado' } }),
+      res,
+      next,
+    );
+
+    expect(next).toHaveBeenCalledWith(err);
+    expect(res.json).not.toHaveBeenCalled();
   });
 });

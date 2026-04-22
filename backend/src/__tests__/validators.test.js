@@ -6,6 +6,7 @@ import {
   createLeadSchema,
   transferLeadsSchema,
   transitionStatusSchema,
+  temperaturaSchema,
 } from '../validators/leadValidator.js';
 import { createTaskSchema, updateTaskStatusSchema } from '../validators/taskValidator.js';
 
@@ -233,5 +234,24 @@ describe('transitionStatusSchema', () => {
     });
     expect(r.success).toBe(true);
     expect(r.data.contexto.obs).toBe('planta do apto 202');
+  });
+});
+
+describe('temperaturaSchema', () => {
+  it('aceita os 3 valores canônicos', () => {
+    for (const t of ['Muito interessado', 'Interessado', 'Sem interesse']) {
+      const r = temperaturaSchema.safeParse({ temperatura: t });
+      expect(r.success).toBe(true);
+      expect(r.data.temperatura).toBe(t);
+    }
+  });
+
+  it('rejeita valor fora do enum', () => {
+    expect(temperaturaSchema.safeParse({ temperatura: 'Quente' }).success).toBe(false);
+    expect(temperaturaSchema.safeParse({ temperatura: 'muito interessado' }).success).toBe(false);
+  });
+
+  it('rejeita campo ausente', () => {
+    expect(temperaturaSchema.safeParse({}).success).toBe(false);
   });
 });
