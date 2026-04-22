@@ -33,6 +33,7 @@ import {
 import { isValidTemperatura } from '../domain/leadTemperatura.js';
 import { LeadEventType } from '../domain/leadEvents.js';
 import { add as addHistoryEvent } from './leadHistoryService.js';
+import { enqueue as enqueueOutbox } from './outboxService.js';
 
 function isAdm(user) {
   return user?.role === 'ADM' || user?.permissions?.includes('*');
@@ -198,12 +199,36 @@ export async function transitionStatus(params) {
               tx,
             ),
           );
-          // TODO(Task #15): enfileirar no outbox para integração real com Agenda
+          await enqueueOutbox(
+            {
+              aggregate: 'lead',
+              aggregateId: lead.id,
+              eventType: SideEffectType.AGENDA_OPEN,
+              payload: {
+                tipo: effect.payload.tipo,
+                dataHora: effect.payload.dataHora ?? null,
+                triggeredBy: user.id ?? null,
+              },
+            },
+            tx,
+          );
           break;
         case SideEffectType.NON_OPEN_OR_CREATE:
-          // TODO(Task #15): enfileirar no outbox para integração com N.O.N.
-          // Não emite LeadEventType.NON_GENERATED aqui — esse evento só é escrito
-          // quando a N.O.N. realmente existir (o worker do outbox registra).
+          // Intencionalmente NÃO emite LeadEventType.NON_GENERATED aqui — esse
+          // evento só é escrito quando a N.O.N. realmente existir (worker
+          // registra após sucesso).
+          await enqueueOutbox(
+            {
+              aggregate: 'lead',
+              aggregateId: lead.id,
+              eventType: SideEffectType.NON_OPEN_OR_CREATE,
+              payload: {
+                mode: effect.payload.mode,
+                triggeredBy: user.id ?? null,
+              },
+            },
+            tx,
+          );
           break;
         default:
           // Side-effect desconhecido — defensivo

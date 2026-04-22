@@ -241,6 +241,30 @@ model KanbanCard {
   @@map("kanban_cards")
 }
 
+// Outbox — fila persistente de intents (side-effects externos) escritos na
+// MESMA transação que a mudança de Lead. Um worker assíncrono consome,
+// executa contra o serviço externo (Agenda / N.O.N.) e marca done ou failed.
+// Garantia: nenhum side-effect se perde mesmo se o serviço externo estiver fora.
+// Fonte de verdade: specs/crm-plan.md §2.6
+model Outbox {
+  id          Int    @id @default(autoincrement())
+  aggregate   String // "lead" por ora — escopo para múltiplos domínios no futuro
+  aggregateId Int    @map("aggregate_id")
+  eventType   String @map("event_type")
+  payload     Json
+
+  status    String  @default("pending") // pending | done | failed
+  attempts  Int     @default(0)
+  lastError String? @map("last_error")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@index([status, createdAt])
+  @@index([aggregate, aggregateId])
+  @@map("outbox")
+}
+
 // LeadHistory — registro append-only de eventos do Lead.
 // authorUserId é nullable para eventos originados por sistema/webhook.
 // eventType é validado em código (ver domain/leadEvents.js) — sem enum no DB

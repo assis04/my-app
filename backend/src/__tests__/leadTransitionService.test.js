@@ -22,6 +22,9 @@ const mockPrisma = {
   leadHistory: {
     create: vi.fn(),
   },
+  outbox: {
+    create: vi.fn(),
+  },
 };
 
 vi.mock('../config/prisma.js', () => ({ default: mockPrisma }));
@@ -41,6 +44,7 @@ beforeEach(() => {
   mockPrisma.kanbanCard.update.mockImplementation(({ data }) => ({ id: 1, ...data }));
   mockPrisma.kanbanCard.create.mockImplementation(({ data }) => ({ id: 10, ...data }));
   mockPrisma.lead.create.mockImplementation(({ data }) => ({ id: 999, ...data }));
+  mockPrisma.outbox.create.mockImplementation(({ data }) => ({ id: 77, ...data }));
 });
 
 // ─── Fixtures ──────────────────────────────────────────────────────────────
@@ -304,6 +308,72 @@ describe('transitionStatus — side-effect AGENDA_OPEN', () => {
     });
     expect(r.sideEffectsApplied).toContain(SideEffectType.AGENDA_OPEN);
     expect(r.sideEffectsApplied).toContain(SideEffectType.NON_OPEN_OR_CREATE);
+  });
+
+  it('enfileira AGENDA_OPEN na outbox quando transição pede agenda', async () => {
+    await transitionStatus({
+      leadId: 10,
+      newStatus: LeadStatus.AGUARDANDO_PLANTA,
+      user: regularUser,
+      context: { dataHora: '2026-05-01T10:00:00Z' },
+    });
+    const outboxCalls = mockPrisma.outbox.create.mock.calls.map((c) => c[0].data);
+    const agendaIntent = outboxCalls.find((d) => d.eventType === SideEffectType.AGENDA_OPEN);
+    expect(agendaIntent).toBeDefined();
+    expect(agendaIntent).toMatchObject({
+      aggregate: 'lead',
+      aggregateId: 10,
+      status: 'pending',
+      attempts: 0,
+    });
+    expect(agendaIntent.payload).toMatchObject({
+      tipo: 'coleta_planta_medidas',
+      dataHora: '2026-05-01T10:00:00Z',
+      triggeredBy: 7,
+    });
+  });
+
+  it('enfileira NON_OPEN_OR_CREATE na outbox em Agendado visita', async () => {
+    await transitionStatus({
+      leadId: 10,
+      newStatus: LeadStatus.AGENDADO_VISITA,
+      user: regularUser,
+    });
+    const outboxCalls = mockPrisma.outbox.create.mock.calls.map((c) => c[0].data);
+    const nonIntent = outboxCalls.find((d) => d.eventType === SideEffectType.NON_OPEN_OR_CREATE);
+    expect(nonIntent).toBeDefined();
+    expect(nonIntent.payload.mode).toBe('create_if_absent');
+  });
+
+  it('Agendado vídeo chamada: enfileira AMBOS intents (NON + AGENDA)', async () => {
+    await transitionStatus({
+      leadId: 10,
+      newStatus: LeadStatus.AGENDADO_VIDEO,
+      user: regularUser,
+    });
+    const types = mockPrisma.outbox.create.mock.calls.map((c) => c[0].data.eventType);
+    expect(types).toContain(SideEffectType.AGENDA_OPEN);
+    expect(types).toContain(SideEffectType.NON_OPEN_OR_CREATE);
+  });
+
+  it('transição SEM side-effect externo NÃO toca a outbox', async () => {
+    await transitionStatus({
+      leadId: 10,
+      newStatus: LeadStatus.EM_ATENDIMENTO_LOJA,
+      user: regularUser,
+    });
+    expect(mockPrisma.outbox.create).not.toHaveBeenCalled();
+  });
+
+  it('cancelamento NÃO enfileira outbox (SET_CANCEL_FIELDS é interno)', async () => {
+    mockLeadLoad(leadBase);
+    await transitionStatus({
+      leadId: 10,
+      newStatus: LeadStatus.CANCELADO,
+      user: regularUser,
+      reason: 'teste',
+    });
+    expect(mockPrisma.outbox.create).not.toHaveBeenCalled();
   });
 });
 
