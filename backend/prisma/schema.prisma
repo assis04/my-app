@@ -56,6 +56,9 @@ model User {
   leadsVendedor Lead[]       @relation("LeadVendedor")
   leadsGerente  Lead[]       @relation("LeadGerente")
 
+  // Eventos que o usuário registrou no histórico de leads
+  leadHistoryEvents LeadHistory[]
+
   @@map("users")
 }
 
@@ -179,6 +182,9 @@ model Lead {
   // === KanbanCard (1:1, criado transacionalmente com o Lead) ===
   kanbanCard KanbanCard?
 
+  // === Histórico (append-only, ordem cronológica) ===
+  history LeadHistory[]
+
   // === Origem do registro ===
   fonte String? @default("crm")
 
@@ -233,6 +239,30 @@ model KanbanCard {
 
   @@index([coluna, posicao])
   @@map("kanban_cards")
+}
+
+// LeadHistory — registro append-only de eventos do Lead.
+// authorUserId é nullable para eventos originados por sistema/webhook.
+// eventType é validado em código (ver domain/leadEvents.js) — sem enum no DB
+// para facilitar evolução.
+// Fonte de verdade: specs/crm.md §4.4 / specs/crm-plan.md §2.4
+model LeadHistory {
+  id Int @id @default(autoincrement())
+
+  leadId Int  @map("lead_id")
+  lead   Lead @relation(fields: [leadId], references: [id])
+
+  authorUserId Int?  @map("author_user_id")
+  authorUser   User? @relation(fields: [authorUserId], references: [id])
+
+  eventType String @map("event_type")
+  payload   Json
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([leadId, createdAt(sort: Desc)])
+  @@index([eventType])
+  @@map("lead_history")
 }
 
 model Task {
