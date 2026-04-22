@@ -132,7 +132,7 @@ model Lead {
 
   // === CRM / Pipeline ===
   idKanban                String? @map("id_kanban")
-  status                  String  @default("Novo")
+  status                  String  @default("Em prospecção")
   etapa                   String?
   temperatura             String?
   statusAntesCancelamento String? @map("status_antes_cancelamento")
