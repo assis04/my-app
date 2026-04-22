@@ -176,6 +176,9 @@ model Lead {
   contaId Int?     @map("conta_id")
   conta   Account? @relation("AccountLeads", fields: [contaId], references: [id])
 
+  // === KanbanCard (1:1, criado transacionalmente com o Lead) ===
+  kanbanCard KanbanCard?
+
   // === Origem do registro ===
   fonte String? @default("crm")
 
@@ -213,6 +216,23 @@ model Account {
   // Índice composto para a regra de identificação cruzada (nome + celular + cep)
   @@unique([celular, nome, cep], name: "account_identity")
   @@map("accounts")
+}
+
+// KanbanCard — entidade interna que representa a etiqueta do Lead no quadro Kanban.
+// Cardinalidade 1:1 com Lead (enforçada via @unique em leadId).
+// Fonte de verdade: specs/crm.md §4.6 / specs/crm-plan.md §2.3
+model KanbanCard {
+  id      Int    @id @default(autoincrement())
+  leadId  Int    @unique @map("lead_id")
+  lead    Lead   @relation(fields: [leadId], references: [id])
+  coluna  String // "Prospecção" | "Negociação" | "Venda" | "Pós-venda" | "Cancelados"
+  posicao Int    @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([coluna, posicao])
+  @@map("kanban_cards")
 }
 
 model Task {
