@@ -134,6 +134,8 @@ export async function listLeads({ search, status, preVendedorId, page = 1, limit
 
 /**
  * Busca um Lead por ID com todas as relações.
+ * Inclui kanbanCard (1:1) e os últimos 20 eventos do histórico — plan §4.6.
+ * Para paginação completa do histórico, use GET /leads/:id/history.
  */
 export async function getLeadById(id, user) {
   const where = { id: parseInt(id, 10), deletedAt: null };
@@ -144,6 +146,14 @@ export async function getLeadById(id, user) {
     include: {
       preVendedor: { select: { id: true, nome: true, email: true } },
       conta: true,
+      kanbanCard: true,
+      history: {
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        include: {
+          authorUser: { select: { id: true, nome: true } },
+        },
+      },
     },
   });
 

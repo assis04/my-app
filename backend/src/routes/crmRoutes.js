@@ -24,6 +24,7 @@ router.get('/history', authMiddleware, leadController.getLeadHistory);
 // ─── Leads CRM (entidade Lead dedicada) ───────────────────────────────────
 router.get('/leads', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.list);
 router.get('/leads/:id', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.getById);
+router.get('/leads/:id/history', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.getLeadHistory);
 router.post('/leads', authMiddleware, authorizeAnyPermission(['crm:leads:create', 'ADM', 'Administrador']), validate(createLeadSchema), leadCrmController.create);
 router.put('/leads/:id', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(updateLeadSchema), leadCrmController.update);
 router.put('/leads/:id/status', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(transitionStatusSchema), leadCrmController.transitionStatus);

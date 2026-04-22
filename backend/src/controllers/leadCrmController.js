@@ -4,6 +4,7 @@ import {
   setTemperatura as setTemperaturaService,
   reactivateLead as reactivateLeadService,
 } from '../services/leadTransitionService.js';
+import { listByLeadPaginated as listLeadHistoryPaginated } from '../services/leadHistoryService.js';
 import { LeadStatus } from '../domain/leadStatus.js';
 import { LeadEventType } from '../domain/leadEvents.js';
 import { SideEffectType } from '../services/statusMachine.js';
@@ -59,6 +60,36 @@ export async function getById(req, res, next) {
   try {
     const lead = await leadCrmService.getLeadById(req.params.id, req.user);
     return res.json(lead);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/crm/leads/:id/history — Task #13
+ * Contrato: plan §4.5
+ *
+ * Query:
+ *   ?cursor=123   id do último item da página anterior (opcional)
+ *   ?limit=50     tamanho da página (1..200, default 50)
+ *
+ * Response 200: { items, nextCursor }
+ *
+ * Fluxo: primeiro valida que o Lead existe e o usuário tem acesso
+ * (filial isolation via getLeadById), depois pagina o histórico.
+ * Duas queries mas contrato limpo e permissionamento consistente.
+ */
+export async function getLeadHistory(req, res, next) {
+  try {
+    // Enforce 404 + filial isolation antes de expor o histórico
+    await leadCrmService.getLeadById(req.params.id, req.user);
+
+    const result = await listLeadHistoryPaginated(req.params.id, {
+      cursor: req.query.cursor,
+      limit: req.query.limit,
+    });
+
+    return res.json(result);
   } catch (error) {
     next(error);
   }
