@@ -23,7 +23,7 @@ export async function processNewQuickLead(req, res, next) {
       plantaPath: req.file ? req.file.path.replace(/\\/g, '/') : undefined
     };
 
-    const result = await leadService.assignLeadQuick(branch_id, leadData, req.user?.id);
+    const result = await leadService.assignLeadQuick(branch_id, leadData, req.user);
     
     // Emitir via SOCKET.IO que a fila da filial atualizou
     emitQueueUpdate(branch_id);
@@ -49,7 +49,7 @@ export async function processNewManualLead(req, res, next) {
     };
 
     // Atribuir o lead a um consultor especifico
-    const result = await leadService.assignLeadManual(branch_id, leadData, assigned_user_id);
+    const result = await leadService.assignLeadManual(branch_id, leadData, assigned_user_id, req.user);
     
     // Removed success log
     
