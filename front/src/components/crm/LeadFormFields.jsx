@@ -103,10 +103,6 @@ export default function LeadFormFields({ form, onChange, sellers, isVendedor, is
               <PremiumSelect placeholder="Selecione..." options={sellers} value={form.preVendedorId} onChange={e => onChange('preVendedorId', e.target.value)} />
             )}
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">ID Kanban</label>
-            <input type="text" placeholder="Opcional..." className="premium-input h-9 px-4 text-sm" value={form.idKanban} onChange={e => onChange('idKanban', e.target.value)} />
-          </div>
         </div>
       </div>
     </>

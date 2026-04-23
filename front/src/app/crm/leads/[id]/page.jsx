@@ -44,11 +44,10 @@ export default function EditLeadPage() {
         conjugeSobrenome: lead.conjugeSobrenome || '',
         conjugeCelular: lead.conjugeCelular ? formatPhone(lead.conjugeCelular) : '',
         conjugeEmail: lead.conjugeEmail || '',
-        status: lead.status || 'Prospecção',
+        status: lead.status || 'Em prospecção',
         etapa: lead.etapa || lead.etapaJornada || '',
         origemCanal: lead.origemCanal || '',
         preVendedorId: lead.preVendedorId ? String(lead.preVendedorId) : '',
-        idKanban: lead.idKanban || '',
       });
       setConta(lead.conta || null);
     } catch (err) {
@@ -81,10 +80,23 @@ export default function EditLeadPage() {
     setSuccess('');
     setSaving(true);
     try {
-      await api(`/api/crm/leads/${leadId}`, {
-        method: 'PUT',
-        body: { ...form, preVendedorId: form.preVendedorId || null },
-      });
+      // Só envia campos editáveis via PUT genérico.
+      // status/etapa ficam em endpoints dedicados (backend rejeita com 400 se enviados aqui).
+      // Ver specs/crm-frontend.md §4.1 + specs/crm.md §9.3.
+      const payload = {
+        nome: form.nome,
+        sobrenome: form.sobrenome,
+        celular: form.celular,
+        email: form.email,
+        cep: form.cep,
+        conjugeNome: form.conjugeNome,
+        conjugeSobrenome: form.conjugeSobrenome,
+        conjugeCelular: form.conjugeCelular,
+        conjugeEmail: form.conjugeEmail,
+        origemCanal: form.origemCanal,
+        preVendedorId: form.preVendedorId || null,
+      };
+      await api(`/api/crm/leads/${leadId}`, { method: 'PUT', body: payload });
       setSuccess('Lead atualizado com sucesso.');
     } catch (err) {
       setError(err?.message || err || 'Erro ao atualizar lead.');

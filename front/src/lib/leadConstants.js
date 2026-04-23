@@ -39,11 +39,10 @@ export const INITIAL_LEAD_FORM = {
   conjugeSobrenome: '',
   conjugeCelular: '',
   conjugeEmail: '',
-  status: 'Prospecção',
+  status: 'Em prospecção',
   etapa: '',
   origemCanal: '',
   preVendedorId: '',
-  idKanban: '',
 };
 
 export function validateLeadForm(form) {
