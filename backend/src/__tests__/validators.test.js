@@ -193,6 +193,52 @@ describe('updateTaskStatusSchema', () => {
   });
 });
 
+describe('createLeadSchema / updateLeadSchema — regression guard', () => {
+  it('NÃO materializa status/etapa com defaults (senão Guard 1 do updateLead dispara)', () => {
+    // Regressão cara: se alguém adicionar `status: z.string().optional().default('X')`
+    // no schema, o updateLeadSchema (= partial) materializa o default mesmo quando
+    // o cliente não envia o campo. Isso fura o Guard 1 de leadCrmService.updateLead
+    // e quebra TODO save via PUT /leads/:id.
+    const r = createLeadSchema.safeParse({
+      nome: 'Teste',
+      celular: '11999999999',
+      cep: '01000000',
+      preVendedorId: null,
+    });
+    expect(r.success).toBe(true);
+    expect(r.data).not.toHaveProperty('status');
+    expect(r.data).not.toHaveProperty('etapa');
+    expect(r.data).not.toHaveProperty('etapaJornada');
+    expect(r.data).not.toHaveProperty('idKanban');
+  });
+
+  it('updateLeadSchema (partial) também não materializa status/etapa em save parcial', () => {
+    // Exatamente o caso que quebrou em staging: frontend manda só alguns campos
+    const updateLeadSchema = createLeadSchema.partial();
+    const r = updateLeadSchema.safeParse({ nome: 'Editado' });
+    expect(r.success).toBe(true);
+    expect(r.data).not.toHaveProperty('status');
+    expect(r.data).not.toHaveProperty('etapa');
+  });
+
+  it('silenciosamente descarta status/etapa/idKanban se enviados (strip, não reject)', () => {
+    const r = createLeadSchema.safeParse({
+      nome: 'X',
+      celular: '11999999999',
+      cep: '01000000',
+      preVendedorId: null,
+      status: 'Venda',              // frontend legado
+      etapa: 'Qualquer',            // idem
+      idKanban: 'col-123',          // idem
+    });
+    expect(r.success).toBe(true);
+    // Campos desconhecidos são dropados por Zod — não aparecem no parsed data
+    expect(r.data).not.toHaveProperty('status');
+    expect(r.data).not.toHaveProperty('etapa');
+    expect(r.data).not.toHaveProperty('idKanban');
+  });
+});
+
 describe('transitionStatusSchema', () => {
   it('aceita payload mínimo só com status', () => {
     const r = transitionStatusSchema.safeParse({ status: 'Venda' });

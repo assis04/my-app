@@ -9,15 +9,21 @@ export const createLeadSchema = z.object({
   conjugeSobrenome: z.string().max(200).optional().default(''),
   conjugeCelular: z.string().max(20).optional().default(''),
   conjugeEmail: z.string().email('E-mail do cônjuge inválido.').optional().or(z.literal('')).default(''),
-  status: z.string().max(50).optional().default('Prospecção'),
-  etapa: z.string().max(50).optional().default(''),
   origemCanal: z.string().max(50).optional().default(''),
   preVendedorId: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
     z.number().int().positive().nullable()
   ),
-  // idKanban removido em Task #22 — campo legado substituído pela entidade KanbanCard.
-  // Requests enviando idKanban têm o campo silenciosamente descartado pelo Zod.
+  // status / etapa: NÃO estão no schema. status é forçado ao valor canônico
+  // "Em prospecção" pelo createLead (leadCrmService); etapa é derivada do
+  // status via STATUS_TO_ETAPA. Transições usam endpoints dedicados (/status,
+  // /cancel, /reactivate). Se incluídos aqui com default, a updateLeadSchema
+  // (=partial) herdava o default mesmo quando o cliente omitia o campo, o que
+  // disparava o Guard 1 de updateLead. Ver spec §9.3 e plan §2.8.
+  //
+  // idKanban: removido em Task #22 — substituído pela entidade KanbanCard.
+  // Qualquer request carregando esses campos tem o valor silenciosamente
+  // descartado pelo Zod (comportamento padrão para unknown keys).
 });
 
 export const updateLeadSchema = createLeadSchema.partial();
