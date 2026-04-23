@@ -72,19 +72,19 @@ async function recalculatePositions(branchIdNum, tx) {
 }
 
 /**
- * Valida o formato e a unicidade do telefone do lead.
+ * Valida formato e normaliza o telefone do lead.
+ *
+ * NÃO checa duplicidade: spec §4.2 permite N Leads por mesmo celular
+ * (uma pessoa pode ter várias oportunidades abertas ao longo do tempo).
+ * A identificação cruzada é via Account (celular + nome + cep) e o
+ * findOrMatchAccount cuida de reusar a Conta existente.
  */
-async function validateLeadPhone(telefone, tx) {
+function validateAndNormalizePhone(telefone) {
   if (!telefone) throw new AppError('O telefone é obrigatório.', 400);
 
   const digits = telefone.replace(/\D/g, '');
   if (digits.length < 10 || digits.length > 11) {
     throw new AppError('O telefone deve ter entre 10 e 11 dígitos (incluindo DDD).', 400);
-  }
-
-  const existingLead = await tx.lead.findFirst({ where: { celular: digits, deletedAt: null } });
-  if (existingLead) {
-    throw new AppError(`O telefone ${telefone} já está cadastrado para "${existingLead.nome}".`, 400);
   }
 
   return digits;
@@ -130,7 +130,7 @@ async function rotateQueue(branchIdNum, assignedUserId, tx) {
  * Retorna { novoLead, accountId }.
  */
 async function createQueueLead(branchIdNum, assignedUserId, leadData, defaultName, tx) {
-  const validPhone = await validateLeadPhone(leadData.telefone, tx);
+  const validPhone = validateAndNormalizePhone(leadData.telefone);
 
   let accountId = null;
   if (leadData.nome && leadData.telefone && leadData.cep) {

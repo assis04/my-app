@@ -133,3 +133,35 @@ describe('assignLead* — filial distinta → locks independentes', () => {
     expect(branches).toEqual([3, 5]);
   });
 });
+
+describe('assignLeadQuick — celular duplicado NÃO bloqueia (Task #19 — spec §4.2)', () => {
+  it('cria o novo Lead mesmo quando já existe outro Lead com mesmo celular', async () => {
+    // Simula que o celular já aparece em outro lead (cenário que antes lançava 400)
+    mockPrisma.lead.findFirst.mockResolvedValue({
+      id: 1,
+      celular: '11999999999',
+      nome: 'Lead antigo',
+    });
+
+    const r = await assignLeadQuick(3, {
+      telefone: '11999999999',
+      nome: 'Mesma pessoa',
+      cep: '01000000',
+    });
+
+    expect(r.leadId).toBe(999); // novo lead criado (mock default)
+    expect(mockPrisma.lead.create).toHaveBeenCalled();
+  });
+
+  it('ainda rejeita telefone mal formatado (menos de 10 dígitos)', async () => {
+    await expect(
+      assignLeadQuick(3, { telefone: '123', nome: 'X', cep: '01000000' }),
+    ).rejects.toThrow(/10 e 11 dígitos/);
+  });
+
+  it('ainda rejeita telefone ausente', async () => {
+    await expect(
+      assignLeadQuick(3, { nome: 'X', cep: '01000000' }),
+    ).rejects.toThrow(/obrigatório/);
+  });
+});
