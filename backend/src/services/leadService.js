@@ -1,6 +1,7 @@
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 import { findOrMatchAccount } from './accountService.js';
+import { withQueueLock } from '../utils/redisLock.js';
 
 /**
  * Retorna os vendedores da Fila ordenados pela vez.
@@ -170,43 +171,54 @@ async function createQueueLead(branchIdNum, assignedUserId, leadData, defaultNam
 
 /**
  * Atribuição Rápida: pega o 1º disponível e atribui o lead.
+ *
+ * Lock distribuído por filial (plan §2.5 / Task #18): duas capturas
+ * simultâneas na mesma filial NUNCA atribuem o mesmo vendedor. O lock
+ * envolve a transação inteira — se a segunda chegar durante a primeira,
+ * recebe 409 e o frontend retenta.
  */
 export async function assignLeadQuick(branchId, leadData) {
   const branchIdNum = parseInt(branchId, 10);
   if (isNaN(branchIdNum)) throw new AppError('ID de filial inválido.', 400);
 
-  return prisma.$transaction(async (tx) => {
-    const availableSellers = await tx.salesQueue.findMany({
-      where: { filialId: branchIdNum, isAvailable: true },
-      orderBy: { position: 'asc' },
-      take: 1
-    });
+  return withQueueLock(branchIdNum, () =>
+    prisma.$transaction(async (tx) => {
+      const availableSellers = await tx.salesQueue.findMany({
+        where: { filialId: branchIdNum, isAvailable: true },
+        orderBy: { position: 'asc' },
+        take: 1
+      });
 
-    if (availableSellers.length === 0) {
-      throw new AppError('Nenhum vendedor disponível nesta filial no momento.', 400);
-    }
+      if (availableSellers.length === 0) {
+        throw new AppError('Nenhum vendedor disponível nesta filial no momento.', 400);
+      }
 
-    const assignedUserId = availableSellers[0].userId;
+      const assignedUserId = availableSellers[0].userId;
 
-    await rotateQueue(branchIdNum, assignedUserId, tx);
-    const { novoLead, accountId } = await createQueueLead(branchIdNum, assignedUserId, leadData, 'Lead Rápido', tx);
+      await rotateQueue(branchIdNum, assignedUserId, tx);
+      const { novoLead, accountId } = await createQueueLead(branchIdNum, assignedUserId, leadData, 'Lead Rápido', tx);
 
-    const vendedor = await tx.user.findUnique({
-      where: { id: assignedUserId },
-      select: { id: true, nome: true }
-    });
+      const vendedor = await tx.user.findUnique({
+        where: { id: assignedUserId },
+        select: { id: true, nome: true }
+      });
 
-    return {
-      leadId: novoLead.id,
-      accountId,
-      assignedUserId,
-      vendedorNome: vendedor?.nome
-    };
-  });
+      return {
+        leadId: novoLead.id,
+        accountId,
+        assignedUserId,
+        vendedorNome: vendedor?.nome
+      };
+    })
+  );
 }
 
 /**
  * Atribuição Manual: atribui a um vendedor específico.
+ *
+ * Mesmo lock distribuído por filial do assignLeadQuick — necessário
+ * porque rotateQueue reescreve as posições da filial inteira, e duas
+ * escritas concorrentes podem embaralhar a ordenação.
  */
 export async function assignLeadManual(branchId, leadData, assignedUserId) {
   const branchIdNum = parseInt(branchId, 10);
@@ -215,27 +227,29 @@ export async function assignLeadManual(branchId, leadData, assignedUserId) {
     throw new AppError('IDs de filial ou usuário inválidos.', 400);
   }
 
-  return prisma.$transaction(async (tx) => {
-    const actor = await tx.salesQueue.findUnique({
-      where: { filialId_userId: { filialId: branchIdNum, userId: userIdNum } }
-    });
-    if (!actor) throw new AppError('Vendedor não encontrado na fila.', 404);
+  return withQueueLock(branchIdNum, () =>
+    prisma.$transaction(async (tx) => {
+      const actor = await tx.salesQueue.findUnique({
+        where: { filialId_userId: { filialId: branchIdNum, userId: userIdNum } }
+      });
+      if (!actor) throw new AppError('Vendedor não encontrado na fila.', 404);
 
-    await rotateQueue(branchIdNum, userIdNum, tx);
-    const { novoLead, accountId } = await createQueueLead(branchIdNum, userIdNum, leadData, leadData.telefone || 'Lead Manual', tx);
+      await rotateQueue(branchIdNum, userIdNum, tx);
+      const { novoLead, accountId } = await createQueueLead(branchIdNum, userIdNum, leadData, leadData.telefone || 'Lead Manual', tx);
 
-    const vendedor = await tx.user.findUnique({
-      where: { id: userIdNum },
-      select: { id: true, nome: true }
-    });
+      const vendedor = await tx.user.findUnique({
+        where: { id: userIdNum },
+        select: { id: true, nome: true }
+      });
 
-    return {
-      leadId: novoLead.id,
-      accountId,
-      assignedUserId: userIdNum,
-      vendedorNome: vendedor?.nome || 'Desconhecido'
-    };
-  });
+      return {
+        leadId: novoLead.id,
+        accountId,
+        assignedUserId: userIdNum,
+        vendedorNome: vendedor?.nome || 'Desconhecido'
+      };
+    })
+  );
 }
 
 /**
