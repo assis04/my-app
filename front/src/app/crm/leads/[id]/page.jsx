@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   ArrowLeft, Save, Briefcase, Loader2,
-  AlertTriangle, Trash2, CheckCircle
+  AlertTriangle, Trash2, CheckCircle, XCircle, RefreshCw, History,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
@@ -11,9 +11,20 @@ import { formatPhone } from '@/lib/utils';
 import { useRouter, useParams } from 'next/navigation';
 import { isAdmin, isSeller } from '@/lib/roles';
 import { INITIAL_LEAD_FORM, validateLeadForm } from '@/lib/leadConstants';
+import { friendlyErrorMessage } from '@/lib/apiError';
+import { LeadStatus, requiresAdminToEdit } from '@/lib/leadStatus';
+import { hasPermission, CRM_PERMISSIONS } from '@/lib/permissions';
+
 import LeadFormFields from '@/components/crm/LeadFormFields';
+import LeadStatusDropdown from '@/components/crm/LeadStatusDropdown';
+import TemperaturaPicker from '@/components/crm/TemperaturaPicker';
+import CancelLeadDialog from '@/components/crm/CancelLeadDialog';
+import ReactivateLeadDialog from '@/components/crm/ReactivateLeadDialog';
+import PostSaleReadOnlyBanner from '@/components/crm/PostSaleReadOnlyBanner';
+import LeadHistoryTimeline from '@/components/crm/LeadHistoryTimeline';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useLeadActions } from '@/hooks/useLeadActions';
 
 export default function EditLeadPage() {
   const { user, loading: authLoading } = useAuth();
@@ -24,10 +35,15 @@ export default function EditLeadPage() {
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState('');
   const [form, setForm] = useState(INITIAL_LEAD_FORM);
+  const [leadStatus, setLeadStatus] = useState(LeadStatus.EM_PROSPECCAO);
+  const [temperatura, setTemperatura] = useState(null);
   const [conta, setConta] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [showCancel, setShowCancel] = useState(false);
+  const [showReactivate, setShowReactivate] = useState(false);
   const { confirm, confirmProps } = useConfirm();
 
   const fetchLead = useCallback(async () => {
@@ -44,18 +60,21 @@ export default function EditLeadPage() {
         conjugeSobrenome: lead.conjugeSobrenome || '',
         conjugeCelular: lead.conjugeCelular ? formatPhone(lead.conjugeCelular) : '',
         conjugeEmail: lead.conjugeEmail || '',
-        status: lead.status || 'Em prospecção',
-        etapa: lead.etapa || lead.etapaJornada || '',
         origemCanal: lead.origemCanal || '',
         preVendedorId: lead.preVendedorId ? String(lead.preVendedorId) : '',
       });
+      setLeadStatus(lead.status || LeadStatus.EM_PROSPECCAO);
+      setTemperatura(lead.temperatura || null);
       setConta(lead.conta || null);
+      setHistory(Array.isArray(lead.history) ? lead.history : []);
     } catch (err) {
-      setError('Erro ao carregar lead.');
+      setSaveError(friendlyErrorMessage(err) || 'Erro ao carregar lead.');
     } finally {
       setLoading(false);
     }
   }, [leadId]);
+
+  const actions = useLeadActions(leadId, fetchLead);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -69,20 +88,20 @@ export default function EditLeadPage() {
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
-    setSuccess('');
+    setSaveSuccess('');
+    actions.clearFeedback();
   };
 
   const handleSave = async () => {
     const validationError = validateLeadForm(form);
-    if (validationError) { setError(validationError); return; }
+    if (validationError) { setSaveError(validationError); return; }
 
-    setError('');
-    setSuccess('');
+    setSaveError('');
+    setSaveSuccess('');
     setSaving(true);
     try {
-      // Só envia campos editáveis via PUT genérico.
-      // status/etapa ficam em endpoints dedicados (backend rejeita com 400 se enviados aqui).
-      // Ver specs/crm-frontend.md §4.1 + specs/crm.md §9.3.
+      // Só envia campos editáveis — status/etapa ficam em endpoints dedicados.
+      // Spec: specs/crm.md §9.3.
       const payload = {
         nome: form.nome,
         sobrenome: form.sobrenome,
@@ -97,9 +116,9 @@ export default function EditLeadPage() {
         preVendedorId: form.preVendedorId || null,
       };
       await api(`/api/crm/leads/${leadId}`, { method: 'PUT', body: payload });
-      setSuccess('Lead atualizado com sucesso.');
+      setSaveSuccess('Lead atualizado com sucesso.');
     } catch (err) {
-      setError(err?.message || err || 'Erro ao atualizar lead.');
+      setSaveError(friendlyErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -116,14 +135,41 @@ export default function EditLeadPage() {
           await api(`/api/crm/leads/${leadId}`, { method: 'DELETE' });
           router.push('/crm/leads');
         } catch (err) {
-          setError(err?.message || err || 'Erro ao remover lead.');
+          setSaveError(friendlyErrorMessage(err));
         }
       },
     });
   };
 
+  const handleCancelConfirm = async (motivo) => {
+    const ok = await actions.cancelLead(motivo);
+    if (ok) setShowCancel(false);
+  };
+
+  const handleReactivateConfirm = async ({ modo, motivo }) => {
+    const res = await actions.reactivateLead({ modo, motivo });
+    if (res) {
+      setShowReactivate(false);
+      // Modo 'novo' retorna { leadAntigo, leadNovo } — redirecionar pro novo lead.
+      if (modo === 'novo' && res.leadNovo?.id) {
+        router.push(`/crm/leads/${res.leadNovo.id}`);
+      }
+    }
+  };
+
   const isVendedor = isSeller(user);
   const isAdm = isAdmin(user);
+
+  // Bloqueio pós-venda: Venda/Pós-venda exigem permissão edit-after-sale
+  const isPostSale = useMemo(() => requiresAdminToEdit(leadStatus), [leadStatus]);
+  const canEditAfterSale = useMemo(
+    () => hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE),
+    [user],
+  );
+  const formDisabled = isPostSale && !canEditAfterSale;
+
+  const isCancelado = leadStatus === LeadStatus.CANCELADO;
+  const isTerminalSale = leadStatus === LeadStatus.VENDA || leadStatus === LeadStatus.POS_VENDA;
 
   if (authLoading) return null;
 
@@ -134,6 +180,9 @@ export default function EditLeadPage() {
       </div>
     );
   }
+
+  const displayError = saveError || actions.error;
+  const displaySuccess = saveSuccess || actions.success;
 
   return (
     <div className="mb-4 max-w-[900px] mx-auto">
@@ -157,20 +206,72 @@ export default function EditLeadPage() {
         </button>
       </div>
 
-      {error && (
+      {/* Banner pós-venda */}
+      {formDisabled && <PostSaleReadOnlyBanner status={leadStatus} />}
+
+      {displayError && (
         <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-          <p className="font-bold">{error}</p>
+          <p className="font-bold">{displayError}</p>
         </div>
       )}
 
-      {success && (
+      {displaySuccess && (
         <div className="bg-emerald-50 border border-emerald-100 text-emerald-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <CheckCircle size={14} className="shrink-0 mt-0.5" />
-          <p className="font-bold">{success}</p>
+          <p className="font-bold">{displaySuccess}</p>
         </div>
       )}
 
+      {/* Painel de Status + Temperatura + Ações rápidas */}
+      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6 space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Status</label>
+            <LeadStatusDropdown
+              status={leadStatus}
+              onTransition={actions.transitionStatus}
+              submitting={actions.busy}
+              disabled={formDisabled}
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {!isCancelado && (
+              <button
+                type="button"
+                onClick={() => setShowCancel(true)}
+                disabled={actions.busy || formDisabled}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[10px] font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <XCircle size={13} /> Cancelar Lead
+              </button>
+            )}
+            {isCancelado && (
+              <button
+                type="button"
+                onClick={() => setShowReactivate(true)}
+                disabled={actions.busy}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
+              >
+                <RefreshCw size={13} /> Reativar
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Temperatura */}
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Temperatura</label>
+          <TemperaturaPicker
+            value={temperatura}
+            onSelect={(t) => actions.setTemperatura(t)}
+            disabled={actions.busy || formDisabled || isCancelado}
+          />
+        </div>
+      </div>
+
+      {/* Form de identificação/cônjuge/atribuição */}
       <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl space-y-6">
         <LeadFormFields
           form={form}
@@ -179,21 +280,54 @@ export default function EditLeadPage() {
           isVendedor={isVendedor}
           isAdm={isAdm}
           userName={user?.nome}
+          disabled={formDisabled}
         />
       </div>
 
       {/* Footer — Botões */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm uppercase tracking-tight">
-          Cancelar
+          Voltar
         </button>
-        <button onClick={handleSave} disabled={saving} className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-xs disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight">
+        <button
+          onClick={handleSave}
+          disabled={saving || formDisabled}
+          className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-xs disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight"
+        >
           {saving ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Save size={14} /> Salvar Alterações</>}
         </button>
-        <button onClick={() => router.push(`/crm/oportunidade-de-negocio?leadId=${leadId}`)} className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-xs flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 uppercase tracking-tight">
-          <Briefcase size={14} /> Nova Oportunidade
-        </button>
+        {!isTerminalSale && !isCancelado && (
+          <button onClick={() => router.push(`/crm/oportunidade-de-negocio?leadId=${leadId}`)} className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-xs flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 uppercase tracking-tight">
+            <Briefcase size={14} /> Nova Oportunidade
+          </button>
+        )}
       </div>
+
+      {/* Timeline de histórico */}
+      <div className="mt-8 glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl">
+        <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1 mb-4">
+          <History size={12} className="text-sky-400" /> Histórico do Lead
+        </h3>
+        <LeadHistoryTimeline
+          leadId={leadId}
+          initialEvents={history}
+        />
+      </div>
+
+      <CancelLeadDialog
+        open={showCancel}
+        onClose={() => setShowCancel(false)}
+        onSubmit={handleCancelConfirm}
+        submitting={actions.busy}
+      />
+
+      <ReactivateLeadDialog
+        open={showReactivate}
+        onClose={() => setShowReactivate(false)}
+        onSubmit={handleReactivateConfirm}
+        submitting={actions.busy}
+      />
+
       <ConfirmDialog {...confirmProps} />
     </div>
   );
