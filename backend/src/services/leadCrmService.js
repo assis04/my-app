@@ -334,7 +334,6 @@ export async function updateLead(id, data, user) {
       celular: data.celular ? data.celular.replace(/\D/g, '') : undefined,
       email: data.email !== undefined ? (data.email ? data.email.trim().toLowerCase() : null) : undefined,
       cep: data.cep ? data.cep.replace(/\D/g, '') : undefined,
-      idKanban: data.idKanban,
       conjugeNome: data.conjugeNome,
       conjugeSobrenome: data.conjugeSobrenome,
       conjugeCelular: data.conjugeCelular,

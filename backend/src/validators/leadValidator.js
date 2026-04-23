@@ -16,7 +16,8 @@ export const createLeadSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
     z.number().int().positive().nullable()
   ),
-  idKanban: z.string().max(100).optional().default(''),
+  // idKanban removido em Task #22 — campo legado substituído pela entidade KanbanCard.
+  // Requests enviando idKanban têm o campo silenciosamente descartado pelo Zod.
 });
 
 export const updateLeadSchema = createLeadSchema.partial();
