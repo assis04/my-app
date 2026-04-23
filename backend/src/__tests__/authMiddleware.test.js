@@ -10,6 +10,11 @@ vi.mock('../config/env.js', () => ({
   },
 }));
 
+// Mock blacklist (evita conexão Redis em teste — timeout de 10s com ioredis)
+vi.mock('../utils/tokenBlacklist.js', () => ({
+  isTokenBlacklisted: vi.fn().mockResolvedValue(false),
+}));
+
 const { authMiddleware } = await import('../config/authMiddleware.js');
 
 function createMockReqResNext(cookies = {}, headers = {}) {
@@ -28,22 +33,22 @@ const ACCESS_SECRET = 'test-access-secret-that-is-32-chars-long!!';
 const REFRESH_SECRET = 'test-refresh-secret-that-is-32-chars-long!';
 
 describe('authMiddleware', () => {
-  it('should authenticate with valid access token from cookie', () => {
+  it('should authenticate with valid access token from cookie', async () => {
     const token = jwt.sign({ id: 1, email: 'test@test.com', role: 'ADM' }, ACCESS_SECRET, { algorithm: 'HS256', expiresIn: '1h' });
     const { req, res, next } = createMockReqResNext({ accessToken: token });
 
-    authMiddleware(req, res, next);
+    await authMiddleware(req, res, next);
 
     expect(next).toHaveBeenCalled();
     expect(req.user.id).toBe(1);
     expect(req.user.email).toBe('test@test.com');
   });
 
-  it('should authenticate with valid Bearer token from header', () => {
+  it('should authenticate with valid Bearer token from header', async () => {
     const token = jwt.sign({ id: 2, email: 'bearer@test.com', role: 'RH' }, ACCESS_SECRET, { algorithm: 'HS256', expiresIn: '1h' });
     const { req, res, next } = createMockReqResNext({}, { authorization: `Bearer ${token}` });
 
-    authMiddleware(req, res, next);
+    await authMiddleware(req, res, next);
 
     expect(next).toHaveBeenCalled();
     expect(req.user.id).toBe(2);
