@@ -163,22 +163,22 @@ describe('getSideEffects', () => {
     expect(effects[0].payload.dataHora).toBe('2026-05-01T10:00:00Z');
   });
 
-  it('Agendado vídeo → abre N.O.N. se ausente + agenda para videochamada', () => {
+  // NON_OPEN_OR_CREATE foi removido do state machine — Orçamento agora é entidade
+  // separada criada explicitamente via POST /api/crm/orcamentos (specs/crm-non.md).
+  // Transições para Agendado vídeo/visita apenas agendam a Agenda externa.
+  it('Agendado vídeo → agenda videochamada (apenas)', () => {
     const effects = getSideEffects(LeadStatus.AGENDADO_VIDEO, { dataHora: '2026-05-02T14:00:00Z' });
-    expect(effects).toHaveLength(2);
-    expect(effects[0].type).toBe(SideEffectType.NON_OPEN_OR_CREATE);
-    expect(effects[0].payload.mode).toBe('open_if_absent');
-    expect(effects[1].type).toBe(SideEffectType.AGENDA_OPEN);
-    expect(effects[1].payload.tipo).toBe('video_chamada');
+    expect(effects).toHaveLength(1);
+    expect(effects[0].type).toBe(SideEffectType.AGENDA_OPEN);
+    expect(effects[0].payload.tipo).toBe('video_chamada');
+    expect(effects[0].payload.dataHora).toBe('2026-05-02T14:00:00Z');
   });
 
-  it('Agendado visita → cria N.O.N. se ausente + agenda para visita', () => {
+  it('Agendado visita → agenda visita (apenas)', () => {
     const effects = getSideEffects(LeadStatus.AGENDADO_VISITA);
-    expect(effects).toHaveLength(2);
-    expect(effects[0].type).toBe(SideEffectType.NON_OPEN_OR_CREATE);
-    expect(effects[0].payload.mode).toBe('create_if_absent');
-    expect(effects[1].type).toBe(SideEffectType.AGENDA_OPEN);
-    expect(effects[1].payload.tipo).toBe('visita_loja');
+    expect(effects).toHaveLength(1);
+    expect(effects[0].type).toBe(SideEffectType.AGENDA_OPEN);
+    expect(effects[0].payload.tipo).toBe('visita_loja');
   });
 
   it('Cancelado → side-effect SET_CANCEL_FIELDS com motivo', () => {

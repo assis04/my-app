@@ -50,17 +50,13 @@ async function handleAgendaOpen(event) {
   logWorker(`agenda_open stub → lead ${event.aggregateId} payload=${JSON.stringify(event.payload)}`);
 }
 
-async function handleNonOpenOrCreate(event) {
-  // TODO: resolver N.O.N. real (open se existir, create se não) e depois
-  // escrever LeadHistory.non_generated com o nonId retornado (via
-  // leadHistoryService.add, fora de transação — é histórico descritivo).
-  // Stub: loga e retorna sucesso.
-  logWorker(`non_open_or_create stub → lead ${event.aggregateId} mode=${event.payload?.mode}`);
-}
+// NON_OPEN_OR_CREATE handler removido — Orçamento é entidade separada criada
+// explicitamente via POST /api/crm/orcamentos (specs/crm-non.md).
+// Eventos pendentes na outbox com event_type='non_open_or_create' serão
+// marcados como failed pelo fallback do processBatch (no handler registered).
 
 export const HANDLERS = Object.freeze({
   [SideEffectType.AGENDA_OPEN]: handleAgendaOpen,
-  [SideEffectType.NON_OPEN_OR_CREATE]: handleNonOpenOrCreate,
 });
 
 // ─── Processamento ─────────────────────────────────────────────────────────

@@ -48,7 +48,7 @@ describe('leadCrmController.transitionStatus — controller', () => {
         etapa: 'Negociação',
         kanbanCard: { id: 5, coluna: 'Negociação', posicao: 3 },
       },
-      sideEffectsApplied: [SideEffectType.NON_OPEN_OR_CREATE, SideEffectType.AGENDA_OPEN],
+      sideEffectsApplied: [SideEffectType.AGENDA_OPEN],
       history: [
         { id: 101, eventType: LeadEventType.STATUS_CHANGED, payload: { from: 'Em prospecção', to: 'Agendado vídeo chamada' } },
         { id: 102, eventType: LeadEventType.AGENDA_SCHEDULED, payload: { tipo: 'video_chamada', dataHora: '2026-05-01T14:00:00Z' } },
@@ -82,8 +82,8 @@ describe('leadCrmController.transitionStatus — controller', () => {
     expect(body.lead).toEqual(serviceResult.lead);
     expect(body.kanbanCard).toEqual(serviceResult.lead.kanbanCard);
     expect(body.historyEvent).toEqual(serviceResult.history[0]); // status_changed
+    // NON_OPEN_OR_CREATE removido — Orçamento é entidade separada agora (specs/crm-non.md).
     expect(body.outboxEvents).toEqual([
-      { eventType: SideEffectType.NON_OPEN_OR_CREATE, status: 'pending' },
       { eventType: SideEffectType.AGENDA_OPEN, status: 'pending' },
     ]);
   });

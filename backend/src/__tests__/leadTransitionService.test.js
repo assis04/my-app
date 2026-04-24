@@ -300,14 +300,16 @@ describe('transitionStatus — side-effect AGENDA_OPEN', () => {
     expect(calls.find((d) => d.eventType === LeadEventType.NON_GENERATED)).toBeUndefined();
   });
 
-  it('sideEffectsApplied inclui AGENDA_OPEN e NON_OPEN_OR_CREATE', async () => {
+  it('sideEffectsApplied inclui AGENDA_OPEN (apenas) em Agendado visita', async () => {
     const r = await transitionStatus({
       leadId: 10,
       newStatus: LeadStatus.AGENDADO_VISITA,
       user: regularUser,
     });
     expect(r.sideEffectsApplied).toContain(SideEffectType.AGENDA_OPEN);
-    expect(r.sideEffectsApplied).toContain(SideEffectType.NON_OPEN_OR_CREATE);
+    // NON_OPEN_OR_CREATE removido — Orçamento agora é criado explicitamente
+    // pelo vendedor via POST /api/crm/orcamentos (specs/crm-non.md).
+    expect(r.sideEffectsApplied).not.toContain('non_open_or_create');
   });
 
   it('enfileira AGENDA_OPEN na outbox quando transição pede agenda', async () => {
@@ -333,19 +335,18 @@ describe('transitionStatus — side-effect AGENDA_OPEN', () => {
     });
   });
 
-  it('enfileira NON_OPEN_OR_CREATE na outbox em Agendado visita', async () => {
+  it('Agendado visita: NÃO enfileira mais NON_OPEN_OR_CREATE (Orçamento é entidade separada)', async () => {
     await transitionStatus({
       leadId: 10,
       newStatus: LeadStatus.AGENDADO_VISITA,
       user: regularUser,
     });
-    const outboxCalls = mockPrisma.outbox.create.mock.calls.map((c) => c[0].data);
-    const nonIntent = outboxCalls.find((d) => d.eventType === SideEffectType.NON_OPEN_OR_CREATE);
-    expect(nonIntent).toBeDefined();
-    expect(nonIntent.payload.mode).toBe('create_if_absent');
+    const types = mockPrisma.outbox.create.mock.calls.map((c) => c[0].data.eventType);
+    expect(types).toContain(SideEffectType.AGENDA_OPEN);
+    expect(types).not.toContain('non_open_or_create');
   });
 
-  it('Agendado vídeo chamada: enfileira AMBOS intents (NON + AGENDA)', async () => {
+  it('Agendado vídeo chamada: enfileira APENAS AGENDA_OPEN (sem criação automática de Orçamento)', async () => {
     await transitionStatus({
       leadId: 10,
       newStatus: LeadStatus.AGENDADO_VIDEO,
@@ -353,7 +354,7 @@ describe('transitionStatus — side-effect AGENDA_OPEN', () => {
     });
     const types = mockPrisma.outbox.create.mock.calls.map((c) => c[0].data.eventType);
     expect(types).toContain(SideEffectType.AGENDA_OPEN);
-    expect(types).toContain(SideEffectType.NON_OPEN_OR_CREATE);
+    expect(types).not.toContain('non_open_or_create');
   });
 
   it('transição SEM side-effect externo NÃO toca a outbox', async () => {

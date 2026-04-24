@@ -159,16 +159,15 @@ describe('processBatch — handler ausente', () => {
 // ─── Handlers padrão stub ─────────────────────────────────────────────────
 
 describe('HANDLERS default', () => {
-  it('registra handlers para AGENDA_OPEN e NON_OPEN_OR_CREATE', () => {
+  it('registra handler para AGENDA_OPEN (NON_OPEN_OR_CREATE foi removido)', () => {
     expect(typeof HANDLERS[SideEffectType.AGENDA_OPEN]).toBe('function');
-    expect(typeof HANDLERS[SideEffectType.NON_OPEN_OR_CREATE]).toBe('function');
+    // non_open_or_create já não existe — SideEffectType não declara mais.
+    expect(HANDLERS.non_open_or_create).toBeUndefined();
   });
 
-  it('stubs não lançam — resolvem silenciosamente (integração real vem depois)', async () => {
+  it('stub AGENDA_OPEN não lança — resolve silenciosamente (integração real vem depois)', async () => {
     const ev = { id: 1, aggregateId: 10, payload: { tipo: 'video_chamada' } };
     await expect(HANDLERS[SideEffectType.AGENDA_OPEN](ev)).resolves.toBeUndefined();
-    await expect(HANDLERS[SideEffectType.NON_OPEN_OR_CREATE]({ ...ev, payload: { mode: 'create_if_absent' } }))
-      .resolves.toBeUndefined();
   });
 
   it('HANDLERS está congelado', () => {

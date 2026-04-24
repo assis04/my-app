@@ -20,7 +20,7 @@ function formatTransitionResponse(result) {
     (h) => h.eventType === LeadEventType.STATUS_CHANGED,
   );
   const outboxEvents = result.sideEffectsApplied
-    .filter((t) => t === SideEffectType.AGENDA_OPEN || t === SideEffectType.NON_OPEN_OR_CREATE)
+    .filter((t) => t === SideEffectType.AGENDA_OPEN)
     .map((t) => ({ eventType: t, status: 'pending' }));
 
   return {

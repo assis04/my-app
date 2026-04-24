@@ -23,12 +23,13 @@ import {
  * sabe como executar cada um.
  */
 export const SideEffectType = Object.freeze({
-  /** Garante que existe uma N.O.N. — abre se já existir, cria se não. */
-  NON_OPEN_OR_CREATE: 'non_open_or_create',
   /** Abre tela/job da Agenda para o tipo correspondente ao status destino. */
   AGENDA_OPEN: 'agenda_open',
   /** Preenche statusAntesCancelamento + canceladoEm (usado ao cancelar). */
   SET_CANCEL_FIELDS: 'set_cancel_fields',
+  // NON_OPEN_OR_CREATE removido — Orçamento é uma entidade separada (specs/crm-non.md)
+  // criada explicitamente pelo vendedor via POST /api/crm/orcamentos.
+  // Transições de Lead não disparam mais criação/abertura de Orçamento.
 });
 
 /**
@@ -146,7 +147,6 @@ export function getSideEffects(to, context = {}) {
 
     case LeadStatus.AGENDADO_VIDEO:
       return [
-        { type: SideEffectType.NON_OPEN_OR_CREATE, payload: { mode: 'open_if_absent' } },
         {
           type: SideEffectType.AGENDA_OPEN,
           payload: { tipo: 'video_chamada', dataHora: context.dataHora ?? null },
@@ -155,7 +155,6 @@ export function getSideEffects(to, context = {}) {
 
     case LeadStatus.AGENDADO_VISITA:
       return [
-        { type: SideEffectType.NON_OPEN_OR_CREATE, payload: { mode: 'create_if_absent' } },
         {
           type: SideEffectType.AGENDA_OPEN,
           payload: { tipo: 'visita_loja', dataHora: context.dataHora ?? null },

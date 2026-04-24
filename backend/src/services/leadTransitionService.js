@@ -213,23 +213,8 @@ export async function transitionStatus(params) {
             tx,
           );
           break;
-        case SideEffectType.NON_OPEN_OR_CREATE:
-          // Intencionalmente NÃO emite LeadEventType.NON_GENERATED aqui — esse
-          // evento só é escrito quando a N.O.N. realmente existir (worker
-          // registra após sucesso).
-          await enqueueOutbox(
-            {
-              aggregate: 'lead',
-              aggregateId: lead.id,
-              eventType: SideEffectType.NON_OPEN_OR_CREATE,
-              payload: {
-                mode: effect.payload.mode,
-                triggeredBy: user.id ?? null,
-              },
-            },
-            tx,
-          );
-          break;
+        // NON_OPEN_OR_CREATE removido — Orçamento é entidade separada criada
+        // explicitamente via POST /api/crm/orcamentos (specs/crm-non.md).
         default:
           // Side-effect desconhecido — defensivo
           break;
