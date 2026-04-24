@@ -14,6 +14,8 @@ import { INITIAL_LEAD_FORM, validateLeadForm } from '@/lib/leadConstants';
 import { friendlyErrorMessage } from '@/lib/apiError';
 import { LeadStatus, requiresAdminToEdit } from '@/lib/leadStatus';
 import { hasPermission, CRM_PERMISSIONS } from '@/lib/permissions';
+import { getOrcamentoByLeadId, createOrcamento } from '@/services/crmApi';
+import OrcamentoStatusBadge from '@/components/crm/OrcamentoStatusBadge';
 
 import LeadFormFields from '@/components/crm/LeadFormFields';
 import LeadStatusDropdown from '@/components/crm/LeadStatusDropdown';
@@ -44,6 +46,8 @@ export default function EditLeadPage() {
   const [history, setHistory] = useState([]);
   const [showCancel, setShowCancel] = useState(false);
   const [showReactivate, setShowReactivate] = useState(false);
+  const [orcamento, setOrcamento] = useState(null);
+  const [creatingOrcamento, setCreatingOrcamento] = useState(false);
   const { confirm, confirmProps } = useConfirm();
 
   const fetchLead = useCallback(async () => {
@@ -76,15 +80,29 @@ export default function EditLeadPage() {
 
   const actions = useLeadActions(leadId, fetchLead);
 
+  const fetchOrcamento = useCallback(async () => {
+    try {
+      const orc = await getOrcamentoByLeadId(leadId);
+      setOrcamento(orc);
+    } catch (err) {
+      // 404 significa "sem orçamento vinculado" — estado válido, não é erro
+      if (err?.status !== 404) {
+        console.warn('Falha ao buscar Orçamento vinculado:', err);
+      }
+      setOrcamento(null);
+    }
+  }, [leadId]);
+
   useEffect(() => {
     if (!authLoading && user) {
       fetchLead();
+      fetchOrcamento();
       api('/users').then(raw => {
         const res = raw?.data ?? (Array.isArray(raw) ? raw : []);
         setSellers(res.filter(u => u.ativo !== false).map(u => ({ id: u.id, nome: u.nome })));
       }).catch(() => {});
     }
-  }, [user, authLoading, fetchLead]);
+  }, [user, authLoading, fetchLead, fetchOrcamento]);
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -144,6 +162,25 @@ export default function EditLeadPage() {
   const handleCancelConfirm = async (motivo) => {
     const ok = await actions.cancelLead(motivo);
     if (ok) setShowCancel(false);
+  };
+
+  const handleOrcamentoAction = async () => {
+    setSaveError('');
+    setSaveSuccess('');
+    // Já existe → navega direto
+    if (orcamento?.id) {
+      router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`);
+      return;
+    }
+    // Senão → cria + navega
+    setCreatingOrcamento(true);
+    try {
+      const novo = await createOrcamento(leadId);
+      router.push(`/crm/oportunidade-de-negocio/${novo.id}`);
+    } catch (err) {
+      setSaveError(friendlyErrorMessage(err));
+      setCreatingOrcamento(false);
+    }
   };
 
   const handleReactivateConfirm = async ({ modo, motivo }) => {
@@ -208,6 +245,28 @@ export default function EditLeadPage() {
 
       {/* Banner pós-venda */}
       {formDisabled && <PostSaleReadOnlyBanner status={leadStatus} />}
+
+      {/* Badge de Orçamento vinculado */}
+      {orcamento && (
+        <button
+          type="button"
+          onClick={() => router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`)}
+          className="w-full flex items-center gap-3 p-3 mb-4 rounded-2xl border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-all shadow-sm active:scale-[0.99]"
+        >
+          <div className="p-2 bg-violet-500 text-white rounded-xl shrink-0">
+            <Briefcase size={14} />
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-[10px] font-black text-violet-700 uppercase tracking-tighter">
+              Orçamento vinculado
+            </p>
+            <p className="text-xs font-bold text-violet-900 truncate">
+              {orcamento.numero}
+            </p>
+          </div>
+          <OrcamentoStatusBadge status={orcamento.status} size="xs" />
+        </button>
+      )}
 
       {displayError && (
         <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
@@ -297,8 +356,16 @@ export default function EditLeadPage() {
           {saving ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Save size={14} /> Salvar Alterações</>}
         </button>
         {!isTerminalSale && !isCancelado && (
-          <button onClick={() => router.push(`/crm/oportunidade-de-negocio?leadId=${leadId}`)} className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-xs flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 uppercase tracking-tight">
-            <Briefcase size={14} /> Nova Oportunidade
+          <button
+            onClick={handleOrcamentoAction}
+            disabled={creatingOrcamento}
+            className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-xs flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 uppercase tracking-tight disabled:opacity-50"
+          >
+            {creatingOrcamento
+              ? <><Loader2 size={14} className="animate-spin" /> Criando...</>
+              : orcamento
+                ? <><Briefcase size={14} /> Abrir Orçamento {orcamento.numero}</>
+                : <><Briefcase size={14} /> Nova Oportunidade</>}
           </button>
         )}
       </div>

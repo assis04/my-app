@@ -154,3 +154,73 @@ export const getLeadHistory = async (id, { cursor, limit } = {}) => {
   const qs = params.toString();
   return api(`/api/crm/leads/${id}/history${qs ? `?${qs}` : ''}`);
 };
+
+// ─── Orçamentos (N.O.N.) — entidade separada vinculada 1:1 ao Lead ────────
+// Contratos: specs/crm-non.md
+
+/**
+ * Lista Orçamentos (paginada, com filtros de nome/telefone/status/filialId/userId/data).
+ * @param {object} [filters]
+ * @returns {Promise<{ data, total, page, limit, totalPages }>}
+ */
+export const getOrcamentos = async (filters = {}) => {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(filters)) {
+    if (v !== undefined && v !== null && v !== '') params.append(k, String(v));
+  }
+  const qs = params.toString();
+  return api(`/api/crm/orcamentos${qs ? `?${qs}` : ''}`);
+};
+
+/**
+ * Detalhe de um Orçamento por id (inclui lead + criadoPor).
+ */
+export const getOrcamentoById = async (id) => {
+  return api(`/api/crm/orcamentos/${id}`);
+};
+
+/**
+ * Shortcut: retorna o Orçamento vinculado ao Lead (404 se não houver).
+ */
+export const getOrcamentoByLeadId = async (leadId) => {
+  return api(`/api/crm/leads/${leadId}/orcamento`);
+};
+
+/**
+ * Cria um Orçamento vinculado a um Lead. Backend força status inicial "Nova O.N."
+ * @returns {Promise<Orcamento>}
+ */
+export const createOrcamento = async (leadId) => {
+  return api('/api/crm/orcamentos', { body: { leadId } });
+};
+
+/**
+ * Transita status do Orçamento (apenas entre não-terminais: Nova O.N. / Não Responde / Standby).
+ * Para cancelar/reativar, use endpoints dedicados.
+ */
+export const transitionOrcamentoStatus = async (id, status) => {
+  return api(`/api/crm/orcamentos/${id}/status`, {
+    method: 'PUT',
+    body: { status },
+  });
+};
+
+/**
+ * Cancela um Orçamento. Motivo obrigatório entre os 5 valores canônicos.
+ */
+export const cancelOrcamento = async (id, motivo) => {
+  return api(`/api/crm/orcamentos/${id}/cancel`, {
+    method: 'PUT',
+    body: { motivo },
+  });
+};
+
+/**
+ * Reativa um Orçamento cancelado — volta para Nova O.N., limpa motivo.
+ */
+export const reactivateOrcamento = async (id) => {
+  return api(`/api/crm/orcamentos/${id}/reactivate`, {
+    method: 'PUT',
+    body: {},
+  });
+};
