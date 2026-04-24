@@ -22,39 +22,45 @@ model Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String   @unique
-  password  String
-  roleId    Int?     @map("role_id")
-  role      Role?    @relation(fields: [roleId], references: [id])
-  filialId  Int?     @map("filial_id")
-  filial    Filial?  @relation(fields: [filialId], references: [id])
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  ativo      Boolean   @default(true)
-  deletedAt  DateTime? @map("deleted_at")
-  mustChangePassword Boolean @default(true) @map("must_change_password")
+  id                 Int       @id @default(autoincrement())
+  nome               String
+  email              String    @unique
+  password           String
+  roleId             Int?      @map("role_id")
+  role               Role?     @relation(fields: [roleId], references: [id])
+  filialId           Int?      @map("filial_id")
+  filial             Filial?   @relation(fields: [filialId], references: [id])
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  ativo              Boolean   @default(true)
+  deletedAt          DateTime? @map("deleted_at")
+  mustChangePassword Boolean   @default(true) @map("must_change_password")
 
   // Audit Log: Who created this user?
-  createdById  Int?    @map("created_by_id")
-  createdBy    User?   @relation("UserCreator", fields: [createdById], references: [id])
-  createdUsers User[]  @relation("UserCreator")
+  createdById  Int?   @map("created_by_id")
+  createdBy    User?  @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers User[] @relation("UserCreator")
 
   // Equipe and Branch Management
-  equipeId        Int?     @map("equipe_id")
-  equipe          Equipe?  @relation("EquipeMembros", fields: [equipeId], references: [id])
-  equipeLiderada  Equipe[] @relation("EquipeLider")
-  managedBranch   Filial[] @relation("BranchManager")
+  equipeId       Int?     @map("equipe_id")
+  equipe         Equipe?  @relation("EquipeMembros", fields: [equipeId], references: [id])
+  equipeLiderada Equipe[] @relation("EquipeLider")
+  managedBranch  Filial[] @relation("BranchManager")
 
   // Tasks (Lista de Tarefas)
-  tasksCreated Task[] @relation("TaskCreator")
+  tasksCreated  Task[] @relation("TaskCreator")
   tasksAssigned Task[] @relation("AssignedTasks")
 
-  salesQueues     SalesQueue[]
-  leadsAssigned   Lead[]       @relation("LeadPreVendedor")
-  leadsVendedor   Lead[]       @relation("LeadVendedor")
-  leadsGerente    Lead[]       @relation("LeadGerente")
+  salesQueues   SalesQueue[]
+  leadsAssigned Lead[]       @relation("LeadPreVendedor")
+  leadsVendedor Lead[]       @relation("LeadVendedor")
+  leadsGerente  Lead[]       @relation("LeadGerente")
+
+  // Eventos que o usuário registrou no histórico de leads
+  leadHistoryEvents LeadHistory[]
+
+  // Orçamentos criados por este usuário
+  orcamentosCriados Orcamento[] @relation("OrcamentoCreator")
 
   @@map("users")
 }
@@ -67,36 +73,36 @@ model Filial {
   leads       Lead[]
   equipes     Equipe[]
   salesQueues SalesQueue[]
-  
-  // Manager of the branch
-  managerId   Int?         @map("manager_id")
-  manager     User?        @relation("BranchManager", fields: [managerId], references: [id])
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  // Manager of the branch
+  managerId Int?  @map("manager_id")
+  manager   User? @relation("BranchManager", fields: [managerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("filiais")
 }
 
 model Equipe {
-  id        Int      @id @default(autoincrement())
-  nome      String   @unique
+  id        Int     @id @default(autoincrement())
+  nome      String  @unique
   descricao String?
-  ativo     Boolean  @default(true)
+  ativo     Boolean @default(true)
 
   // Líder da equipe (um usuário)
-  liderId   Int?     @map("lider_id")
-  lider     User?    @relation("EquipeLider", fields: [liderId], references: [id])
+  liderId Int?  @map("lider_id")
+  lider   User? @relation("EquipeLider", fields: [liderId], references: [id])
 
   // Filial da equipe
-  filialId  Int?     @map("filial_id")
-  filial    Filial?  @relation(fields: [filialId], references: [id])
+  filialId Int?    @map("filial_id")
+  filial   Filial? @relation(fields: [filialId], references: [id])
 
   // Membros da equipe
-  membros   User[]   @relation("EquipeMembros")
+  membros User[] @relation("EquipeMembros")
 
   // Tarefas da Equipe
-  tasks     Task[]   @relation("EquipeTasks")
+  tasks Task[] @relation("EquipeTasks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,68 +125,81 @@ model SalesQueue {
 }
 
 model Lead {
-  id              Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // === Identidade ===
-  nome            String
-  sobrenome       String?
-  celular         String
-  email           String?
-  cpfCnpj         String?   @map("cpf_cnpj")
-  cep             String?
-  endereco        String?
+  nome      String
+  sobrenome String?
+  celular   String
+  email     String?
+  cpfCnpj   String? @map("cpf_cnpj")
+  cep       String?
+  endereco  String?
 
   // === CRM / Pipeline ===
-  idKanban        String?   @map("id_kanban")
-  status          String    @default("Novo")
-  etapa           String?
+  // (idKanban removido em Task #22 — substituído pela entidade KanbanCard 1:1)
+  status                  String  @default("Em prospecção")
+  etapa                   String?
+  temperatura             String?
+  statusAntesCancelamento String? @map("status_antes_cancelamento")
 
   // === Imóvel (domínio imobiliário) ===
-  tipoImovel      String?   @map("tipo_imovel")
-  statusImovel    String?   @map("status_imovel")
-  plantaPath      String?   @map("planta_path")
-  pedidosContratos String?  @map("pedidos_contratos")
+  tipoImovel       String? @map("tipo_imovel")
+  statusImovel     String? @map("status_imovel")
+  plantaPath       String? @map("planta_path")
+  pedidosContratos String? @map("pedidos_contratos")
 
   // === Marketing / Origem ===
-  canal           String?
-  origem          String?
-  parceria        String?
-  origemCanal     String?   @map("origem_canal")
-  origemExterna   Boolean   @default(false) @map("origem_externa")
+  canal         String?
+  origem        String?
+  parceria      String?
+  origemCanal   String? @map("origem_canal")
+  origemExterna Boolean @default(false) @map("origem_externa")
 
   // === Cônjuge ===
-  conjugeNome      String?  @map("conjuge_nome")
-  conjugeSobrenome String?  @map("conjuge_sobrenome")
-  conjugeCelular   String?  @map("conjuge_celular")
-  conjugeEmail     String?  @map("conjuge_email")
+  conjugeNome      String? @map("conjuge_nome")
+  conjugeSobrenome String? @map("conjuge_sobrenome")
+  conjugeCelular   String? @map("conjuge_celular")
+  conjugeEmail     String? @map("conjuge_email")
 
   // === Vendedor (atribuição via fila) ===
-  vendedorId      Int?      @map("vendedor_id")
-  vendedor        User?     @relation("LeadVendedor", fields: [vendedorId], references: [id])
+  vendedorId Int?  @map("vendedor_id")
+  vendedor   User? @relation("LeadVendedor", fields: [vendedorId], references: [id])
 
   // === Pré-vendedor (CRM) ===
-  preVendedorId   Int?      @map("pre_vendedor_id")
-  preVendedor     User?     @relation("LeadPreVendedor", fields: [preVendedorId], references: [id])
+  preVendedorId Int?  @map("pre_vendedor_id")
+  preVendedor   User? @relation("LeadPreVendedor", fields: [preVendedorId], references: [id])
 
   // === Gerente ===
-  gerenteId       Int?      @map("gerente_id")
-  gerente         User?     @relation("LeadGerente", fields: [gerenteId], references: [id])
+  gerenteId Int?  @map("gerente_id")
+  gerente   User? @relation("LeadGerente", fields: [gerenteId], references: [id])
 
   // === Filial ===
-  filialId        Int?      @map("filial_id")
-  filial          Filial?   @relation(fields: [filialId], references: [id])
+  filialId Int?    @map("filial_id")
+  filial   Filial? @relation(fields: [filialId], references: [id])
 
   // === Conta (nullable — fila pode não ter dados suficientes) ===
-  contaId         Int?      @map("conta_id")
-  conta           Account?  @relation("AccountLeads", fields: [contaId], references: [id])
+  contaId Int?     @map("conta_id")
+  conta   Account? @relation("AccountLeads", fields: [contaId], references: [id])
+
+  // === KanbanCard (1:1, criado transacionalmente com o Lead) ===
+  kanbanCard KanbanCard?
+
+  // === Orçamento (1:1, criado explicitamente via botão "Nova Oportunidade") ===
+  orcamento Orcamento?
+
+  // === Histórico (append-only, ordem cronológica) ===
+  history LeadHistory[]
 
   // === Origem do registro ===
-  fonte           String?   @default("crm")
+  fonte String? @default("crm")
 
   // === Timestamps ===
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? @map("deleted_at")
+  canceladoEm DateTime? @map("cancelado_em")
+  reativadoEm DateTime? @map("reativado_em")
 
   @@index([vendedorId])
   @@index([preVendedorId])
@@ -188,19 +207,20 @@ model Lead {
   @@index([filialId])
   @@index([contaId])
   @@index([status])
+  @@index([temperatura])
   @@index([createdAt])
   @@map("leads")
 }
 
 model Account {
-  id        Int      @id @default(autoincrement())
+  id        Int    @id @default(autoincrement())
   nome      String
   sobrenome String
   celular   String
   cep       String
 
   // 1:N — Uma Conta pode ter muitos Leads
-  leads     Lead[]   @relation("AccountLeads")
+  leads Lead[] @relation("AccountLeads")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -210,26 +230,122 @@ model Account {
   @@map("accounts")
 }
 
+// KanbanCard — entidade interna que representa a etiqueta do Lead no quadro Kanban.
+// Cardinalidade 1:1 com Lead (enforçada via @unique em leadId).
+// Fonte de verdade: specs/crm.md §4.6 / specs/crm-plan.md §2.3
+model KanbanCard {
+  id      Int    @id @default(autoincrement())
+  leadId  Int    @unique @map("lead_id")
+  lead    Lead   @relation(fields: [leadId], references: [id])
+  coluna  String // "Prospecção" | "Negociação" | "Venda" | "Pós-venda" | "Cancelados"
+  posicao Int    @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([coluna, posicao])
+  @@map("kanban_cards")
+}
+
+// Orcamento — Oportunidade de Negócio (N.O.N.) vinculada 1:1 a um Lead.
+// Criada explicitamente pelo vendedor via botão "Nova Oportunidade" na tela
+// de edição do Lead. Estados: Nova O.N. | Não Responde | Standby | Cancelado.
+// Cancelamento exige motivo entre os 5 valores canônicos (ver domain/orcamentoStatus.js).
+// Fonte de verdade: specs/crm-non.md + plan validated-swimming-otter.md
+model Orcamento {
+  id     Int    @id @default(autoincrement())
+  numero String @unique
+
+  // 1:1 estrito com Lead (FK única — não permite segundo orçamento)
+  leadId Int  @unique @map("lead_id")
+  lead   Lead @relation(fields: [leadId], references: [id])
+
+  status             String  @default("Nova O.N.")
+  motivoCancelamento String? @map("motivo_cancelamento")
+
+  canceladoEm DateTime? @map("cancelado_em")
+  reativadoEm DateTime? @map("reativado_em")
+
+  // Autoria
+  criadoPorUserId Int?  @map("criado_por_user_id")
+  criadoPor       User? @relation("OrcamentoCreator", fields: [criadoPorUserId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("orcamentos")
+}
+
+// Outbox — fila persistente de intents (side-effects externos) escritos na
+// MESMA transação que a mudança de Lead. Um worker assíncrono consome,
+// executa contra o serviço externo (Agenda / N.O.N.) e marca done ou failed.
+// Garantia: nenhum side-effect se perde mesmo se o serviço externo estiver fora.
+// Fonte de verdade: specs/crm-plan.md §2.6
+model Outbox {
+  id          Int    @id @default(autoincrement())
+  aggregate   String // "lead" por ora — escopo para múltiplos domínios no futuro
+  aggregateId Int    @map("aggregate_id")
+  eventType   String @map("event_type")
+  payload     Json
+
+  status    String  @default("pending") // pending | done | failed
+  attempts  Int     @default(0)
+  lastError String? @map("last_error")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@index([status, createdAt])
+  @@index([aggregate, aggregateId])
+  @@map("outbox")
+}
+
+// LeadHistory — registro append-only de eventos do Lead.
+// authorUserId é nullable para eventos originados por sistema/webhook.
+// eventType é validado em código (ver domain/leadEvents.js) — sem enum no DB
+// para facilitar evolução.
+// Fonte de verdade: specs/crm.md §4.4 / specs/crm-plan.md §2.4
+model LeadHistory {
+  id Int @id @default(autoincrement())
+
+  leadId Int  @map("lead_id")
+  lead   Lead @relation(fields: [leadId], references: [id])
+
+  authorUserId Int?  @map("author_user_id")
+  authorUser   User? @relation(fields: [authorUserId], references: [id])
+
+  eventType String @map("event_type")
+  payload   Json
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([leadId, createdAt(sort: Desc)])
+  @@index([eventType])
+  @@map("lead_history")
+}
+
 model Task {
-  id                 Int       @id @default(autoincrement())
-  titulo             String
-  descricao          String?
-  status             String    @default("PENDENTE") // PENDENTE, CONCLUIDA
-  dataVencimento     DateTime?
-  
+  id             Int       @id @default(autoincrement())
+  titulo         String
+  descricao      String?
+  status         String    @default("PENDENTE") // PENDENTE, CONCLUIDA
+  dataVencimento DateTime?
+
   // Criador da tarefa
-  createdById        Int       @map("created_by_id")
-  createdBy          User      @relation("TaskCreator", fields: [createdById], references: [id])
+  createdById Int  @map("created_by_id")
+  createdBy   User @relation("TaskCreator", fields: [createdById], references: [id])
 
   // Atribuição
-  assignedToUserId   Int?      @map("assigned_to_user_id")
-  assignedToUser     User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
-  
-  assignedToEquipeId Int?      @map("assigned_to_equipe_id")
-  assignedToEquipe   Equipe?   @relation("EquipeTasks", fields: [assignedToEquipeId], references: [id])
+  assignedToUserId Int?  @map("assigned_to_user_id")
+  assignedToUser   User? @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
 
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  assignedToEquipeId Int?    @map("assigned_to_equipe_id")
+  assignedToEquipe   Equipe? @relation("EquipeTasks", fields: [assignedToEquipeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([assignedToUserId])
   @@index([createdById])

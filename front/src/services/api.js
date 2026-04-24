@@ -109,8 +109,13 @@ export const api = async (endpoint, { body, ...customConfig } = {}, _isRetry = f
       return Promise.reject('Sessão expirada. Faça login novamente.');
     }
 
-    throw new Error(data.message || `Erro ${response.status}`);
+    const err = new Error(data.message || `Erro ${response.status}`);
+    err.status = response.status;
+    err.data = data;
+    throw err;
   } catch (error) {
-    return Promise.reject(error.message);
+    // Mantém estrutura (status, data) pra friendlyErrorMessage. Callers que
+    // fazem `err?.message || err` continuam funcionando — Error.message existe.
+    return Promise.reject(error);
   }
 };

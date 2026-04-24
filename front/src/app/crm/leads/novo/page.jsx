@@ -40,7 +40,21 @@ export default function NovoLeadPage() {
     setError('');
     setLoading(true);
     try {
-      const payload = { ...form, preVendedorId: form.preVendedorId || null };
+      // status / etapa não vão no POST — backend força status canônico "Em prospecção"
+      // e deriva etapa via STATUS_TO_ETAPA. Ver specs/crm.md §9.3 + leadValidator.js.
+      const payload = {
+        nome: form.nome,
+        sobrenome: form.sobrenome,
+        celular: form.celular,
+        email: form.email,
+        cep: form.cep,
+        conjugeNome: form.conjugeNome,
+        conjugeSobrenome: form.conjugeSobrenome,
+        conjugeCelular: form.conjugeCelular,
+        conjugeEmail: form.conjugeEmail,
+        origemCanal: form.origemCanal,
+        preVendedorId: form.preVendedorId || null,
+      };
       const lead = await api('/api/crm/leads', { body: payload });
       return lead;
     } catch (err) {

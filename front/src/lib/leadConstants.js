@@ -1,23 +1,30 @@
 /**
  * Constantes e helpers compartilhados do formulário de Leads CRM.
  * Usado em: leads/page.jsx (modal), leads/novo/page.jsx, leads/[id]/page.jsx
+ *
+ * Status e Etapa não são mais editáveis via form. Permanecem aqui como
+ * catálogos read-only para filtros e bulk operations na listagem — valores
+ * alinhados com o backend domain/leadStatus.js (LeadStatus + LeadEtapa).
  */
 
-export const STATUS_OPTIONS = [
-  { id: 'Prospecção', nome: 'Prospecção' },
-  { id: 'Qualificação', nome: 'Qualificação' },
-  { id: 'Apresentação', nome: 'Apresentação' },
-  { id: 'Negociação', nome: 'Negociação' },
-  { id: 'Fechado', nome: 'Fechado' },
-  { id: 'Perdido', nome: 'Perdido' },
-];
+import { STATUS_ORDER } from './leadStatus';
 
+/**
+ * Apenas para filtros e listagens — não usar em forms de edição.
+ * Valores espelham LeadStatus do backend (8 canônicos).
+ */
+export const STATUS_OPTIONS = STATUS_ORDER.map((s) => ({ id: s, nome: s }));
+
+/**
+ * Apenas para filtros e bulk-assignment legado — status é a fonte de verdade.
+ * Valores espelham LeadEtapa do backend (5 canônicos).
+ */
 export const ETAPA_OPTIONS = [
-  { id: 'Vídeo Chamada', nome: 'Vídeo Chamada' },
-  { id: 'Visita à Loja', nome: 'Visita à Loja' },
-  { id: 'Agendamento', nome: 'Agendamento' },
-  { id: 'Follow-up', nome: 'Follow-up' },
-  { id: 'Proposta Enviada', nome: 'Proposta Enviada' },
+  { id: 'Prospecção', nome: 'Prospecção' },
+  { id: 'Negociação', nome: 'Negociação' },
+  { id: 'Venda', nome: 'Venda' },
+  { id: 'Pós-venda', nome: 'Pós-venda' },
+  { id: 'Cancelados', nome: 'Cancelados' },
 ];
 
 export const CANAL_OPTIONS = [
@@ -39,11 +46,8 @@ export const INITIAL_LEAD_FORM = {
   conjugeSobrenome: '',
   conjugeCelular: '',
   conjugeEmail: '',
-  status: 'Prospecção',
-  etapa: '',
   origemCanal: '',
   preVendedorId: '',
-  idKanban: '',
 };
 
 export function validateLeadForm(form) {

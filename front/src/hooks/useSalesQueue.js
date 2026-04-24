@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { getQueue, getLeadHistory, toggleAvailability, createQuickLead, createManualLead } from '@/services/crmApi';
+import { getQueue, getQueueHistory, toggleAvailability, createQuickLead, createManualLead } from '@/services/crmApi';
 import { getSocketUrl } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -19,7 +19,7 @@ export function useSalesQueue(branchId) {
       setError(null);
       const [queueData, historyData] = await Promise.all([
         getQueue(branchId),
-        getLeadHistory(branchId)
+        getQueueHistory(branchId)
       ]);
       setQueue(queueData);
       setHistory(historyData);

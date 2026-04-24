@@ -226,3 +226,34 @@ export const SYSTEM_MODULES = [
     ]
   },
 ];
+
+/**
+ * Permissões específicas do CRM core (backend Tasks #14 / #12).
+ * Adicionadas como constantes pra consumo seguro (sem string literal em JSX).
+ */
+export const CRM_PERMISSIONS = Object.freeze({
+  EDIT_AFTER_SALE: 'crm:leads:edit-after-sale',
+  REACTIVATE: 'crm:leads:reactivate',
+});
+
+const ADMIN_ROLES = new Set(['ADM', 'admin', 'Administrador']);
+
+/**
+ * Helper puro — verifica se um usuário tem determinada permissão.
+ * Use em contextos fora de componentes React (callbacks, libs, services).
+ * Em componentes, prefira o hook `usePermissions`.
+ *
+ * Regras (espelham o hook):
+ *  - role admin → acesso total
+ *  - permissions inclui '*' → acesso total
+ *  - caso contrário → match literal
+ *
+ * Spec: specs/crm-frontend-plan.md §2.5
+ */
+export function hasPermission(user, perm) {
+  if (!user) return false;
+  if (ADMIN_ROLES.has(user.role)) return true;
+  const permissions = Array.isArray(user.permissions) ? user.permissions : [];
+  if (permissions.includes('*')) return true;
+  return permissions.includes(perm);
+}

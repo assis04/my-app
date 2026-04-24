@@ -9,14 +9,21 @@ export const createLeadSchema = z.object({
   conjugeSobrenome: z.string().max(200).optional().default(''),
   conjugeCelular: z.string().max(20).optional().default(''),
   conjugeEmail: z.string().email('E-mail do cônjuge inválido.').optional().or(z.literal('')).default(''),
-  status: z.string().max(50).optional().default('Prospecção'),
-  etapa: z.string().max(50).optional().default(''),
   origemCanal: z.string().max(50).optional().default(''),
   preVendedorId: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
     z.number().int().positive().nullable()
   ),
-  idKanban: z.string().max(100).optional().default(''),
+  // status / etapa: NÃO estão no schema. status é forçado ao valor canônico
+  // "Em prospecção" pelo createLead (leadCrmService); etapa é derivada do
+  // status via STATUS_TO_ETAPA. Transições usam endpoints dedicados (/status,
+  // /cancel, /reactivate). Se incluídos aqui com default, a updateLeadSchema
+  // (=partial) herdava o default mesmo quando o cliente omitia o campo, o que
+  // disparava o Guard 1 de updateLead. Ver spec §9.3 e plan §2.8.
+  //
+  // idKanban: removido em Task #22 — substituído pela entidade KanbanCard.
+  // Qualquer request carregando esses campos tem o valor silenciosamente
+  // descartado pelo Zod (comportamento padrão para unknown keys).
 });
 
 export const updateLeadSchema = createLeadSchema.partial();
@@ -61,6 +68,58 @@ export const manualLeadSchema = quickLeadSchema.extend({
     (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
     z.number({ message: 'O vendedor alvo é obrigatório.' }).int().positive()
   ),
+});
+
+// ─── Transição de status (Task #9) ───────────────────────────────────────
+// Plan §4.1. Aceita os nomes do contrato público (status, motivo, contexto)
+// e traduz para o contrato interno do leadTransitionService (newStatus, reason, context).
+
+export const transitionStatusSchema = z.object({
+  status: z.string().min(1, 'status é obrigatório.').max(100),
+  motivo: z.string().max(1000).optional().nullable(),
+  contexto: z
+    .object({
+      agendadoPara: z.string().datetime({ offset: true }).optional().nullable(),
+    })
+    .passthrough()
+    .optional()
+    .default({}),
+});
+
+// ─── Temperatura (Task #10) ──────────────────────────────────────────────
+// Plan §4.4. Restringe a string a um dos três valores canônicos do enum
+// LeadTemperatura — validação redundante com o domain, mas garante rejeição
+// antes do service (melhor mensagem de erro e evita round-trip).
+
+export const temperaturaSchema = z.object({
+  temperatura: z.enum(['Muito interessado', 'Interessado', 'Sem interesse'], {
+    message: 'temperatura deve ser "Muito interessado", "Interessado" ou "Sem interesse".',
+  }),
+});
+
+// ─── Cancel (Task #11) ───────────────────────────────────────────────────
+// Plan §4.2. Endpoint dedicado que exige motivo — reforça a diferença
+// semântica entre "mudança de status qualquer" e "cancelamento" (que sempre
+// exige justificativa auditável).
+
+export const cancelLeadSchema = z.object({
+  motivo: z
+    .string()
+    .trim()
+    .min(1, 'motivo é obrigatório ao cancelar.')
+    .max(1000),
+});
+
+// ─── Reativação (Task #12) ───────────────────────────────────────────────
+// Plan §4.3 / spec §6.5. Usuário decide na UI:
+//   - "reativar": restaura o Lead existente para o status anterior ao cancelamento
+//   - "novo": preserva o Lead cancelado e cria um novo Lead vinculado ao mesmo Account
+
+export const reactivateLeadSchema = z.object({
+  modo: z.enum(['reativar', 'novo'], {
+    message: 'modo deve ser "reativar" ou "novo".',
+  }),
+  motivo: z.string().trim().max(1000).optional().default(''),
 });
 
 export const toggleStatusSchema = z.object({

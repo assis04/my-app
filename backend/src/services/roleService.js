@@ -8,6 +8,9 @@ const VALID_PERMISSIONS = [
   'rh:filiais:create', 'rh:filiais:read', 'rh:filiais:update', 'rh:filiais:delete',
   'crm:leads:create', 'crm:leads:read', 'crm:leads:update', 'crm:leads:delete',
   'crm:leads:transfer', 'crm:leads:read:branch', 'crm:leads:read:all',
+  // Permissões introduzidas pelo CRM core plan (Task #20 — scope atual enforcado)
+  'crm:leads:edit-after-sale', // leadCrmService.updateLead + leadTransitionService guards (spec §9.14)
+  'crm:leads:reactivate',      // reactivateLead route/service (spec §3 / §6.5)
   'crm:accounts:create', 'crm:accounts:read', 'crm:accounts:update', 'crm:accounts:delete',
   'crm:orcamentos:create', 'crm:orcamentos:read', 'crm:orcamentos:update', 'crm:orcamentos:delete',
   'crm:fila:read', 'crm:fila:manage',
