@@ -8,7 +8,7 @@ import {
 } from '../domain/leadEvents.js';
 
 describe('LeadEventType enum', () => {
-  it('contains all 12 event types defined in the spec (§4.4)', () => {
+  it('contains all 15 event types (12 originais + 3 de Orçamento)', () => {
     expect(getAllEventTypes()).toEqual([
       'status_changed',
       'temperatura_changed',
@@ -16,6 +16,9 @@ describe('LeadEventType enum', () => {
       'prevendedor_transferred',
       'agenda_scheduled',
       'non_generated',
+      'non_status_changed',
+      'non_cancelled',
+      'non_reactivated',
       'lead_cancelled',
       'lead_reactivated',
       'reactivated_as_new_lead',
@@ -64,7 +67,10 @@ describe('PAYLOAD_SHAPES contract', () => {
     expect(PAYLOAD_SHAPES[LeadEventType.VENDEDOR_TRANSFERRED]).toEqual(['fromUserId', 'toUserId', 'reason']);
     expect(PAYLOAD_SHAPES[LeadEventType.PREVENDEDOR_TRANSFERRED]).toEqual(['fromUserId', 'toUserId', 'reason']);
     expect(PAYLOAD_SHAPES[LeadEventType.AGENDA_SCHEDULED]).toEqual(['tipo', 'dataHora']);
-    expect(PAYLOAD_SHAPES[LeadEventType.NON_GENERATED]).toEqual(['nonId']);
+    expect(PAYLOAD_SHAPES[LeadEventType.NON_GENERATED]).toEqual(['orcamentoId', 'numero']);
+    expect(PAYLOAD_SHAPES[LeadEventType.NON_STATUS_CHANGED]).toEqual(['orcamentoId', 'numero', 'from', 'to']);
+    expect(PAYLOAD_SHAPES[LeadEventType.NON_CANCELLED]).toEqual(['orcamentoId', 'numero', 'motivo']);
+    expect(PAYLOAD_SHAPES[LeadEventType.NON_REACTIVATED]).toEqual(['orcamentoId', 'numero']);
     expect(PAYLOAD_SHAPES[LeadEventType.LEAD_CANCELLED]).toEqual(['reason']);
     expect(PAYLOAD_SHAPES[LeadEventType.LEAD_REACTIVATED]).toEqual([]);
     expect(PAYLOAD_SHAPES[LeadEventType.REACTIVATED_AS_NEW_LEAD]).toEqual(['newLeadId']);

@@ -59,6 +59,9 @@ model User {
   // Eventos que o usuário registrou no histórico de leads
   leadHistoryEvents LeadHistory[]
 
+  // Orçamentos criados por este usuário
+  orcamentosCriados Orcamento[] @relation("OrcamentoCreator")
+
   @@map("users")
 }
 
@@ -182,6 +185,9 @@ model Lead {
   // === KanbanCard (1:1, criado transacionalmente com o Lead) ===
   kanbanCard KanbanCard?
 
+  // === Orçamento (1:1, criado explicitamente via botão "Nova Oportunidade") ===
+  orcamento Orcamento?
+
   // === Histórico (append-only, ordem cronológica) ===
   history LeadHistory[]
 
@@ -239,6 +245,37 @@ model KanbanCard {
 
   @@index([coluna, posicao])
   @@map("kanban_cards")
+}
+
+// Orcamento — Oportunidade de Negócio (N.O.N.) vinculada 1:1 a um Lead.
+// Criada explicitamente pelo vendedor via botão "Nova Oportunidade" na tela
+// de edição do Lead. Estados: Nova O.N. | Não Responde | Standby | Cancelado.
+// Cancelamento exige motivo entre os 5 valores canônicos (ver domain/orcamentoStatus.js).
+// Fonte de verdade: specs/crm-non.md + plan validated-swimming-otter.md
+model Orcamento {
+  id     Int    @id @default(autoincrement())
+  numero String @unique
+
+  // 1:1 estrito com Lead (FK única — não permite segundo orçamento)
+  leadId Int  @unique @map("lead_id")
+  lead   Lead @relation(fields: [leadId], references: [id])
+
+  status             String  @default("Nova O.N.")
+  motivoCancelamento String? @map("motivo_cancelamento")
+
+  canceladoEm DateTime? @map("cancelado_em")
+  reativadoEm DateTime? @map("reativado_em")
+
+  // Autoria
+  criadoPorUserId Int?  @map("criado_por_user_id")
+  criadoPor       User? @relation("OrcamentoCreator", fields: [criadoPorUserId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("orcamentos")
 }
 
 // Outbox — fila persistente de intents (side-effects externos) escritos na

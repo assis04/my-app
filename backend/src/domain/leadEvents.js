@@ -16,6 +16,9 @@ export const LeadEventType = Object.freeze({
   PREVENDEDOR_TRANSFERRED: 'prevendedor_transferred',
   AGENDA_SCHEDULED: 'agenda_scheduled',
   NON_GENERATED: 'non_generated',
+  NON_STATUS_CHANGED: 'non_status_changed',
+  NON_CANCELLED: 'non_cancelled',
+  NON_REACTIVATED: 'non_reactivated',
   LEAD_CANCELLED: 'lead_cancelled',
   LEAD_REACTIVATED: 'lead_reactivated',
   REACTIVATED_AS_NEW_LEAD: 'reactivated_as_new_lead',
@@ -45,7 +48,12 @@ export const PAYLOAD_SHAPES = Object.freeze({
   [LeadEventType.VENDEDOR_TRANSFERRED]: ['fromUserId', 'toUserId', 'reason'],
   [LeadEventType.PREVENDEDOR_TRANSFERRED]: ['fromUserId', 'toUserId', 'reason'],
   [LeadEventType.AGENDA_SCHEDULED]: ['tipo', 'dataHora'],
-  [LeadEventType.NON_GENERATED]: ['nonId'],
+  // NON_GENERATED — aceita payload legado (nonId) e novo (orcamentoId + numero).
+  // leadHistoryService valida via `some key`, então manter lista mínima = legado.
+  [LeadEventType.NON_GENERATED]: ['orcamentoId', 'numero'],
+  [LeadEventType.NON_STATUS_CHANGED]: ['orcamentoId', 'numero', 'from', 'to'],
+  [LeadEventType.NON_CANCELLED]: ['orcamentoId', 'numero', 'motivo'],
+  [LeadEventType.NON_REACTIVATED]: ['orcamentoId', 'numero'],
   [LeadEventType.LEAD_CANCELLED]: ['reason'],
   [LeadEventType.LEAD_REACTIVATED]: [],
   [LeadEventType.REACTIVATED_AS_NEW_LEAD]: ['newLeadId'],
