@@ -42,6 +42,27 @@ const GRANTS = [
     targetRoleNames: [...ADMIN_ROLES, ...MANAGER_ROLES],
     rationale: 'Reativar Lead cancelado (spec §3 / §6.5)',
   },
+  // Permissões da entidade Orçamento (N.O.N.) — specs/crm-non.md
+  {
+    perm: 'crm:orcamentos:read',
+    targetRoleNames: [...ADMIN_ROLES, ...MANAGER_ROLES],
+    rationale: 'Listar e ver Orçamentos (specs/crm-non.md §6.4)',
+  },
+  {
+    perm: 'crm:orcamentos:create',
+    targetRoleNames: [...ADMIN_ROLES, ...MANAGER_ROLES],
+    rationale: 'Criar Orçamento vinculado a um Lead',
+  },
+  {
+    perm: 'crm:orcamentos:update',
+    targetRoleNames: [...ADMIN_ROLES, ...MANAGER_ROLES],
+    rationale: 'Transição de status, cancelamento e reativação de Orçamento',
+  },
+  {
+    perm: 'crm:orcamentos:delete',
+    targetRoleNames: ADMIN_ROLES,
+    rationale: 'Excluir Orçamento (apenas ADM)',
+  },
 ];
 
 function logSection(title) {
