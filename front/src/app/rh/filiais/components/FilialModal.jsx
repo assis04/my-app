@@ -69,37 +69,37 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-white relative z-10">
           {error && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-sm font-bold flex items-start gap-3 shadow-sm">
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-base font-bold flex items-start gap-3 shadow-sm">
               <AlertTriangle size={18} className="shrink-0 mt-0.5" />
               <p>{error}</p>
             </div>
           )}
 
           <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
-            <label className="text-xs font-bold text-slate-400 ml-1">Nome da Filial *</label>
+            <label className="text-sm font-bold text-slate-400 ml-1">Nome da Filial *</label>
             <input
               required
               type="text"
               placeholder="Ex: Matriz São Paulo"
-              className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm shadow-xs"
+              className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-base shadow-xs"
               value={formData.nome}
               onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
             />
           </div>
 
           <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
-            <label className="text-xs font-bold text-slate-400 ml-1">Localização (Endereço)</label>
+            <label className="text-sm font-bold text-slate-400 ml-1">Localização (Endereço)</label>
             <input
               type="text"
               placeholder="Rua, número, cidade - estado"
-              className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-sm shadow-xs"
+              className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-base shadow-xs"
               value={formData.endereco}
               onChange={e => setFormData(p => ({ ...p, endereco: e.target.value }))}
             />
           </div>
 
           <div className="space-y-2 focus-within:scale-[1.01] transition-transform">
-            <label className="text-xs font-bold text-slate-400 ml-1 flex items-center gap-2">
+            <label className="text-sm font-bold text-slate-400 ml-1 flex items-center gap-2">
               <UserCheck size={14} /> Gerente
             </label>
             <PremiumSelect 
@@ -112,11 +112,11 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
 
           <div className="flex gap-4 pt-4 border-t border-slate-50">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3 font-bold text-xs border border-slate-200 text-slate-400 rounded-2xl hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-95 shadow-sm">
+              className="flex-1 py-3 font-bold text-sm border border-slate-200 text-slate-400 rounded-2xl hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-95 shadow-sm">
               Retornar
             </button>
             <button type="submit" disabled={loading}
-              className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap">
+              className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-base shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap">
               {loading ? <><Loader2 size={18} className="animate-spin" /> Processando...</> : (
                 <>{isEditing ? 'Confirmar Ajuste' : 'Efetivar Unidade'}</>
               )}

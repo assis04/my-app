@@ -17,15 +17,15 @@ export default function LeadStatusBadge({ status, size = 'sm', showDot = true })
   // Status desconhecido → pill neutro sem quebrar a UI.
   if (!palette) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-sm font-bold bg-slate-100 text-slate-500 border border-slate-200">
         {status || '—'}
       </span>
     );
   }
 
   const sizeClasses = size === 'xs'
-    ? 'text-xs px-1.5 py-0.5'
-    : 'text-xs px-2 py-0.5';
+    ? 'text-sm px-1.5 py-0.5'
+    : 'text-sm px-2 py-0.5';
 
   return (
     <span

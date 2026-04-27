@@ -34,7 +34,7 @@ const inactiveSubItem = 'text-slate-400 hover:text-slate-600 transition-colors';
 function SubLink({ href, label, pathname }) {
   const isActive = pathname === href;
   return (
-    <Link href={href} className={`text-sm ${isActive ? activeSubItem : inactiveSubItem}`}>
+    <Link href={href} className={`text-base ${isActive ? activeSubItem : inactiveSubItem}`}>
       {isActive && <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />}
       {label}
     </Link>

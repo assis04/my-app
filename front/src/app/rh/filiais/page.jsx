@@ -79,13 +79,13 @@ export default function FiliaisPage() {
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Filiais</h1>
-            <p className="text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-wider">{filiais.length} filial{filiais.length !== 1 ? 'is' : ''} estratégica{filiais.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-wider">{filiais.length} filial{filiais.length !== 1 ? 'is' : ''} estratégica{filiais.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-3">
             {isAdmin && (
               <button
                 onClick={() => setModalData({})}
-                className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-xs active:scale-95 whitespace-nowrap"
+                className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-sm active:scale-95 whitespace-nowrap"
               >
                 Nova Filial <Plus size={16} />
               </button>
@@ -101,7 +101,7 @@ export default function FiliaisPage() {
             </div>
             <div>
               <p className="text-2xl font-black text-slate-900 tracking-tighter">{filiais.length}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Unidades Ativas</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Unidades Ativas</p>
             </div>
           </div>
           <div className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-premium hover:shadow-floating transition-all active:scale-[0.98] cursor-pointer group">
@@ -112,7 +112,7 @@ export default function FiliaisPage() {
               <p className="text-2xl font-black text-slate-900 tracking-tighter">
                 {filiais.reduce((acc, f) => acc + (f._count?.users || 0), 0)}
               </p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Colaboradores</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Colaboradores</p>
             </div>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function FiliaisPage() {
               <input
                 type="text"
                 placeholder="Localizar unidade..."
-                className="w-full bg-slate-50 text-xs text-slate-900 pl-11 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold placeholder:text-slate-300 placeholder:font-medium"
+                className="w-full bg-slate-50 text-sm text-slate-900 pl-11 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold placeholder:text-slate-300 placeholder:font-medium"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -143,20 +143,20 @@ export default function FiliaisPage() {
               <Loader2 size={32} className="animate-spin text-sky-500" />
             </div>
           ) : error ? (
-            <div className="text-center py-16 bg-rose-50 rounded-2xl border border-rose-100 text-rose-600 font-bold flex items-center justify-center gap-3 text-xs">
+            <div className="text-center py-16 bg-rose-50 rounded-2xl border border-rose-100 text-rose-600 font-bold flex items-center justify-center gap-3 text-sm">
               <AlertTriangle size={18} /> {error}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20 bg-slate-50/10 rounded-2xl border border-dashed border-slate-100 group">
               <Building2 size={40} className="mx-auto text-slate-200 mb-4 group-hover:text-sky-200 transition-colors" />
-              <p className="text-slate-400 font-bold text-[10px] uppercase">
+              <p className="text-slate-400 font-bold text-xs uppercase">
                 {search ? 'Nenhum resultado encontrado.' : 'Nenhuma unidade cadastrada.'}
               </p>
             </div>
           ) : (
             <div className="w-full overflow-hidden rounded-2xl border border-slate-100">
-              <table className="w-full text-left text-xs whitespace-nowrap text-slate-600 border-collapse">
-                <thead className="bg-slate-50/80 text-slate-500 font-black text-[10px] uppercase border-b border-slate-100 italic tracking-tighter">
+              <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
+                <thead className="bg-slate-50/80 text-slate-500 font-black text-xs uppercase border-b border-slate-100 italic tracking-tighter">
                   <tr>
                     <th className="py-2 px-4 italic">Unidade</th>
                     <th className="py-2 px-4 italic">Gerente</th>
@@ -176,34 +176,34 @@ export default function FiliaisPage() {
                           </div>
                           <div className="flex flex-col leading-tight">
                             <span className="font-black text-slate-900 tracking-tight group-hover:text-sky-700 transition-colors uppercase">{f.nome}</span>
-                            <span className="text-[10px] font-bold text-slate-400 truncate max-w-[150px] uppercase tracking-tighter">{f.endereco || 'N/A'}</span>
+                            <span className="text-xs font-bold text-slate-400 truncate max-w-[150px] uppercase tracking-tighter">{f.endereco || 'N/A'}</span>
                           </div>
                         </div>
                       </td>
                       <td className="py-2 px-4">
                         {f.manager ? (
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[9px] text-white font-black group-hover:from-sky-400 group-hover:to-sky-600 transition-all shadow-sm uppercase">
+                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center text-xs text-white font-black group-hover:from-sky-400 group-hover:to-sky-600 transition-all shadow-sm uppercase">
                               {f.manager.nome.charAt(0).toUpperCase()}
                             </div>
                             <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors uppercase tracking-tighter">{f.manager.nome}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-300 font-bold text-[10px] uppercase italic tracking-widest">Vago</span>
+                          <span className="text-slate-300 font-bold text-xs uppercase italic tracking-widest">Vago</span>
                         )}
                       </td>
                       <td className="py-2 px-4 text-center">
-                        <span className="bg-sky-50 text-sky-400 border border-sky-100 px-3 py-0.5 rounded-xl text-[9px] font-black group-hover:bg-sky-500 group-hover:text-white transition-all shadow-xs uppercase">
+                        <span className="bg-sky-50 text-sky-400 border border-sky-100 px-3 py-0.5 rounded-xl text-xs font-black group-hover:bg-sky-500 group-hover:text-white transition-all shadow-xs uppercase">
                           {f._count?.users ?? 0}
                         </span>
                       </td>
                       <td className="py-2 px-4 text-center">
-                        <span className="bg-emerald-50 text-emerald-400 border border-emerald-100 px-3 py-0.5 rounded-xl text-[9px] font-black group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xs uppercase">
+                        <span className="bg-emerald-50 text-emerald-400 border border-emerald-100 px-3 py-0.5 rounded-xl text-xs font-black group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xs uppercase">
                           {f._count?.equipes ?? 0}
                         </span>
                       </td>
                       <td className="py-2 px-4">
-                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">
+                        <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">
                           {new Date(f.createdAt).toLocaleDateString('pt-BR')}
                         </span>
                       </td>
@@ -211,7 +211,7 @@ export default function FiliaisPage() {
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => handleViewTeam(f.id)}
-                            className="bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 px-3 py-1.5 rounded-xl transition-all text-[10px] font-black flex items-center gap-1.5 shadow-xs active:scale-95 uppercase"
+                            className="bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 px-3 py-1.5 rounded-xl transition-all text-xs font-black flex items-center gap-1.5 shadow-xs active:scale-95 uppercase"
                           >
                             <Users size={12} /> Ver
                           </button>
@@ -266,19 +266,19 @@ export default function FiliaisPage() {
               {viewTeamData.users?.length === 0 ? (
                 <div className="text-center py-16 group">
                    <Users size={48} className="mx-auto text-slate-100 mb-4 group-hover:text-sky-100 transition-colors" />
-                   <p className="text-slate-300 font-medium text-sm">Unidade sem efetivo vinculado.</p>
+                   <p className="text-slate-300 font-medium text-base">Unidade sem efetivo vinculado.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3">
                   {viewTeamData.users.map(u => (
                     <div key={u.id} className="bg-white border border-slate-200 p-4 rounded-2xl flex items-center justify-between group hover:border-sky-200 hover:shadow-sm transition-all">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-600 group-hover:border-sky-100 transition-all shadow-xs">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-sm font-black text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-600 group-hover:border-sky-100 transition-all shadow-xs">
                           {u.nome.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-black text-slate-800 text-sm tracking-tight truncate">{u.nome}</p>
-                          <p className="text-xs font-medium text-slate-400 truncate">{u.email}</p>
+                          <p className="font-black text-slate-800 text-base tracking-tight truncate">{u.nome}</p>
+                          <p className="text-sm font-medium text-slate-400 truncate">{u.email}</p>
                         </div>
                       </div>
                     </div>
@@ -290,7 +290,7 @@ export default function FiliaisPage() {
             <div className="p-8 border-t border-slate-100 flex justify-end shrink-0 bg-slate-50/50">
               <button 
                 onClick={() => setViewTeamData(null)}
-                className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-900 border border-slate-200 rounded-2xl transition-all text-sm font-bold shadow-sm active:scale-95 whitespace-nowrap"
+                className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-900 border border-slate-200 rounded-2xl transition-all text-base font-bold shadow-sm active:scale-95 whitespace-nowrap"
               >
                 Retornar ao Painel
               </button>

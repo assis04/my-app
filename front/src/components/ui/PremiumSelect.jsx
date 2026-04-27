@@ -40,7 +40,7 @@ export default function PremiumSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white text-slate-900 h-9 px-4 rounded-2xl border transition-all font-bold text-sm flex items-center justify-between outline-none 
+        className={`w-full bg-white text-slate-900 h-9 px-4 rounded-2xl border transition-all font-bold text-base flex items-center justify-between outline-none 
           ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-slate-300 hover:bg-slate-50/10'}
           ${isOpen && !disabled ? 'border-sky-500 ring-4 ring-sky-500/10' : 'border-slate-200'}
         `}
@@ -59,7 +59,7 @@ export default function PremiumSelect({
         <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
           <div className="max-h-60 overflow-y-auto custom-scrollbar p-2">
             {options.length === 0 ? (
-              <div className="p-4 text-center text-slate-400 text-xs font-black uppercase tracking-widest">
+              <div className="p-4 text-center text-slate-400 text-sm font-black uppercase tracking-widest">
                 Nenhuma opção disponível
               </div>
             ) : (
@@ -68,7 +68,7 @@ export default function PremiumSelect({
                   key={option.id}
                   type="button"
                   onClick={() => handleSelect(option.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl text-left text-sm transition-all group
+                  className={`w-full flex items-center justify-between p-3 rounded-xl text-left text-base transition-all group
                     ${String(option.id) === String(value)
                       ? 'bg-sky-50 text-sky-600 font-black' 
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}

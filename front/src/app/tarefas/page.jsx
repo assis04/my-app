@@ -79,13 +79,13 @@ export default function Tarefas() {
           <Loader2 size={24} className="animate-spin text-sky-500" />
         </div>
       ) : taskList.length === 0 ? (
-        <div className="text-center py-16 text-slate-400 font-medium italic bg-slate-50/10 text-[10px] uppercase">
+        <div className="text-center py-16 text-slate-400 font-medium italic bg-slate-50/10 text-xs uppercase">
           {emptyMessage}
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs whitespace-nowrap text-slate-600 border-collapse">
-            <thead className="bg-slate-50/80 text-slate-500 font-black text-[10px] uppercase border-b border-slate-100 italic tracking-tighter">
+          <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
+            <thead className="bg-slate-50/80 text-slate-500 font-black text-xs uppercase border-b border-slate-100 italic tracking-tighter">
               <tr>
                 <th className="py-2 px-4 italic w-10">St.</th>
                 <th className="py-2 px-4 italic">Tarefa</th>
@@ -102,14 +102,14 @@ export default function Tarefas() {
                      </button>
                   </td>
                   <td className="py-1.5 px-4">
-                    <div className={`font-bold ${task.status === 'CONCLUIDA' ? 'line-through text-slate-400' : 'text-slate-800'} ${isAdmin ? 'text-xs' : 'text-[11px]'}`}>
+                    <div className={`font-bold ${task.status === 'CONCLUIDA' ? 'line-through text-slate-400' : 'text-slate-800'} ${isAdmin ? 'text-sm' : 'text-sm'}`}>
                       {task.titulo}
                     </div>
                     {task.assignedToEquipe && (
-                       <div className="text-[9px] text-purple-600 font-bold bg-purple-50 inline-block px-1.5 rounded mt-0.5">Equipe: {task.assignedToEquipe.nome}</div>
+                       <div className="text-xs text-purple-600 font-bold bg-purple-50 inline-block px-1.5 rounded mt-0.5">Equipe: {task.assignedToEquipe.nome}</div>
                     )}
                   </td>
-                  <td className="py-1.5 px-4 font-bold text-[10px] text-slate-500">
+                  <td className="py-1.5 px-4 font-bold text-xs text-slate-500">
                     {task.dataVencimento ? new Date(task.dataVencimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}
                   </td>
                   <td className="py-1.5 px-4 text-right">
@@ -136,11 +136,11 @@ export default function Tarefas() {
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Lista de Tarefas</h1>
-            <p className="text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-wider">Gestão Pessoal e de Equipes</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-wider">Gestão Pessoal e de Equipes</p>
           </div>
           <button
             onClick={() => setModalData({})}
-            className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2.5 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-xs active:scale-95 whitespace-nowrap"
+            className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2.5 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-sm active:scale-95 whitespace-nowrap"
           >
             Nova Tarefa <Plus size={16} />
           </button>
@@ -149,7 +149,7 @@ export default function Tarefas() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-start">
            {/* Coluna Esquerda: Minhas Tarefas */}
            <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-5 shadow-floating">
-              <h2 className="text-sm font-black text-slate-800 mb-4 flex items-center gap-2">
+              <h2 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2">
                  <div className="w-6 h-6 bg-sky-100 rounded-lg flex items-center justify-center text-sky-600"><CheckSquare size={14}/></div>
                  MINHAS TAREFAS
               </h2>
@@ -158,7 +158,7 @@ export default function Tarefas() {
 
            {/* Coluna Direita: Tarefas da Equipe */}
            <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-5 shadow-floating">
-              <h2 className="text-sm font-black text-slate-800 mb-4 flex items-center gap-2">
+              <h2 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2">
                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600"><CheckSquare size={14}/></div>
                  TAREFAS DA EQUIPE
               </h2>

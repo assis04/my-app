@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
  */
 export function Th({ children, className = '', center = false }) {
   return (
-    <th className={`py-2 px-3 text-[9px] font-black text-slate-400 uppercase tracking-tighter italic ${center ? 'text-center' : ''} ${className}`}>
+    <th className={`py-2 px-3 text-xs font-black text-slate-400 uppercase tracking-tighter italic ${center ? 'text-center' : ''} ${className}`}>
       {children}
     </th>
   );
@@ -45,7 +45,7 @@ export default function DataTable({
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-slate-100 bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs whitespace-nowrap text-slate-600 border-collapse">
+        <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
               {columns.map(col => (
@@ -60,7 +60,7 @@ export default function DataTable({
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
                   <Loader2 size={20} className="animate-spin text-sky-500 mx-auto" />
-                  <p className="text-slate-300 font-black text-[9px] uppercase mt-2">Carregando...</p>
+                  <p className="text-slate-300 font-black text-xs uppercase mt-2">Carregando...</p>
                 </td>
               </tr>
             )}
@@ -68,8 +68,8 @@ export default function DataTable({
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
                   {emptyIcon && <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-slate-100 text-slate-200">{emptyIcon}</div>}
-                  <p className="text-slate-300 font-black text-[9px] uppercase">{emptyMessage}</p>
-                  {emptyHint && <p className="text-slate-200 text-[8px] font-bold mt-1">{emptyHint}</p>}
+                  <p className="text-slate-300 font-black text-xs uppercase">{emptyMessage}</p>
+                  {emptyHint && <p className="text-slate-200 text-xs font-bold mt-1">{emptyHint}</p>}
                 </td>
               </tr>
             )}

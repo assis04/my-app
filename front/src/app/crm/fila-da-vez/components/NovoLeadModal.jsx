@@ -143,7 +143,7 @@ export default function NovoLeadModal({
 
         <form onSubmit={handleSubmit} className="flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar">
           {error && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-2.5 rounded-2xl text-[11px] flex items-start gap-2 shadow-sm animate-in slide-in-from-top-2">
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-2.5 rounded-2xl text-sm flex items-start gap-2 shadow-sm animate-in slide-in-from-top-2">
               <AlertTriangle size={14} className="shrink-0" />
               <p className="font-bold">{error}</p>
             </div>
@@ -151,31 +151,31 @@ export default function NovoLeadModal({
 
           {/* Seção 1: Dados Essenciais */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
               <UserCheck size={12} className="text-sky-400" /> Identificação do Cliente
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
                   Nome *
                 </label>
                 <input
                   required
                   type="text"
                   placeholder="Nome..."
-                  className="premium-input h-9 px-4 text-sm bg-white"
+                  className="premium-input h-9 px-4 text-base bg-white"
                   value={formData.nome}
                   onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
                   Sobrenome
                 </label>
                 <input
                   type="text"
                   placeholder="Sobrenome..."
-                  className="premium-input h-9 px-4 text-sm bg-white"
+                  className="premium-input h-9 px-4 text-base bg-white"
                   value={formData.sobrenome}
                   onChange={e => setFormData(p => ({ ...p, sobrenome: e.target.value }))}
                 />
@@ -183,27 +183,27 @@ export default function NovoLeadModal({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
                   Celular *
                 </label>
                 <input
                   required
                   type="text"
                   placeholder="(00) 00000-0000"
-                  className="premium-input h-9 px-4 text-sm bg-white"
+                  className="premium-input h-9 px-4 text-base bg-white"
                   value={formData.telefone}
                   onChange={e => setFormData(p => ({ ...p, telefone: formatPhone(e.target.value) }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
                   CEP *
                 </label>
                 <input
                   required
                   type="text"
                   placeholder="00000-000"
-                  className="premium-input h-9 px-4 text-sm bg-white"
+                  className="premium-input h-9 px-4 text-base bg-white"
                   maxLength={9}
                   value={formData.cep}
                   onChange={e => setFormData(p => ({ ...p, cep: e.target.value }))}
@@ -214,13 +214,13 @@ export default function NovoLeadModal({
 
           {/* Seção 2: Atribuição Organizacional */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
               <Building2 size={12} className="text-sky-400" /> Roteamento de Venda
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Filial *</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Filial *</label>
                 <PremiumSelect 
                   placeholder="Filial"
                   options={branches}
@@ -231,7 +231,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Vendedor *</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Vendedor *</label>
                 <PremiumSelect 
                   placeholder="Escolha..."
                   options={renderSellers}
@@ -241,7 +241,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Gerente</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Gerente</label>
                 <PremiumSelect 
                   placeholder="Nenhum"
                   options={managers}
@@ -255,12 +255,12 @@ export default function NovoLeadModal({
 
           {/* Seção 3: Marketing e Origem */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
               <Globe size={12} className="text-sky-400" /> Marketing & Origem
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Canal</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Canal</label>
                 <PremiumSelect 
                   placeholder="Canal..."
                   options={[
@@ -275,7 +275,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Origem</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Origem</label>
                 <PremiumSelect 
                   placeholder="Origem..."
                   options={[
@@ -291,7 +291,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Parceria</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Parceria</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Não', nome: 'Venda Direta' },
@@ -306,12 +306,12 @@ export default function NovoLeadModal({
 
           {/* Seção 4: Sistema e Etapa */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
               <Settings2 size={12} className="text-sky-400" /> Status de CRM
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Etapa do Funil</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Etapa do Funil</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Novo', nome: 'Novo' },
@@ -324,7 +324,7 @@ export default function NovoLeadModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Status Vital</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Status Vital</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Ativo', nome: '🟢 ATIVO' },
@@ -339,22 +339,22 @@ export default function NovoLeadModal({
 
           {/* Seção 5: Perfil de Interesse */}
           <div className="space-y-3">
-             <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1">
+             <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
               <Building2 size={12} className="text-sky-400" /> Preferências
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Tipo de Imóvel</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Tipo de Imóvel</label>
                 <input
                   type="text" 
                   placeholder="Ex: Apartamento..."
-                  className="premium-input h-9 px-4 text-sm bg-white"
+                  className="premium-input h-9 px-4 text-base bg-white"
                   value={formData.tipoImovel}
                   onChange={e => setFormData(p => ({ ...p, tipoImovel: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">Status Preferencial</label>
+                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Status Preferencial</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Pronto', nome: 'Pronto para Morar' },
@@ -370,7 +370,7 @@ export default function NovoLeadModal({
 
           {/* Upload Section */}
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
               <FileUp size={12} className="text-sky-500" /> Planta (Opcional)
             </label>
             <div className="relative group bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 hover:border-sky-400 hover:bg-sky-50/50 transition-all cursor-pointer overflow-hidden">
@@ -384,10 +384,10 @@ export default function NovoLeadModal({
                 <FileUp size={16} className="text-sky-500" />
               </div>
               <div className="text-center">
-                <p className="text-[11px] font-black text-slate-700 leading-tight">
+                <p className="text-sm font-black text-slate-700 leading-tight">
                   {plantaFile ? plantaFile.name : 'Arquivar Planta'}
                 </p>
-                <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase leading-none">
+                <p className="text-xs text-slate-400 mt-0.5 font-bold uppercase leading-none">
                   MÁX 10MB
                 </p>
               </div>
@@ -399,11 +399,11 @@ export default function NovoLeadModal({
         {/* Footer */}
         <div className="flex gap-4 p-4 border-t border-slate-100 bg-white shadow-inner shrink-0 relative z-20 font-sans">
           <button type="button" onClick={onClose}
-            className="flex-1 py-2 font-bold text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm">
+            className="flex-1 py-2 font-bold text-sm text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm">
             Descartar
           </button>
           <button type="button" disabled={loading} onClick={handleSubmit}
-            className="flex-2 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 whitespace-nowrap"
+            className="flex-2 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 whitespace-nowrap"
           >
             {loading ? <><Loader2 size={16} className="animate-spin" /> Sincronizando...</> : 'Confirmar e Sincronizar'}
           </button>

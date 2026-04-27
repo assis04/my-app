@@ -42,7 +42,7 @@ export default function ModalBase({ open, onClose, title, subtitle, maxWidth = '
         <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100 shrink-0">
           <div>
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight italic">{title}</h2>
-            {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-0.5 italic">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-slate-400 font-bold mt-0.5 italic">{subtitle}</p>}
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
             <X size={18} />

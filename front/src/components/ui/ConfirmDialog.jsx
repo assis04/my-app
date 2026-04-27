@@ -66,21 +66,21 @@ export default function ConfirmDialog({
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 border ${styles.icon}`}>
             <AlertTriangle size={22} />
           </div>
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-2">{title}</h3>
-          <p className="text-xs text-slate-500 font-medium leading-relaxed">{message}</p>
+          <h3 className="text-base font-black text-slate-900 uppercase tracking-tight mb-2">{title}</h3>
+          <p className="text-sm text-slate-500 font-medium leading-relaxed">{message}</p>
         </div>
         <div className="flex gap-3 p-6 pt-0">
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 py-2.5 font-black text-[10px] text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-xs uppercase tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-black text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-xs uppercase tracking-tight disabled:opacity-50"
           >
             {cancelLabel}
           </button>
           <button
             onClick={handleConfirm}
             disabled={loading}
-            className={`flex-1 py-2.5 font-black text-[10px] rounded-2xl transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50 flex items-center justify-center gap-2 ${styles.button}`}
+            className={`flex-1 py-2.5 font-black text-xs rounded-2xl transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50 flex items-center justify-center gap-2 ${styles.button}`}
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : confirmLabel}
           </button>

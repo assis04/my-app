@@ -51,11 +51,11 @@ export default function Login() {
               <WardrobeIcon size={40} className="text-white" />
             </div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight text-center">Moveis Valcenter</h1>
-            <p className="text-slate-400 mt-2 font-medium text-center text-xs">Autenticação Segura</p>
+            <p className="text-slate-400 mt-2 font-medium text-center text-sm">Autenticação Segura</p>
           </div>
           
           {error && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-2xl mb-8 text-sm font-bold text-center flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200 shadow-sm">
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-2xl mb-8 text-base font-bold text-center flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
               {error}
             </div>
@@ -63,7 +63,7 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-xs font-bold text-slate-400 ml-1">Endereço de E-mail</label>
+              <label htmlFor="email" className="text-sm font-bold text-slate-400 ml-1">Endereço de E-mail</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-sky-500 transition-colors">
                   <Mail size={18} />
@@ -82,10 +82,10 @@ export default function Login() {
             
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label htmlFor="password" className="text-xs font-bold text-slate-400">Senha de Acesso</label>
+                <label htmlFor="password" className="text-sm font-bold text-slate-400">Senha de Acesso</label>
                 <button 
                   type="button" 
-                  className="text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors"
+                  className="text-sm font-bold text-sky-600 hover:text-sky-700 transition-colors"
                   onClick={() => alert('Funcionalidade de recuperação em breve')}
                 >
                   Recuperar?
@@ -124,14 +124,14 @@ export default function Login() {
                 <Loader2 size={24} className="animate-spin" />
               ) : (
                 <>
-                  <span className="text-sm">Acessar Sistema</span>
+                  <span className="text-base">Acessar Sistema</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-12 text-center text-slate-400 font-medium text-xs">
+          <p className="mt-12 text-center text-slate-400 font-medium text-sm">
             Moveis <span className="text-sky-500">Valcenter</span> &copy; {new Date().getFullYear()} • Versão 4.0
           </p>
         </div>

@@ -38,7 +38,7 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
         {/* Scrollable form */}
         <form onSubmit={handleSubmit} className="overflow-y-auto custom-scrollbar flex-1 p-8 space-y-8 bg-white">
           {error && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-sm font-bold flex items-start gap-3 shadow-sm">
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-base font-bold flex items-start gap-3 shadow-sm">
               <AlertTriangle size={18} className="shrink-0 mt-0.5" />
               <p>{error}</p>
             </div>
@@ -46,23 +46,23 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5 focus-within:scale-[1.01] transition-transform">
-              <label className="text-xs font-bold text-slate-400 ml-1">Identificador do Perfil *</label>
+              <label className="text-sm font-bold text-slate-400 ml-1">Identificador do Perfil *</label>
               <input
                 required
                 disabled={isADM}
                 type="text"
                 placeholder="Ex: GERENTE_VENDAS"
-                className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-sm disabled:opacity-50"
+                className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-black placeholder:text-slate-300 text-base disabled:opacity-50"
                 value={formData.nome}
                 onChange={e => handleInputChange('nome', e.target.value.toUpperCase())}
               />
             </div>
             <div className="space-y-1.5 focus-within:scale-[1.01] transition-transform">
-              <label className="text-xs font-bold text-slate-400 ml-1">Descrição Breve</label>
+              <label className="text-sm font-bold text-slate-400 ml-1">Descrição Breve</label>
               <input
                 type="text"
                 placeholder="Ex: Responsável pela filial..."
-                className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-sm"
+                className="w-full bg-slate-50 text-slate-900 p-3 rounded-2xl border border-slate-200 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all font-bold placeholder:text-slate-300 text-base"
                 value={formData.descricao}
                 onChange={e => handleInputChange('descricao', e.target.value)}
               />
@@ -72,8 +72,8 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
           {/* Permissions Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <label className="text-sm font-bold text-slate-800">Matriz de Acessos</label>
-              <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-100 shadow-sm">
+              <label className="text-base font-bold text-slate-800">Matriz de Acessos</label>
+              <span className="text-sm font-semibold text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-100 shadow-sm">
                 {selectedPermissions.length} Módulos Ativos
               </span>
             </div>
@@ -103,9 +103,9 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
                             <Square size={16} className="text-slate-200" />
                           )}
                         </div>
-                        <span className={`text-sm font-black tracking-tight ${group.color}`}>{group.category}</span>
+                        <span className={`text-base font-black tracking-tight ${group.color}`}>{group.category}</span>
                       </div>
-                      <span className="text-xs font-medium text-slate-400 bg-white/60 px-2 py-0.5 rounded-lg">
+                      <span className="text-sm font-medium text-slate-400 bg-white/60 px-2 py-0.5 rounded-lg">
                         {groupKeys.filter(k => selectedPermissions.includes(k)).length} / {group.modules.length}
                       </span>
                     </button>
@@ -130,7 +130,7 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
                                 </svg>
                               )}
                             </div>
-                            <span className={`text-xs font-bold transition-colors ${checked ? 'text-slate-800' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                            <span className={`text-sm font-bold transition-colors ${checked ? 'text-slate-800' : 'text-slate-400 group-hover:text-slate-600'}`}>
                               {mod.label}
                             </span>
                           </label>
@@ -149,7 +149,7 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 font-bold text-xs border border-slate-200 text-slate-400 rounded-2xl hover:bg-white hover:text-slate-600 transition-all active:scale-95 shadow-sm"
+            className="flex-1 py-3 font-bold text-sm border border-slate-200 text-slate-400 rounded-2xl hover:bg-white hover:text-slate-600 transition-all active:scale-95 shadow-sm"
           >
             Cancelar
           </button>
@@ -157,7 +157,7 @@ export default function RoleModal({ role = null, onClose, onRefresh }) {
             type="button"
             disabled={loading}
             onClick={handleSubmit}
-            className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-sm shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap"
+            className="flex-2 bg-linear-to-br from-sky-400 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-200/50 hover:shadow-xl transition-all font-bold text-base shadow-lg shadow-sky-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-95 whitespace-nowrap"
           >
             {loading ? (
               <><Loader2 size={18} className="animate-spin" /> Sincronizando...</>
