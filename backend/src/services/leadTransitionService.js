@@ -40,7 +40,17 @@ function isAdm(user) {
 }
 
 function hasPermission(user, perm) {
-  return Array.isArray(user?.permissions) && user.permissions.includes(perm);
+  // Wildcard '*' satisfaz qualquer permissão — mesmo critério da route
+  // middleware (config/roleMiddleware.js authorizePermission).
+  // ADM role sozinho NÃO dá bypass aqui — guard exige permissão explícita
+  // (spec §9.14): admin pode até estar com role 'ADM' mas se permissions=[]
+  // sem '*' nem a permissão literal, é bloqueado. Ver teste:
+  // "ADM sem permissão edit-after-sale é bloqueado".
+  // Sem essa expansão de '*', ADM seed com permissions:['*'] era rejeitado
+  // por hasPermission('crm:leads:reactivate') (bug em staging 2026-04-24).
+  if (!Array.isArray(user?.permissions)) return false;
+  if (user.permissions.includes('*')) return true;
+  return user.permissions.includes(perm);
 }
 
 function assertFilialAccess(lead, user) {

@@ -176,6 +176,19 @@ describe('transitionStatus — guard de edição pós-venda', () => {
       }),
     ).rejects.toThrow(/edit-after-sale/);
   });
+
+  // Regressão 2026-04-24: wildcard '*' deve satisfazer hasPermission interno
+  // (mesmo comportamento da route middleware authorizePermission).
+  it('aceita user com wildcard "*" mesmo sem edit-after-sale explícita', async () => {
+    mockLeadLoad({ ...leadBase, status: LeadStatus.VENDA });
+    const r = await transitionStatus({
+      leadId: 10,
+      newStatus: LeadStatus.POS_VENDA,
+      user: { id: 1, role: 'ADM', filialId: null, permissions: ['*'] },
+      reason: null,
+    });
+    expect(r.lead.status).toBe(LeadStatus.POS_VENDA);
+  });
 });
 
 describe('transitionStatus — validação da statusMachine', () => {
@@ -645,6 +658,24 @@ describe('reactivateLead — validações de entrada', () => {
     await expect(
       reactivateLead({ leadId: 10, modo: 'reativar', user: regularUser }),
     ).rejects.toThrow(/crm:leads:reactivate/);
+  });
+
+  // Regressão 2026-04-24: ADM com permissions:["*"] estava sendo bloqueado pelo
+  // hasPermission interno (literal includes('crm:leads:reactivate')). O fix
+  // expande '*' como wildcard, mantendo o requisito de permissão explícita
+  // pra users sem '*' (preservando spec §9.14).
+  it('aceita user com wildcard "*" mesmo sem listar crm:leads:reactivate explicitamente', async () => {
+    mockLeadLoad({
+      ...leadBase,
+      status: LeadStatus.CANCELADO,
+      statusAntesCancelamento: LeadStatus.EM_PROSPECCAO,
+    });
+    const r = await reactivateLead({
+      leadId: 10,
+      modo: 'reativar',
+      user: { id: 1, role: 'ADM', filialId: null, permissions: ['*'] },
+    });
+    expect(r.lead.status).toBe(LeadStatus.EM_PROSPECCAO);
   });
 });
 
