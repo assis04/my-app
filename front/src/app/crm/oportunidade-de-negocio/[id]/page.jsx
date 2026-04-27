@@ -109,7 +109,7 @@ export default function OrcamentoDetailPage() {
   if (!orcamento) {
     return (
       <div className="max-w-[900px] mx-auto">
-        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mt-6">
+        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-sm flex items-start gap-2 shadow-sm mt-6">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{error || 'Orçamento não encontrado.'}</p>
         </div>
@@ -136,7 +136,7 @@ export default function OrcamentoDetailPage() {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase tracking-tighter italic">
             Orçamento <span className="text-sky-500">{orcamento.numero}</span>
           </h1>
-          <p className="text-[10px] text-slate-400 font-bold mt-0.5 italic">
+          <p className="text-xs text-slate-400 font-bold mt-0.5 italic">
             Criado em {new Date(orcamento.createdAt).toLocaleString('pt-BR')}
             {criadoPor?.nome && ` por ${criadoPor.nome}`}
           </p>
@@ -145,13 +145,13 @@ export default function OrcamentoDetailPage() {
 
       {/* Feedback */}
       {error && (
-        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-sm flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{error}</p>
         </div>
       )}
       {success && (
-        <div className="bg-emerald-50 border border-emerald-100 text-emerald-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-emerald-50 border border-emerald-100 text-emerald-600 p-3 rounded-2xl text-sm flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <CheckCircle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{success}</p>
         </div>
@@ -164,7 +164,7 @@ export default function OrcamentoDetailPage() {
           className="flex items-start gap-3 p-4 mb-4 rounded-2xl border border-amber-200 bg-amber-50 shadow-sm"
         >
           <AlertTriangle size={14} className="text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+          <p className="text-sm text-amber-700 font-medium leading-relaxed">
             <strong>Atenção:</strong> o Lead vinculado a este Orçamento está Cancelado.
             Considere reativar o Lead antes de avançar com esta oportunidade.
           </p>
@@ -175,7 +175,7 @@ export default function OrcamentoDetailPage() {
       <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">
+            <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">
               Status
             </label>
             <OrcamentoStatusDropdown
@@ -184,7 +184,7 @@ export default function OrcamentoDetailPage() {
               submitting={busy}
             />
             {isCancelado && orcamento.motivoCancelamento && (
-              <p className="text-[10px] text-rose-600 font-bold px-1 mt-1">
+              <p className="text-xs text-rose-600 font-bold px-1 mt-1">
                 Motivo: {orcamento.motivoCancelamento}
               </p>
             )}
@@ -196,7 +196,7 @@ export default function OrcamentoDetailPage() {
                 type="button"
                 onClick={() => setShowCancel(true)}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[10px] font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
               >
                 <XCircle size={13} /> Cancelar Orçamento
               </button>
@@ -206,7 +206,7 @@ export default function OrcamentoDetailPage() {
                 type="button"
                 onClick={handleReactivate}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-black text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
               >
                 <RefreshCw size={13} /> Reativar
               </button>
@@ -217,29 +217,29 @@ export default function OrcamentoDetailPage() {
 
       {/* Lead vinculado */}
       <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6">
-        <h3 className="text-sky-600 font-black text-[9px] uppercase tracking-widest flex items-center gap-2 px-1 mb-4">
+        <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1 mb-4">
           <Briefcase size={12} className="text-sky-400" /> Lead Vinculado
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-1">Nome</p>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-1">Nome</p>
             <p className="font-bold text-slate-900">
               {lead.nome} {lead.sobrenome || ''}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-1">Celular</p>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-1">Celular</p>
             <p className="font-bold text-slate-700">{formatPhone(lead.celular || '')}</p>
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-1">Status do Lead</p>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-1">Status do Lead</p>
             <p className="font-bold text-slate-700">{lead.status || '—'}</p>
           </div>
         </div>
         <div className="mt-4">
           <button
             onClick={() => router.push(`/crm/leads/${lead.id}`)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-600 hover:text-sky-700 transition-all"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-sky-600 hover:text-sky-700 transition-all"
           >
             <ExternalLink size={12} /> Abrir Lead #{String(lead.id).padStart(4, '0')}
           </button>

@@ -89,12 +89,12 @@ export default function NovoLeadPage() {
         </button>
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase tracking-tighter italic">Novo Lead</h1>
-          <p className="text-[10px] text-slate-400 font-bold mt-0.5 italic">O vínculo com a Conta será feito automaticamente</p>
+          <p className="text-xs text-slate-400 font-bold mt-0.5 italic">O vínculo com a Conta será feito automaticamente</p>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-xs flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-sm flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{error}</p>
         </div>
@@ -113,13 +113,13 @@ export default function NovoLeadPage() {
 
       {/* Footer — Botões */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
-        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm uppercase tracking-tight">
+        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-sm text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm uppercase tracking-tight">
           Cancelar
         </button>
-        <button onClick={handleSave} disabled={loading} className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-xs disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight">
+        <button onClick={handleSave} disabled={loading} className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-sm disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight">
           {loading ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Save size={14} /> Salvar Lead</>}
         </button>
-        <button onClick={handleSaveAndOportunidade} disabled={loading} className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-xs disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 uppercase tracking-tight">
+        <button onClick={handleSaveAndOportunidade} disabled={loading} className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-sm disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 uppercase tracking-tight">
           {loading ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Briefcase size={14} /> Nova Oportunidade</>}
         </button>
       </div>

@@ -69,14 +69,14 @@ export default function ReactivateLeadDialog({ open, onClose, onSubmit, submitti
           <button
             onClick={handleClose}
             disabled={submitting}
-            className="flex-1 py-2.5 font-bold text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-bold text-sm text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50"
           >
             Voltar
           </button>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-600 text-white py-2.5 rounded-2xl hover:shadow-emerald-500/40 hover:shadow-2xl transition-all font-black text-xs disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-emerald-900/10 active:scale-95 uppercase tracking-tight"
+            className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-600 text-white py-2.5 rounded-2xl hover:shadow-emerald-500/40 hover:shadow-2xl transition-all font-black text-sm disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-emerald-900/10 active:scale-95 uppercase tracking-tight"
           >
             {submitting ? <><Loader2 size={13} className="animate-spin" /> Reativando...</> : <><RefreshCw size={13} /> Confirmar</>}
           </button>
@@ -109,10 +109,10 @@ export default function ReactivateLeadDialog({ open, onClose, onSubmit, submitti
                     <Icon size={14} />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight mb-0.5">
+                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-0.5">
                       {title}
                     </h4>
-                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed">
                       {description}
                     </p>
                   </div>
@@ -123,7 +123,7 @@ export default function ReactivateLeadDialog({ open, onClose, onSubmit, submitti
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">
+          <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">
             Motivo (opcional)
           </label>
           <textarea
@@ -132,7 +132,7 @@ export default function ReactivateLeadDialog({ open, onClose, onSubmit, submitti
             onChange={(e) => setMotivo(e.target.value)}
             maxLength={1000}
             disabled={submitting}
-            className="premium-input px-4 py-2 text-sm w-full resize-none disabled:opacity-50"
+            className="premium-input px-4 py-2 text-base w-full resize-none disabled:opacity-50"
             placeholder="Contexto da reativação — visível no histórico..."
           />
         </div>

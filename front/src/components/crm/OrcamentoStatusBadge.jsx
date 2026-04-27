@@ -15,15 +15,15 @@ export default function OrcamentoStatusBadge({ status, size = 'sm', showDot = tr
 
   if (!palette) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
         {status || '—'}
       </span>
     );
   }
 
   const sizeClasses = size === 'xs'
-    ? 'text-[9px] px-1.5 py-0.5'
-    : 'text-[10px] px-2 py-0.5';
+    ? 'text-xs px-1.5 py-0.5'
+    : 'text-xs px-2 py-0.5';
 
   return (
     <span

@@ -78,14 +78,14 @@ export default function StatusTransitionModal({
           <button
             onClick={handleClose}
             disabled={submitting}
-            className="flex-1 py-2.5 font-bold text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-bold text-sm text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-xs disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight"
+            className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-sm disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight"
           >
             {submitting ? <><Loader2 size={13} className="animate-spin" /> Aplicando...</> : <><Send size={13} /> Aplicar</>}
           </button>
@@ -93,7 +93,7 @@ export default function StatusTransitionModal({
       }
     >
       {validTargets.length === 0 ? (
-        <p className="text-xs text-slate-500 font-medium text-center py-4">
+        <p className="text-sm text-slate-500 font-medium text-center py-4">
           Nenhuma transição disponível a partir de <strong>{currentStatus}</strong>.
           {currentStatus === 'Cancelado' && ' Use "Reativar" para restaurar.'}
         </p>
@@ -123,21 +123,21 @@ export default function StatusTransitionModal({
           {/* Datetime condicional */}
           {needsDatetime && (
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">
+              <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">
                 Agendar para *
               </label>
               <input
                 type="datetime-local"
                 value={datetimeLocal}
                 onChange={(e) => setDatetimeLocal(e.target.value)}
-                className="premium-input h-9 px-4 text-sm w-full"
+                className="premium-input h-9 px-4 text-base w-full"
               />
             </div>
           )}
 
           {/* Motivo opcional */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 px-1 uppercase tracking-tighter">
+            <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">
               Motivo (opcional)
             </label>
             <textarea
@@ -145,7 +145,7 @@ export default function StatusTransitionModal({
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               maxLength={1000}
-              className="premium-input px-4 py-2 text-sm w-full resize-none"
+              className="premium-input px-4 py-2 text-base w-full resize-none"
               placeholder="Contexto da mudança — visível no histórico do lead..."
             />
           </div>
