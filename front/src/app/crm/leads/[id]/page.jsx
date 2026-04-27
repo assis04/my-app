@@ -243,30 +243,8 @@ export default function EditLeadPage() {
         </button>
       </div>
 
-      {/* Banner pós-venda */}
+      {/* Alertas: banner pós-venda + feedback de erro/sucesso (sempre topo) */}
       {formDisabled && <PostSaleReadOnlyBanner status={leadStatus} />}
-
-      {/* Badge de Orçamento vinculado */}
-      {orcamento && (
-        <button
-          type="button"
-          onClick={() => router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`)}
-          className="w-full flex items-center gap-3 p-3 mb-4 rounded-2xl border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-all shadow-sm active:scale-[0.99]"
-        >
-          <div className="p-2 bg-violet-500 text-white rounded-xl shrink-0">
-            <Briefcase size={14} />
-          </div>
-          <div className="flex-1 text-left min-w-0">
-            <p className="text-sm font-black text-violet-700 uppercase tracking-tighter">
-              Orçamento vinculado
-            </p>
-            <p className="text-base font-bold text-violet-900 truncate">
-              {orcamento.numero}
-            </p>
-          </div>
-          <OrcamentoStatusBadge status={orcamento.status} size="xs" />
-        </button>
-      )}
 
       {displayError && (
         <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
@@ -282,7 +260,20 @@ export default function EditLeadPage() {
         </div>
       )}
 
-      {/* Painel de Status + Temperatura + Ações rápidas */}
+      {/* 1. Informações do Lead (identificação + cônjuge + atribuição) */}
+      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl space-y-6 mb-6">
+        <LeadFormFields
+          form={form}
+          onChange={handleChange}
+          sellers={sellers}
+          isVendedor={isVendedor}
+          isAdm={isAdm}
+          userName={user?.nome}
+          disabled={formDisabled}
+        />
+      </div>
+
+      {/* 2. Status + Temperatura + Ações rápidas */}
       <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
@@ -330,18 +321,27 @@ export default function EditLeadPage() {
         </div>
       </div>
 
-      {/* Form de identificação/cônjuge/atribuição */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl space-y-6">
-        <LeadFormFields
-          form={form}
-          onChange={handleChange}
-          sellers={sellers}
-          isVendedor={isVendedor}
-          isAdm={isAdm}
-          userName={user?.nome}
-          disabled={formDisabled}
-        />
-      </div>
+      {/* 3. Orçamento vinculado (só aparece se já existir um) */}
+      {orcamento && (
+        <button
+          type="button"
+          onClick={() => router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`)}
+          className="w-full flex items-center gap-3 p-3 mb-6 rounded-2xl border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-all shadow-sm active:scale-[0.99]"
+        >
+          <div className="p-2 bg-violet-500 text-white rounded-xl shrink-0">
+            <Briefcase size={14} />
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-black text-violet-700 uppercase tracking-tighter">
+              Orçamento vinculado
+            </p>
+            <p className="text-base font-bold text-violet-900 truncate">
+              {orcamento.numero}
+            </p>
+          </div>
+          <OrcamentoStatusBadge status={orcamento.status} size="xs" />
+        </button>
+      )}
 
       {/* Footer — Botões */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
