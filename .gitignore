@@ -1,1 +1,7 @@
 PROJECT_OVERVIEW.md
+
+# Uploads de usuários — não versionar
+backend/uploads/
+
+# Configuração local do Claude Code
+.claude/
