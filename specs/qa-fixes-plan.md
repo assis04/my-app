@@ -489,6 +489,77 @@ npm audit  # esperado: postcss issue resolved
 
 ---
 
+### Task #10 — Endurecer CSP com nonce-based via middleware Next 16 `[LOW — adicionada em 2026-04-30]`
+
+**Contexto:** Task #6 (CSP) foi entregue na P1 com `'unsafe-inline'` em `script-src` e `style-src` porque Next 16 (App Router + reactCompiler + RSC) injeta múltiplos scripts inline para hidratação e payloads RSC. Sem isso, todas as páginas ficavam em branco em staging (descoberto no smoke test pós-deploy).
+
+**Estado atual:** CSP entregue com defesas em camadas:
+- `script-src 'self' 'unsafe-inline'` — bloqueia scripts de outros domínios
+- `connect-src` restrito a self + backend
+- `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `upgrade-insecure-requests`
+
+O ganho real do nonce vs. `'unsafe-inline'` é bloquear **XSS injetado** (ex.: usuário cola `<script>` num campo que renderiza). Como o codebase não tem `dangerouslySetInnerHTML` e o React 19 escapa por default, a superfície prática hoje é pequena — mas a defesa em profundidade vale.
+
+**Solução:**
+
+Pattern oficial da Next docs (canonical para App Router):
+
+1. Criar `front/src/middleware.js`:
+   ```js
+   import { NextResponse } from 'next/server';
+
+   export function middleware(request) {
+     const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+     const wsUrl = apiUrl.replace(/^http/, 'ws');
+     const csp = [
+       "default-src 'self'",
+       `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+       `style-src 'self' 'nonce-${nonce}'`,
+       `connect-src 'self' ${apiUrl} ${wsUrl}`,
+       "img-src 'self' data: blob:",
+       "font-src 'self'",
+       "object-src 'none'",
+       "base-uri 'self'",
+       "form-action 'self'",
+       "frame-ancestors 'none'",
+       "upgrade-insecure-requests",
+     ].join('; ');
+
+     const requestHeaders = new Headers(request.headers);
+     requestHeaders.set('x-nonce', nonce);
+     requestHeaders.set('Content-Security-Policy', csp);
+
+     const response = NextResponse.next({ request: { headers: requestHeaders } });
+     response.headers.set('Content-Security-Policy', csp);
+     return response;
+   }
+
+   export const config = {
+     matcher: [
+       { source: '/((?!api|_next/static|_next/image|favicon.ico).*)', missing: [...] },
+     ],
+   };
+   ```
+
+2. Remover CSP do `next.config.mjs` (vira responsabilidade do middleware).
+
+3. Auditar componentes que usam `<Script>` do Next — passar `nonce` lido do header via `headers()` no Server Component que monta o `<Script>`.
+
+**Risco/Validação:**
+
+Next 16 com `output: 'standalone'` + `reactCompiler: true` pode ter quirks com nonce em RSC. Necessário smoke test profundo:
+- Hidratação inicial (sem flash de conteúdo bloqueado)
+- Navegação client-side entre rotas
+- Modais e portals (recharts, lucide)
+- Socket.IO connect
+
+**Estimativa:** 3–5h (1h código, 2-3h testes + ajustes em staging, 1h deploy).
+
+**Critério de aceite:** zero violações CSP no console de qualquer página + zero `'unsafe-inline'` no header CSP final.
+
+---
+
 ## 6. Cronograma sugerido
 
 ```
@@ -509,9 +580,10 @@ Semana 2 (P1):
                                        total: 6h
 
 Sprint seguinte (P2):
-  Task #8 (a11y sweep)                  — 8h
-  Task #9 (E2E Playwright)              — 8h
-                                  total: 16h
+  Task #8 (a11y sweep)                          — 8h
+  Task #9 (E2E Playwright)                      — 8h
+  Task #10 (CSP nonce-based via middleware)     — 4h
+                                  total: 20h
 ```
 
 **Total geral:** ~31.5h ≈ 4 dias de trabalho focado, distribuídos em ~3 semanas.
