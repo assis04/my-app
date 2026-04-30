@@ -52,12 +52,38 @@ function isAdm(user) {
 }
 
 /**
- * Listagem de contas — somente leitura, para a tela de visualização.
- * Non-ADM: só vê contas que tenham leads na sua filial.
+ * Listagem de contas com filtros — somente leitura.
+ *
+ * Filtros aceitos (todos opcionais, combinam com AND):
+ *   - search: busca textual em nome/sobrenome/celular/CEP (retro-compat)
+ *   - nome: contains case-insensitive em nome OU sobrenome
+ *   - telefone: contains em celular (digits)
+ *   - status: conta TEM ao menos um lead com esse status (lead.status exato)
+ *   - filialId: conta TEM ao menos um lead nessa filial
+ *   - userId: conta TEM ao menos um lead com esse vendedor
+ *   - dataInicio / dataFim: account.createdAt no range (ISO ou Date)
+ *
+ * Scoping: non-ADM só vê contas com leads na própria filial.
+ * Quando filialId é passado E o usuário não-ADM tem filial diferente,
+ * o non-ADM continua restrito à dele (filialId é ignorado em favor do scope).
  */
-export async function listAccounts({ search, page = 1, limit = 50 }, user) {
+export async function listAccounts(filters = {}, user) {
+  const {
+    search,
+    nome,
+    telefone,
+    status,
+    filialId,
+    userId,
+    dataInicio,
+    dataFim,
+    page = 1,
+    limit = 50,
+  } = filters;
+
   const where = {};
 
+  // Busca textual ampla (retro-compat com a UI antiga)
   if (search) {
     where.OR = [
       { nome: { contains: search, mode: 'insensitive' } },
@@ -67,9 +93,43 @@ export async function listAccounts({ search, page = 1, limit = 50 }, user) {
     ];
   }
 
-  // Scoping: non-ADM só vê accounts com leads na sua filial
+  // Filtro de nome estruturado (UI nova) — sobrescreve OR só se search ausente
+  if (nome && !search) {
+    where.OR = [
+      { nome: { contains: nome, mode: 'insensitive' } },
+      { sobrenome: { contains: nome, mode: 'insensitive' } },
+    ];
+  }
+
+  if (telefone) {
+    const digits = String(telefone).replace(/\D/g, '');
+    if (digits) where.celular = { contains: digits };
+  }
+
+  if (dataInicio || dataFim) {
+    where.createdAt = {};
+    if (dataInicio) where.createdAt.gte = new Date(dataInicio);
+    if (dataFim) where.createdAt.lte = new Date(dataFim);
+  }
+
+  // Filtros que dependem de leads vinculados.
+  // Se non-ADM, força filial da sessão; ignora filialId arbitrário do query.
+  const leadSomeWhere = {};
+  if (status) leadSomeWhere.status = status;
+  if (userId) {
+    const uid = parseInt(userId, 10);
+    if (Number.isInteger(uid)) leadSomeWhere.vendedorId = uid;
+  }
+
   if (!isAdm(user) && user?.filialId) {
-    where.leads = { some: { filialId: user.filialId } };
+    leadSomeWhere.filialId = user.filialId;
+  } else if (filialId) {
+    const fid = parseInt(filialId, 10);
+    if (Number.isInteger(fid)) leadSomeWhere.filialId = fid;
+  }
+
+  if (Object.keys(leadSomeWhere).length > 0) {
+    where.leads = { some: leadSomeWhere };
   }
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
