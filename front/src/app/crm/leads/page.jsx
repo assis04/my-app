@@ -219,8 +219,8 @@ export default function LeadsListPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      api('/users').then(raw => {
-        const res = raw?.data ?? (Array.isArray(raw) ? raw : []);
+      api('/users/lookup').then(raw => {
+        const res = Array.isArray(raw) ? raw : (raw?.data ?? []);
         const list = res
           .filter(u => u.ativo !== false)
           .map(u => ({ id: u.id, nome: u.nome }));

@@ -97,8 +97,8 @@ export default function EditLeadPage() {
     if (!authLoading && user) {
       fetchLead();
       fetchOrcamento();
-      api('/users').then(raw => {
-        const res = raw?.data ?? (Array.isArray(raw) ? raw : []);
+      api('/users/lookup').then(raw => {
+        const res = Array.isArray(raw) ? raw : (raw?.data ?? []);
         setSellers(res.filter(u => u.ativo !== false).map(u => ({ id: u.id, nome: u.nome })));
       }).catch(() => {});
     }

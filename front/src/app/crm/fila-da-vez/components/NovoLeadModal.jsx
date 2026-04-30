@@ -44,11 +44,11 @@ export default function NovoLeadModal({
     async function fetchInitialData() {
       try {
         const [resUsers, resBranches] = await Promise.all([
-          api('/users'),
+          api('/users/lookup'),
           api('/filiais')
         ]);
-        
-        const usersList = resUsers?.data ?? (Array.isArray(resUsers) ? resUsers : []);
+
+        const usersList = Array.isArray(resUsers) ? resUsers : (resUsers?.data ?? []);
         const gerentes = usersList
           .filter(u => ['Gerente', 'GERENTE', 'ADM', 'Administrador'].includes(String(u.perfil)))
           .map(u => ({ id: u.id, nome: `${u.nome} (${u.perfil})` }));

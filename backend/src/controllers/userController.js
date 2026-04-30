@@ -19,6 +19,16 @@ export async function listUsers(req, res, next) {
   }
 }
 
+export async function lookupUsers(req, res, next) {
+  try {
+    const { filialId, role } = req.query;
+    const users = await userService.listUsersForLookup({ filialId, role });
+    return res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function updateUser(req, res, next) {
   try {
     const updatedUser = await userService.updateUser(req.params.id, req.body, req.user);

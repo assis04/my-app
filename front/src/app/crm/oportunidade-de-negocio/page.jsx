@@ -42,13 +42,12 @@ export default function OportunidadeDeNegocioPage() {
       try {
         const [resBranches, resUsers] = await Promise.all([
           api('/filiais'),
-          api('/users'),
+          api('/users/lookup?role=Vendedor'),
         ]);
         const list = resBranches?.data ?? (Array.isArray(resBranches) ? resBranches : []);
         setBranches(list);
-        const usersList = resUsers?.data ?? (Array.isArray(resUsers) ? resUsers : []);
-        const vendedores = usersList.filter((u) => String(u.perfil || '').toLowerCase() === 'vendedor');
-        setUsers(vendedores);
+        const usersList = Array.isArray(resUsers) ? resUsers : (resUsers?.data ?? []);
+        setUsers(usersList);
       } catch (err) {
         console.error('Erro ao carregar filtros:', err);
       }
