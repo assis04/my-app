@@ -51,12 +51,25 @@ export const getLeads = async ({ search, status, preVendedorId, page, limit } = 
   return api(`/api/crm/leads?${params.toString()}`);
 };
 
-export const getAccounts = async ({ search, page, limit } = {}) => {
+/**
+ * Lista contas com filtros. Backend aceita combinações em AND.
+ * @param {object} [filters]
+ * @param {string} [filters.search]     — busca textual ampla (nome/sobrenome/celular/CEP)
+ * @param {string} [filters.nome]       — contains em nome OU sobrenome (estruturado)
+ * @param {string} [filters.telefone]   — contains em celular (digits-only)
+ * @param {string} [filters.status]     — Account tem lead com esse status
+ * @param {string|number} [filters.filialId]
+ * @param {string|number} [filters.userId]
+ * @param {string} [filters.dataInicio] — ISO datetime, account.createdAt >= X
+ * @param {string} [filters.dataFim]    — ISO datetime, account.createdAt <= X
+ */
+export const getAccounts = async (filters = {}) => {
   const params = new URLSearchParams();
-  if (search) params.append('search', search);
-  if (page) params.append('page', page);
-  if (limit) params.append('limit', limit);
-  return api(`/api/crm/accounts?${params.toString()}`);
+  for (const [k, v] of Object.entries(filters)) {
+    if (v !== undefined && v !== null && v !== '') params.append(k, String(v));
+  }
+  const qs = params.toString();
+  return api(`/api/crm/accounts${qs ? `?${qs}` : ''}`);
 };
 
 export const getLeadById = async (id) => {

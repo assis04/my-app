@@ -6,7 +6,7 @@ import * as leadController from '../controllers/leadController.js';
 import * as leadCrmController from '../controllers/leadCrmController.js';
 import * as accountController from '../controllers/accountController.js';
 import * as orcamentoController from '../controllers/orcamentoController.js';
-import { uploadPlanta } from '../middlewares/uploadMiddleware.js';
+import { uploadPlanta, validateUploadedFileMagicBytes } from '../middlewares/uploadMiddleware.js';
 import { createLeadSchema, updateLeadSchema, transferLeadsSchema, updateEtapaSchema, quickLeadSchema, manualLeadSchema, toggleStatusSchema, transitionStatusSchema, temperaturaSchema, cancelLeadSchema, reactivateLeadSchema } from '../validators/leadValidator.js';
 import { createOrcamentoSchema, transitionOrcamentoSchema, cancelOrcamentoSchema, reactivateOrcamentoSchema } from '../validators/orcamentoValidator.js';
 
@@ -23,8 +23,8 @@ router.get('/leads/:id/orcamento', authMiddleware, authorizeAnyPermission(['crm:
 
 // Fila da Vez / Leads legado (Client)
 router.get('/queue/:branch_id', authMiddleware, leadController.getQueueRanking);
-router.post('/lead/quick', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), uploadPlanta.single('planta'), validate(quickLeadSchema), leadController.processNewQuickLead);
-router.post('/lead/manual', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), uploadPlanta.single('planta'), validate(manualLeadSchema), leadController.processNewManualLead);
+router.post('/lead/quick', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), uploadPlanta.single('planta'), validateUploadedFileMagicBytes, validate(quickLeadSchema), leadController.processNewQuickLead);
+router.post('/lead/manual', authMiddleware, authorizeAnyPermission(['captacao:leads:create', 'ADM', 'Administrador']), uploadPlanta.single('planta'), validateUploadedFileMagicBytes, validate(manualLeadSchema), leadController.processNewManualLead);
 router.put('/queue/toggle-status', authMiddleware, validate(toggleStatusSchema), leadController.toggleAgentAvailability);
 router.get('/history', authMiddleware, leadController.getLeadHistory);
 
@@ -32,6 +32,7 @@ router.get('/history', authMiddleware, leadController.getLeadHistory);
 router.get('/leads', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.list);
 router.get('/leads/:id', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.getById);
 router.get('/leads/:id/history', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.getLeadHistory);
+router.get('/leads/:id/planta', authMiddleware, authorizeAnyPermission(['crm:leads:read', 'ADM', 'Administrador']), leadCrmController.getPlanta);
 router.post('/leads', authMiddleware, authorizeAnyPermission(['crm:leads:create', 'ADM', 'Administrador']), validate(createLeadSchema), leadCrmController.create);
 router.put('/leads/:id', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(updateLeadSchema), leadCrmController.update);
 router.put('/leads/:id/status', authMiddleware, authorizeAnyPermission(['crm:leads:update', 'ADM', 'Administrador']), validate(transitionStatusSchema), leadCrmController.transitionStatus);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useId } from 'react';
 import { X } from 'lucide-react';
 
 /**
@@ -15,6 +15,9 @@ import { X } from 'lucide-react';
  *  - footer: conteúdo do footer (opcional)
  */
 export default function ModalBase({ open, onClose, title, subtitle, maxWidth = 'max-w-lg', children, footer }) {
+  const titleId = useId();
+  const subtitleId = useId();
+
   const handleEsc = useCallback((e) => {
     if (e.key === 'Escape') onClose();
   }, [onClose]);
@@ -33,19 +36,31 @@ export default function ModalBase({ open, onClose, title, subtitle, maxWidth = '
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+      onClick={onClose}
+      role="presentation"
+    >
       <div
         className={`bg-white rounded-3xl shadow-floating w-full ${maxWidth} max-h-[90vh] flex flex-col border border-slate-100 animate-in fade-in zoom-in-95 duration-200`}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitle ? subtitleId : undefined}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100 shrink-0">
           <div>
-            <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight italic">{title}</h2>
-            {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-0.5 italic">{subtitle}</p>}
+            <h2 id={titleId} className="text-lg font-black text-slate-900 tracking-tight">{title}</h2>
+            {subtitle && <p id={subtitleId} className="text-xs text-slate-400 font-bold mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
-            <X size={18} />
+          <button
+            onClick={onClose}
+            aria-label="Fechar modal"
+            className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-all"
+          >
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 

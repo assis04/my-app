@@ -69,13 +69,13 @@ export default function AlterarSenha() {
               <ShieldCheck size={36} className="text-white" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight text-center">Primeiro Acesso</h1>
-            <p className="text-slate-400 mt-2 font-medium text-center text-xs max-w-[260px]">
+            <p className="text-slate-400 mt-2 font-medium text-center text-sm max-w-[260px]">
               Por segurança, crie uma nova senha pessoal para continuar.
             </p>
           </div>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-2xl mb-8 text-sm font-bold text-center flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200 shadow-sm">
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-2xl mb-8 text-base font-bold text-center flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
               {error}
             </div>
@@ -83,7 +83,7 @@ export default function AlterarSenha() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="currentPassword" className="text-xs font-bold text-slate-400 ml-1">Senha Atual</label>
+              <label htmlFor="currentPassword" className="text-sm font-bold text-slate-400 ml-1">Senha Atual</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-sky-500 transition-colors">
                   <Lock size={18} />
@@ -109,7 +109,7 @@ export default function AlterarSenha() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="newPassword" className="text-xs font-bold text-slate-400 ml-1">Nova Senha</label>
+              <label htmlFor="newPassword" className="text-sm font-bold text-slate-400 ml-1">Nova Senha</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-sky-500 transition-colors">
                   <Lock size={18} />
@@ -141,7 +141,7 @@ export default function AlterarSenha() {
                   return (
                     <div key={rule.label} className="flex items-center gap-2">
                       <span className={`w-1.5 h-1.5 rounded-full transition-colors ${pass ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                      <span className={`text-xs font-medium transition-colors ${pass ? 'text-emerald-600' : 'text-slate-400'}`}>
+                      <span className={`text-sm font-medium transition-colors ${pass ? 'text-emerald-600' : 'text-slate-400'}`}>
                         {rule.label}
                       </span>
                     </div>
@@ -159,14 +159,14 @@ export default function AlterarSenha() {
                 <Loader2 size={24} className="animate-spin" />
               ) : (
                 <>
-                  <span className="text-sm">Confirmar Nova Senha</span>
+                  <span className="text-base">Confirmar Nova Senha</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-12 text-center text-slate-400 font-medium text-xs">
+          <p className="mt-12 text-center text-slate-400 font-medium text-sm">
             Moveis <span className="text-sky-500">Valcenter</span> &copy; {new Date().getFullYear()} &bull; Versão 4.0
           </p>
         </div>

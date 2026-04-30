@@ -64,6 +64,50 @@ export async function createUserByAdminOrHR({ nome, email, password, roleId, fil
   return { id: newUser.id, nome: newUser.nome, email: newUser.email, role: targetRole.nome };
 }
 
+/**
+ * Lookup leve para popular `<select>` no frontend.
+ * Retorna apenas { id, nome, perfil, filialId, ativo } — SEM email/timestamps/created_by.
+ * Aceita filtros opcionais para reduzir payload e escopo:
+ *   - filialId: limita à filial (numérico)
+ *   - role: limita a usuários com esse role.nome (case-insensitive exato)
+ *
+ * Por design, não pagina — o caller espera lista leve para preencher um select.
+ * Limite duro de 500 para não vazar comportamento de "lista tudo".
+ */
+export async function listUsersForLookup({ filialId, role } = {}) {
+  const where = { deletedAt: null };
+
+  const filialIdInt = filialId != null && filialId !== '' ? parseInt(filialId, 10) : null;
+  if (Number.isInteger(filialIdInt)) {
+    where.filialId = filialIdInt;
+  }
+
+  if (role && typeof role === 'string') {
+    where.role = { nome: { equals: role.trim(), mode: 'insensitive' } };
+  }
+
+  const users = await prisma.user.findMany({
+    where,
+    orderBy: { nome: 'asc' },
+    select: {
+      id: true,
+      nome: true,
+      ativo: true,
+      filialId: true,
+      role: { select: { nome: true } },
+    },
+    take: 500,
+  });
+
+  return users.map(u => ({
+    id: u.id,
+    nome: u.nome,
+    ativo: u.ativo,
+    filialId: u.filialId,
+    perfil: u.role?.nome || null,
+  }));
+}
+
 export async function listUsers({ page = 1, limit = 100 } = {}) {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const take = Math.min(500, Math.max(1, parseInt(limit, 10) || 100));

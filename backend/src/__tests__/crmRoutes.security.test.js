@@ -63,6 +63,17 @@ describe('crmRoutes.js — gates de segurança estáticos', () => {
     expect(src).toContain("'/leads/:id/cancel'");
     expect(src).toContain("'/leads/:id/reactivate'");
     expect(src).toContain("'/leads/:id/history'");
+    expect(src).toContain("'/leads/:id/planta'");
+  });
+
+  it('Endpoint /planta tem auth + permissão (substitui o express.static legado)', async () => {
+    const src = await readRoutesFile();
+    const lines = src.split('\n');
+    const plantaLine = lines.find((l) => l.includes("'/leads/:id/planta'"));
+    expect(plantaLine).toBeDefined();
+    expect(plantaLine).toContain('authMiddleware');
+    expect(plantaLine).toContain('authorizeAnyPermission');
+    expect(plantaLine).toContain('crm:leads:read');
   });
 
   it('Endpoint /reactivate exige a permissão role-gated crm:leads:reactivate', async () => {

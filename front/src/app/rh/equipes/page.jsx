@@ -80,13 +80,13 @@ export default function Equipes() {
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gestão de Equipes</h1>
-            <p className="text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-wider">{equipes.length} equipe{equipes.length !== 1 ? 's' : ''} estratégica{equipes.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold tracking-wider">{equipes.length} equipe{equipes.length !== 1 ? 's' : ''} estratégica{equipes.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-3">
             <PermissionGate permission="rh:equipes:manage">
               <button
                 onClick={() => setModalData({})}
-                className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-xs active:scale-95 whitespace-nowrap"
+                className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-sm active:scale-95 whitespace-nowrap"
               >
                 Nova Equipe <Plus size={16} />
               </button>
@@ -107,7 +107,7 @@ export default function Equipes() {
               <input
                 type="text"
                 placeholder="Filtrar por nome ou líder..."
-                className="w-full bg-slate-50 text-xs text-slate-900 pl-11 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold placeholder:text-slate-300 placeholder:font-medium"
+                className="w-full bg-slate-50 text-sm text-slate-900 pl-11 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold placeholder:text-slate-300 placeholder:font-medium"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -120,20 +120,20 @@ export default function Equipes() {
               <Loader2 size={32} className="animate-spin text-sky-500" />
             </div>
           ) : error ? (
-            <div className="text-center py-16 bg-rose-50 rounded-2xl border border-rose-100 text-rose-600 font-bold flex items-center justify-center gap-3 text-xs">
+            <div className="text-center py-16 bg-rose-50 rounded-2xl border border-rose-100 text-rose-600 font-bold flex items-center justify-center gap-3 text-sm">
               <AlertTriangle size={18} /> {error}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20 bg-slate-50/10 rounded-2xl border border-dashed border-slate-100 group">
               <Users size={40} className="mx-auto text-slate-200 mb-4 group-hover:text-sky-200 transition-colors" />
-              <p className="text-slate-400 font-bold text-[10px] uppercase">
+              <p className="text-slate-400 font-bold text-xs">
                 {search ? 'Nenhum resultado encontrado.' : 'Nenhuma equipe estruturada.'}
               </p>
             </div>
           ) : (
             <div className="w-full overflow-hidden rounded-2xl border border-slate-100">
-              <table className="w-full text-left text-xs whitespace-nowrap text-slate-600 border-collapse">
-                <thead className="bg-slate-50/80 text-slate-500 font-black text-[10px] uppercase border-b border-slate-100 italic tracking-tighter">
+              <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
+                <thead className="bg-slate-50/80 text-slate-500 font-black text-xs border-b border-slate-100 italic tracking-tight">
                   <tr>
                     <th className="py-2 px-4 italic">Identificação</th>
                     <th className="py-2 px-4 italic">Lider</th>
@@ -146,31 +146,31 @@ export default function Equipes() {
                 <tbody className="divide-y divide-slate-50">
                   {filtered.map((equipe) => (
                     <tr key={equipe.id} className="hover:bg-slate-50 transition-all group">
-                      <td className="py-2 px-4 font-black text-slate-900 group-hover:text-sky-700 transition-colors uppercase tracking-tight">{equipe.nome}</td>
+                      <td className="py-2 px-4 font-black text-slate-900 group-hover:text-sky-700 transition-colors tracking-tight">{equipe.nome}</td>
                       <td className="py-2 px-4">
                         {equipe.lider ? (
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-sky-400 to-indigo-600 flex items-center justify-center text-[9px] text-white font-black shadow-sm group-hover:scale-110 transition-transform uppercase">
+                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-sky-400 to-indigo-600 flex items-center justify-center text-xs text-white font-black shadow-sm group-hover:scale-110 transition-transform">
                               {equipe.lider.nome.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-bold text-slate-700 uppercase tracking-tighter">{equipe.lider.nome}</span>
+                            <span className="font-bold text-slate-700 tracking-tight">{equipe.lider.nome}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-300 font-bold text-[10px] uppercase italic tracking-widest">Sem Líder</span>
+                          <span className="text-slate-300 font-bold text-xs italic tracking-tight">Sem Líder</span>
                         )}
                       </td>
                       <td className="py-2 px-4 text-center">
-                        <span className="bg-slate-50 text-slate-400 px-3 py-0.5 rounded-xl border border-slate-100 font-black text-[9px] shadow-xs group-hover:bg-sky-50 group-hover:text-sky-600 group-hover:border-sky-100 transition-all uppercase">
+                        <span className="bg-slate-50 text-slate-400 px-3 py-0.5 rounded-xl border border-slate-100 font-black text-xs shadow-xs group-hover:bg-sky-50 group-hover:text-sky-600 group-hover:border-sky-100 transition-all">
                           {equipe.membros?.length ?? 0} Integrantes
                         </span>
                       </td>
                       <td className="py-2 px-4">
-                        <span className="font-bold text-slate-400 text-[10px] uppercase tracking-tighter whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] inline-block">
+                        <span className="font-bold text-slate-400 text-xs tracking-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] inline-block">
                           {equipe.filial?.nome ?? 'Global'}
                         </span>
                       </td>
                       <td className="py-2 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border shadow-sm uppercase tracking-tighter ${equipe.ativo ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-black border shadow-sm tracking-tight ${equipe.ativo ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
                           {equipe.ativo ? 'Ativa' : 'Inativa'}
                         </span>
                       </td>

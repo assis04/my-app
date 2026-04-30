@@ -21,12 +21,12 @@ export default function PostSaleReadOnlyBanner({ status }) {
         <Lock size={14} />
       </div>
       <div className="flex-1">
-        <h4 className="text-xs font-black text-amber-900 uppercase tracking-tight mb-0.5">
+        <h4 className="text-base font-black text-amber-900 tracking-tight mb-0.5">
           Edição bloqueada — Lead em {status}
         </h4>
-        <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+        <p className="text-base text-amber-700 font-medium leading-relaxed">
           Após a venda, o lead entra em modo somente leitura. Apenas administradores com permissão
-          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 rounded text-[10px] font-mono">
+          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 rounded text-sm font-mono">
             crm:leads:edit-after-sale
           </code>
           podem editar. Se precisar alterar algo, peça a um administrador.

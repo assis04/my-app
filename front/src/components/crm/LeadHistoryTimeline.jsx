@@ -51,7 +51,7 @@ export default function LeadHistoryTimeline({
         <div className="inline-flex p-3 bg-slate-50 rounded-2xl mb-2">
           <History size={18} className="text-slate-400" />
         </div>
-        <p className="text-xs text-slate-400 font-medium">Nenhum evento registrado ainda.</p>
+        <p className="text-base text-slate-400 font-medium">Nenhum evento registrado ainda.</p>
       </div>
     );
   }
@@ -70,8 +70,8 @@ export default function LeadHistoryTimeline({
               <Icon size={14} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-800 leading-snug">{title}</p>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+              <p className="text-base font-bold text-slate-800 leading-snug">{title}</p>
+              <p className="text-sm text-slate-400 font-medium mt-0.5">
                 {author} · {formatRelative(event.createdAt)}
               </p>
             </div>
@@ -80,7 +80,7 @@ export default function LeadHistoryTimeline({
       })}
 
       {error && (
-        <p className="text-[11px] text-rose-500 font-bold text-center py-2">{error}</p>
+        <p className="text-base text-rose-500 font-bold text-center py-2">{error}</p>
       )}
 
       {nextCursor && (
@@ -88,7 +88,7 @@ export default function LeadHistoryTimeline({
           type="button"
           onClick={handleLoadMore}
           disabled={loading}
-          className="w-full py-2.5 text-[10px] font-black text-sky-600 border border-sky-100 bg-sky-50/50 rounded-2xl hover:bg-sky-100 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50 flex justify-center items-center gap-2"
+          className="w-full py-2.5 text-sm font-black text-sky-600 border border-sky-100 bg-sky-50/50 rounded-2xl hover:bg-sky-100 transition-all active:scale-95 tracking-tight disabled:opacity-50 flex justify-center items-center gap-2"
         >
           {loading ? <><Loader2 size={11} className="animate-spin" /> Carregando...</> : 'Ver mais eventos'}
         </button>

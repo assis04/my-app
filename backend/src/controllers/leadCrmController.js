@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import * as leadCrmService from '../services/leadCrmService.js';
 import {
   transitionStatus as transitionStatusService,
@@ -60,6 +62,49 @@ export async function getById(req, res, next) {
   try {
     const lead = await leadCrmService.getLeadById(req.params.id, req.user);
     return res.json(lead);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/crm/leads/:id/planta — substitui o serving direto via express.static.
+ *
+ * Por que existe: o endpoint anterior `/uploads/plantas/<file>` exigia auth
+ * mas não validava ownership do arquivo — qualquer autenticado conseguia
+ * baixar plantas de outras filiais se conhecesse o filename.
+ *
+ * Aqui:
+ *   1. authMiddleware + authorizeAnyPermission rodam antes (definidos na rota)
+ *   2. getLeadById carrega o Lead E enforça filial isolation
+ *   3. path traversal é rejeitado checando que o caminho resolvido vive
+ *      dentro de uploads/plantas/
+ *   4. Content-Disposition usa filename derivado do leadId — não vaza o
+ *      filename gerado internamente.
+ */
+const UPLOADS_PLANTAS_ROOT = path.resolve('uploads', 'plantas');
+
+export async function getPlanta(req, res, next) {
+  try {
+    const lead = await leadCrmService.getLeadById(req.params.id, req.user);
+    if (!lead?.plantaPath) {
+      return res.status(404).json({ message: 'Lead sem planta anexada.' });
+    }
+
+    const resolved = path.resolve(lead.plantaPath);
+    const expectedPrefix = UPLOADS_PLANTAS_ROOT + path.sep;
+    if (!resolved.startsWith(expectedPrefix)) {
+      return res.status(400).json({ message: 'Caminho de arquivo inválido.' });
+    }
+
+    if (!fs.existsSync(resolved)) {
+      return res.status(404).json({ message: 'Arquivo não encontrado em disco.' });
+    }
+
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    const ext = path.extname(resolved).toLowerCase() || '.bin';
+    res.setHeader('Content-Disposition', `inline; filename="planta-${lead.id}${ext}"`);
+    return res.sendFile(resolved);
   } catch (error) {
     next(error);
   }

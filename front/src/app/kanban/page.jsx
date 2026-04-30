@@ -7,8 +7,8 @@ export default function KanbanPage() {
     <div className="max-w-[1600px] mx-auto">
       <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic">Gráfico Kanban</h1>
-          <p className="text-[10px] text-slate-400 font-bold mt-0.5 italic">Visualização de fluxo por etapas</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gráfico Kanban</h1>
+          <p className="text-xs text-slate-400 font-bold mt-0.5">Visualização de fluxo por etapas</p>
         </div>
       </header>
 
@@ -17,7 +17,7 @@ export default function KanbanPage() {
           <div className="w-14 h-14 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100 text-slate-300">
             <KanbanSquare size={28} />
           </div>
-          <p className="text-slate-400 font-black text-[10px] uppercase tracking-tighter">Módulo em desenvolvimento</p>
+          <p className="text-slate-400 font-black text-xs tracking-tight">Módulo em desenvolvimento</p>
         </div>
       </div>
     </div>

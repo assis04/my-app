@@ -6,8 +6,14 @@ import * as accountService from '../services/accountService.js';
  */
 export async function list(req, res, next) {
   try {
-    const { search, page, limit } = req.query;
-    const result = await accountService.listAccounts({ search, page, limit }, req.user);
+    const {
+      search, nome, telefone, status, filialId, userId,
+      dataInicio, dataFim, page, limit,
+    } = req.query;
+    const result = await accountService.listAccounts(
+      { search, nome, telefone, status, filialId, userId, dataInicio, dataFim, page, limit },
+      req.user,
+    );
     return res.json(result);
   } catch (error) {
     next(error);
