@@ -11,11 +11,12 @@ vi.mock('../config/env.js', () => ({
 }));
 
 // Mock blacklist (evita conexão Redis em teste — timeout de 10s com ioredis)
+const isTokenBlacklistedMock = vi.fn().mockResolvedValue(false);
 vi.mock('../utils/tokenBlacklist.js', () => ({
-  isTokenBlacklisted: vi.fn().mockResolvedValue(false),
+  isTokenBlacklisted: isTokenBlacklistedMock,
 }));
 
-const { authMiddleware } = await import('../config/authMiddleware.js');
+const { authMiddleware, _resetRedisFailLogThrottleForTests } = await import('../config/authMiddleware.js');
 
 function createMockReqResNext(cookies = {}, headers = {}) {
   const req = { cookies, headers };
@@ -102,5 +103,46 @@ describe('authMiddleware', () => {
 
     expect(res._status).toBe(401);
     expect(next).not.toHaveBeenCalled();
+  });
+});
+
+describe('authMiddleware — fail-open do Redis blacklist', () => {
+  let consoleErrorSpy;
+
+  beforeEach(() => {
+    _resetRedisFailLogThrottleForTests();
+    isTokenBlacklistedMock.mockReset();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  it('aceita o token e loga quando isTokenBlacklisted lança (fail-open com alarme)', async () => {
+    isTokenBlacklistedMock.mockRejectedValueOnce(new Error('ECONNREFUSED redis'));
+    const token = jwt.sign({ id: 1, email: 'test@test.com', role: 'ADM' }, ACCESS_SECRET, { algorithm: 'HS256', expiresIn: '1h' });
+    const { req, res, next } = createMockReqResNext({ accessToken: token });
+
+    await authMiddleware(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.user.id).toBe(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy.mock.calls[0][0]).toMatch(/\[SECURITY\].*Redis blacklist indispon/);
+  });
+
+  it('throttle: 5 falhas seguidas dentro do intervalo geram apenas 1 linha de log', async () => {
+    isTokenBlacklistedMock.mockRejectedValue(new Error('redis down'));
+    const token = jwt.sign({ id: 1, email: 'test@test.com', role: 'ADM' }, ACCESS_SECRET, { algorithm: 'HS256', expiresIn: '1h' });
+
+    consoleErrorSpy.mockClear();
+
+    for (let i = 0; i < 5; i += 1) {
+      const { req, res, next } = createMockReqResNext({ accessToken: token });
+      await authMiddleware(req, res, next);
+      expect(next).toHaveBeenCalled();
+    }
+
+    const securityLogs = consoleErrorSpy.mock.calls.filter(
+      (args) => typeof args[0] === 'string' && args[0].includes('[SECURITY]'),
+    );
+    expect(securityLogs).toHaveLength(1);
   });
 });
