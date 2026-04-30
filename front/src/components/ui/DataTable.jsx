@@ -3,9 +3,9 @@ import { Loader2 } from 'lucide-react';
 /**
  * Th — Célula de cabeçalho padronizada.
  */
-export function Th({ children, className = '', center = false }) {
+export function Th({ children, className = '', center = false, scope = 'col' }) {
   return (
-    <th className={`py-2 px-3 text-xs font-black text-slate-400 uppercase tracking-tighter italic ${center ? 'text-center' : ''} ${className}`}>
+    <th scope={scope} className={`py-2 px-3 text-xs font-black text-slate-400 uppercase tracking-tighter italic ${center ? 'text-center' : ''} ${className}`}>
       {children}
     </th>
   );

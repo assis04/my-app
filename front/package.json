@@ -17,6 +17,7 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.11.3",
     "@tailwindcss/postcss": "^4.2.4",
     "@types/tailwindcss": "^3.0.11",
     "babel-plugin-react-compiler": "1.0.0",

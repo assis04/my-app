@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Loader2, XCircle } from 'lucide-react';
 import ModalBase from '@/components/ui/ModalBase';
 
@@ -18,6 +18,7 @@ import ModalBase from '@/components/ui/ModalBase';
  */
 export default function CancelLeadDialog({ open, onClose, onSubmit, submitting = false }) {
   const [motivo, setMotivo] = useState('');
+  const motivoId = useId();
 
   const canSubmit = motivo.trim().length > 0 && !submitting;
 
@@ -64,15 +65,18 @@ export default function CancelLeadDialog({ open, onClose, onSubmit, submitting =
           reativação. Qualquer oportunidade de negócio em aberto será encerrada.
         </p>
         <div className="space-y-1.5">
-          <label className="text-sm font-black text-slate-400 px-1 uppercase tracking-tighter">
+          <label htmlFor={motivoId} className="text-sm font-black text-slate-400 px-1 uppercase tracking-tighter">
             Motivo do cancelamento *
           </label>
           <textarea
+            id={motivoId}
             rows={4}
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
             maxLength={1000}
             disabled={submitting}
+            required
+            aria-required="true"
             className="premium-input px-4 py-2 text-base w-full resize-none disabled:opacity-50"
             placeholder="Ex: cliente desistiu da compra, endereço fora da área de atendimento, etc."
           />

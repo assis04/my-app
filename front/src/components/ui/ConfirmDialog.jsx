@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 /**
  * Diálogo de confirmação visual (substitui window.confirm / window.alert).
@@ -26,6 +26,8 @@ export default function ConfirmDialog({
   variant = 'danger',
 }) {
   const [loading, setLoading] = useState(false);
+  const titleId = useId();
+  const messageId = useId();
 
   if (!open) return null;
 
@@ -57,17 +59,25 @@ export default function ConfirmDialog({
   const styles = variantStyles[variant] || variantStyles.danger;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+      onClick={onClose}
+      role="presentation"
+    >
       <div
         className="bg-white rounded-3xl shadow-floating w-full max-w-sm border border-slate-100 animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
       >
         <div className="p-6 text-center">
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 border ${styles.icon}`}>
-            <AlertTriangle size={22} />
+            <AlertTriangle size={22} aria-hidden="true" />
           </div>
-          <h3 className="text-base font-black text-slate-900 uppercase tracking-tight mb-2">{title}</h3>
-          <p className="text-sm text-slate-500 font-medium leading-relaxed">{message}</p>
+          <h3 id={titleId} className="text-base font-black text-slate-900 uppercase tracking-tight mb-2">{title}</h3>
+          <p id={messageId} className="text-sm text-slate-500 font-medium leading-relaxed">{message}</p>
         </div>
         <div className="flex gap-3 p-6 pt-0">
           <button
