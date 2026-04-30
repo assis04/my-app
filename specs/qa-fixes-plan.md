@@ -275,17 +275,10 @@ Esse comando só insere uma linha em `_prisma_migrations` — não toca dados ne
 }
 ```
 
-**Etapa 6 — Aplicar partial unique index do `crm-non-plan.md`** (que ainda não foi aplicado):
-```bash
-npx prisma migrate dev --name 1_orcamento_lead_ativo_partial_index --create-only
-```
-Editar o SQL gerado pra adicionar:
-```sql
-CREATE UNIQUE INDEX orcamento_lead_ativo
-  ON "orcamentos" ("lead_id")
-  WHERE status IN ('Nova O.N.', 'Não Responde', 'Standby');
-```
-Aplicar em staging via `migrate deploy`, depois prod.
+**Etapa 6 — Partial unique index do `crm-non-plan.md`: descartado.**
+O schema final usa `Orcamento.leadId @unique` absoluto (mais estrito
+que o partial). Lead com orçamento cancelado precisa reativar o
+existente, não criar novo — confirmado em `orcamentoService.createOrcamento`.
 
 **Arquivos:**
 - `backend/prisma/migrations/0_init/migration.sql` (gerado)
