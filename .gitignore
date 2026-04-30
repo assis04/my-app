@@ -5,3 +5,6 @@ backend/uploads/
 
 # Configuração local do Claude Code
 .claude/
+
+# Specs e planos técnicos — referência local, não versionar
+specs/
