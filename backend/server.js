@@ -4,8 +4,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import http from 'http';
-import { fileURLToPath } from 'url';
-import path from 'path';
 import authRoutes from "./src/routes/authRoutes.js";
 import roleRoutes from "./src/routes/roleRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
@@ -16,9 +14,6 @@ import taskRoutes from "./src/routes/taskRoutes.js";
 import { env } from "./src/config/env.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 import { initSocket } from './src/config/socket.js';
-import { authMiddleware } from './src/config/authMiddleware.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.set('trust proxy', 1);
@@ -43,9 +38,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Servir arquivos estáticos da pasta uploads (plantas, contratos, etc.)
-// Protegido por autenticação — apenas usuários logados podem acessar
-app.use('/uploads', authMiddleware, express.static(path.join(__dirname, 'uploads')));
+// Uploads são servidos via endpoints dedicados (ex: GET /api/crm/leads/:id/planta)
+// para enforce de filial isolation — não há mais express.static em /uploads.
 
 // Rate Limiting Global
 const limiter = rateLimit({

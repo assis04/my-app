@@ -418,8 +418,8 @@ export default function CaptacaoFilaPage() {
                       <td className="py-1.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                         {lead.plantaPath ? (
                           <a
-                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/${lead.plantaPath}`}
-                            target="_blank" 
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/crm/leads/${lead.id}/planta`}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex p-1 text-sky-400 hover:text-sky-600 transition-all active:scale-90"
                           >
