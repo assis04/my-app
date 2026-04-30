@@ -21,7 +21,7 @@ export default function PostSaleReadOnlyBanner({ status }) {
         <Lock size={14} />
       </div>
       <div className="flex-1">
-        <h4 className="text-base font-black text-amber-900 uppercase tracking-tight mb-0.5">
+        <h4 className="text-base font-black text-amber-900 tracking-tight mb-0.5">
           Edição bloqueada — Lead em {status}
         </h4>
         <p className="text-base text-amber-700 font-medium leading-relaxed">

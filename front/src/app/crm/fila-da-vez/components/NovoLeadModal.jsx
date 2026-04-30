@@ -151,12 +151,12 @@ export default function NovoLeadModal({
 
           {/* Seção 1: Dados Essenciais */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs tracking-tight flex items-center gap-2 px-1">
               <UserCheck size={12} className="text-sky-400" /> Identificação do Cliente
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 tracking-tight">
                   Nome *
                 </label>
                 <input
@@ -169,7 +169,7 @@ export default function NovoLeadModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 tracking-tight">
                   Sobrenome
                 </label>
                 <input
@@ -183,7 +183,7 @@ export default function NovoLeadModal({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 tracking-tight">
                   Celular *
                 </label>
                 <input
@@ -196,7 +196,7 @@ export default function NovoLeadModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 uppercase tracking-tighter">
+                <label className="text-xs font-black text-slate-400 flex items-center gap-2 px-1 tracking-tight">
                   CEP *
                 </label>
                 <input
@@ -214,13 +214,13 @@ export default function NovoLeadModal({
 
           {/* Seção 2: Atribuição Organizacional */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs tracking-tight flex items-center gap-2 px-1">
               <Building2 size={12} className="text-sky-400" /> Roteamento de Venda
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Filial *</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Filial *</label>
                 <PremiumSelect 
                   placeholder="Filial"
                   options={branches}
@@ -231,7 +231,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Vendedor *</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Vendedor *</label>
                 <PremiumSelect 
                   placeholder="Escolha..."
                   options={renderSellers}
@@ -241,7 +241,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Gerente</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Gerente</label>
                 <PremiumSelect 
                   placeholder="Nenhum"
                   options={managers}
@@ -255,12 +255,12 @@ export default function NovoLeadModal({
 
           {/* Seção 3: Marketing e Origem */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs tracking-tight flex items-center gap-2 px-1">
               <Globe size={12} className="text-sky-400" /> Marketing & Origem
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Canal</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Canal</label>
                 <PremiumSelect 
                   placeholder="Canal..."
                   options={[
@@ -275,7 +275,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Origem</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Origem</label>
                 <PremiumSelect 
                   placeholder="Origem..."
                   options={[
@@ -291,7 +291,7 @@ export default function NovoLeadModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Parceria</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Parceria</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Não', nome: 'Venda Direta' },
@@ -306,12 +306,12 @@ export default function NovoLeadModal({
 
           {/* Seção 4: Sistema e Etapa */}
           <div className="space-y-3">
-            <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
+            <h3 className="text-sky-600 font-black text-xs tracking-tight flex items-center gap-2 px-1">
               <Settings2 size={12} className="text-sky-400" /> Status de CRM
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Etapa do Funil</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Etapa do Funil</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Novo', nome: 'Novo' },
@@ -324,7 +324,7 @@ export default function NovoLeadModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Status Vital</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Status Vital</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Ativo', nome: '🟢 ATIVO' },
@@ -339,12 +339,12 @@ export default function NovoLeadModal({
 
           {/* Seção 5: Perfil de Interesse */}
           <div className="space-y-3">
-             <h3 className="text-sky-600 font-black text-xs uppercase tracking-widest flex items-center gap-2 px-1">
+             <h3 className="text-sky-600 font-black text-xs tracking-tight flex items-center gap-2 px-1">
               <Building2 size={12} className="text-sky-400" /> Preferências
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Tipo de Imóvel</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Tipo de Imóvel</label>
                 <input
                   type="text" 
                   placeholder="Ex: Apartamento..."
@@ -354,7 +354,7 @@ export default function NovoLeadModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-400 px-1 uppercase tracking-tighter">Status Preferencial</label>
+                <label className="text-xs font-black text-slate-400 px-1 tracking-tight">Status Preferencial</label>
                 <PremiumSelect 
                   options={[
                     { id: 'Pronto', nome: 'Pronto para Morar' },
@@ -370,7 +370,7 @@ export default function NovoLeadModal({
 
           {/* Upload Section */}
           <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+            <label className="text-xs font-black text-slate-400 tracking-tight flex items-center gap-2 px-1">
               <FileUp size={12} className="text-sky-500" /> Planta (Opcional)
             </label>
             <div className="relative group bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 hover:border-sky-400 hover:bg-sky-50/50 transition-all cursor-pointer overflow-hidden">
@@ -387,7 +387,7 @@ export default function NovoLeadModal({
                 <p className="text-sm font-black text-slate-700 leading-tight">
                   {plantaFile ? plantaFile.name : 'Arquivar Planta'}
                 </p>
-                <p className="text-xs text-slate-400 mt-0.5 font-bold uppercase leading-none">
+                <p className="text-xs text-slate-400 mt-0.5 font-bold leading-none">
                   MÁX 10MB
                 </p>
               </div>

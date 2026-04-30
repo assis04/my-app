@@ -133,10 +133,10 @@ export default function OrcamentoDetailPage() {
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase tracking-tighter italic">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Orçamento <span className="text-sky-500">{orcamento.numero}</span>
           </h1>
-          <p className="text-sm text-slate-400 font-bold mt-0.5 italic">
+          <p className="text-sm text-slate-400 font-bold mt-0.5">
             Criado em {new Date(orcamento.createdAt).toLocaleString('pt-BR')}
             {criadoPor?.nome && ` por ${criadoPor.nome}`}
           </p>
@@ -175,7 +175,7 @@ export default function OrcamentoDetailPage() {
       <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-black text-slate-400 px-1 uppercase tracking-tighter">
+            <label className="text-sm font-black text-slate-400 px-1 tracking-tight">
               Status
             </label>
             <OrcamentoStatusDropdown
@@ -196,7 +196,7 @@ export default function OrcamentoDetailPage() {
                 type="button"
                 onClick={() => setShowCancel(true)}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50"
               >
                 <XCircle size={13} /> Cancelar Orçamento
               </button>
@@ -206,7 +206,7 @@ export default function OrcamentoDetailPage() {
                 type="button"
                 onClick={handleReactivate}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all uppercase tracking-tighter shadow-xs active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50"
               >
                 <RefreshCw size={13} /> Reativar
               </button>
@@ -217,22 +217,22 @@ export default function OrcamentoDetailPage() {
 
       {/* Lead vinculado */}
       <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6">
-        <h3 className="text-sky-600 font-black text-sm uppercase tracking-widest flex items-center gap-2 px-1 mb-4">
+        <h3 className="text-sky-600 font-black text-sm tracking-tight flex items-center gap-2 px-1 mb-4">
           <Briefcase size={12} className="text-sky-400" /> Lead Vinculado
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-base">
           <div>
-            <p className="text-sm font-black text-slate-400 uppercase tracking-tighter mb-1">Nome</p>
+            <p className="text-sm font-black text-slate-400 tracking-tight mb-1">Nome</p>
             <p className="font-bold text-slate-900">
               {lead.nome} {lead.sobrenome || ''}
             </p>
           </div>
           <div>
-            <p className="text-sm font-black text-slate-400 uppercase tracking-tighter mb-1">Celular</p>
+            <p className="text-sm font-black text-slate-400 tracking-tight mb-1">Celular</p>
             <p className="font-bold text-slate-700">{formatPhone(lead.celular || '')}</p>
           </div>
           <div>
-            <p className="text-sm font-black text-slate-400 uppercase tracking-tighter mb-1">Status do Lead</p>
+            <p className="text-sm font-black text-slate-400 tracking-tight mb-1">Status do Lead</p>
             <p className="font-bold text-slate-700">{lead.status || '—'}</p>
           </div>
         </div>

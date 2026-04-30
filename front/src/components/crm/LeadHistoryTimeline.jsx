@@ -88,7 +88,7 @@ export default function LeadHistoryTimeline({
           type="button"
           onClick={handleLoadMore}
           disabled={loading}
-          className="w-full py-2.5 text-sm font-black text-sky-600 border border-sky-100 bg-sky-50/50 rounded-2xl hover:bg-sky-100 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50 flex justify-center items-center gap-2"
+          className="w-full py-2.5 text-sm font-black text-sky-600 border border-sky-100 bg-sky-50/50 rounded-2xl hover:bg-sky-100 transition-all active:scale-95 tracking-tight disabled:opacity-50 flex justify-center items-center gap-2"
         >
           {loading ? <><Loader2 size={11} className="animate-spin" /> Carregando...</> : 'Ver mais eventos'}
         </button>

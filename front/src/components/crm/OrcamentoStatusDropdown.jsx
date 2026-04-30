@@ -66,14 +66,14 @@ export default function OrcamentoStatusDropdown({ status, onTransition, submitti
             <button
               onClick={handleClose}
               disabled={submitting}
-              className="flex-1 py-2.5 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 uppercase tracking-tight disabled:opacity-50"
+              className="flex-1 py-2.5 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 tracking-tight disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               onClick={handleSubmit}
               disabled={!selected || submitting}
-              className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 uppercase tracking-tight"
+              className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 tracking-tight"
             >
               {submitting ? <><Loader2 size={13} className="animate-spin" /> Aplicando...</> : <><Send size={13} /> Aplicar</>}
             </button>

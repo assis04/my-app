@@ -52,8 +52,8 @@ export default function ModalBase({ open, onClose, title, subtitle, maxWidth = '
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100 shrink-0">
           <div>
-            <h2 id={titleId} className="text-lg font-black text-slate-900 uppercase tracking-tight italic">{title}</h2>
-            {subtitle && <p id={subtitleId} className="text-xs text-slate-400 font-bold mt-0.5 italic">{subtitle}</p>}
+            <h2 id={titleId} className="text-lg font-black text-slate-900 tracking-tight">{title}</h2>
+            {subtitle && <p id={subtitleId} className="text-xs text-slate-400 font-bold mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}

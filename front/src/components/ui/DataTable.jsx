@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
  */
 export function Th({ children, className = '', center = false, scope = 'col' }) {
   return (
-    <th scope={scope} className={`py-2 px-3 text-xs font-black text-slate-400 uppercase tracking-tighter italic ${center ? 'text-center' : ''} ${className}`}>
+    <th scope={scope} className={`py-2 px-3 text-xs font-black text-slate-400 tracking-tight italic ${center ? 'text-center' : ''} ${className}`}>
       {children}
     </th>
   );
@@ -60,7 +60,7 @@ export default function DataTable({
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
                   <Loader2 size={20} className="animate-spin text-sky-500 mx-auto" />
-                  <p className="text-slate-300 font-black text-xs uppercase mt-2">Carregando...</p>
+                  <p className="text-slate-300 font-black text-xs mt-2">Carregando...</p>
                 </td>
               </tr>
             )}
@@ -68,7 +68,7 @@ export default function DataTable({
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
                   {emptyIcon && <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-slate-100 text-slate-200">{emptyIcon}</div>}
-                  <p className="text-slate-300 font-black text-xs uppercase">{emptyMessage}</p>
+                  <p className="text-slate-300 font-black text-xs">{emptyMessage}</p>
                   {emptyHint && <p className="text-slate-200 text-xs font-bold mt-1">{emptyHint}</p>}
                 </td>
               </tr>

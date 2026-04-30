@@ -61,7 +61,7 @@ export default function TaskModal({ task, onClose, user, isAdmin }) {
             <h2 className="text-base font-black text-slate-800 tracking-tight">
               {isEditing ? "Editar Tarefa" : "Nova Tarefa"}
             </h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+            <p className="text-xs text-slate-500 font-bold tracking-wider mt-0.5">
               {isEditing ? "Atualize os dados" : "Crie um novo registro"}
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function TaskModal({ task, onClose, user, isAdmin }) {
         <div className="p-6 overflow-y-auto custom-scrollbar">
           <form id="taskForm" onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Título da Tarefa</label>
+              <label className="block text-xs font-black text-slate-500 tracking-wider mb-1.5 ml-1">Título da Tarefa</label>
               <input
                 type="text"
                 required
@@ -85,7 +85,7 @@ export default function TaskModal({ task, onClose, user, isAdmin }) {
             </div>
 
             <div>
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Descrição (Opcional)</label>
+              <label className="block text-xs font-black text-slate-500 tracking-wider mb-1.5 ml-1">Descrição (Opcional)</label>
               <textarea
                 value={formData.descricao}
                 onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
@@ -97,7 +97,7 @@ export default function TaskModal({ task, onClose, user, isAdmin }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Vencimento</label>
+                  <label className="block text-xs font-black text-slate-500 tracking-wider mb-1.5 ml-1">Vencimento</label>
                   <input
                     type="date"
                     value={formData.dataVencimento}
@@ -108,7 +108,7 @@ export default function TaskModal({ task, onClose, user, isAdmin }) {
 
                {canAssignToEquipe && (
                  <div>
-                    <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-1.5 ml-1">Atribuir a Equipe?</label>
+                    <label className="block text-xs font-black text-sky-600 tracking-wider mb-1.5 ml-1">Atribuir a Equipe?</label>
                     <select
                       value={formData.assignedToEquipeId}
                       onChange={(e) => setFormData({ ...formData, assignedToEquipeId: e.target.value })}

@@ -76,7 +76,7 @@ export default function GerenciarUsuarios() {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               Gestão de Usuários
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-wider">Controle de acesso e permissões</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold tracking-wider">Controle de acesso e permissões</p>
           </div>
           <PermissionGate permission="rh:usuarios:create">
             <button
@@ -102,13 +102,13 @@ export default function GerenciarUsuarios() {
                 <Loader2 size={32} className="animate-spin text-sky-500" />
               </div>
             ) : usersList.length === 0 ? (
-              <div className="text-center py-20 text-slate-400 font-medium italic bg-slate-50/10 text-xs uppercase">
+              <div className="text-center py-20 text-slate-400 font-medium italic bg-slate-50/10 text-xs">
                 Não há colaboradores registrados.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
-                  <thead className="bg-slate-50/80 text-slate-500 font-black text-xs uppercase border-b border-slate-100 italic tracking-tighter">
+                  <thead className="bg-slate-50/80 text-slate-500 font-black text-xs border-b border-slate-100 italic tracking-tight">
                     <tr>
                       <th className="py-2 px-4 italic">Colaborador</th>
                       <th className="py-2 px-4 italic">E-mail de Acesso</th>
@@ -126,22 +126,22 @@ export default function GerenciarUsuarios() {
                       >
                         <td className="py-2 px-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 font-black text-xs border border-sky-100 group-hover:bg-sky-500 group-hover:text-white transition-colors uppercase">
+                            <div className="w-6 h-6 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 font-black text-xs border border-sky-100 group-hover:bg-sky-500 group-hover:text-white transition-colors">
                               {usr.nome.charAt(0)}
                             </div>
-                            <span className="text-slate-900 font-black group-hover:text-sky-700 transition-colors uppercase tracking-tight">{usr.nome}</span>
+                            <span className="text-slate-900 font-black group-hover:text-sky-700 transition-colors tracking-tight">{usr.nome}</span>
                           </div>
                         </td>
                         <td className="py-2 px-4 font-bold text-slate-500">{usr.email}</td>
                         <td className="py-2 px-4">
-                          <span className="text-xs font-black text-slate-400 bg-white px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">
+                          <span className="text-xs font-black text-slate-400 bg-white px-2 py-0.5 rounded-lg border border-slate-100 tracking-tight">
                             {usr.perfil}
                           </span>
                         </td>
-                        <td className="py-2 px-4 text-center font-bold text-slate-400 text-xs uppercase">{usr.filial || '—'}</td>
+                        <td className="py-2 px-4 text-center font-bold text-slate-400 text-xs">{usr.filial || '—'}</td>
                         <td className="py-2 px-4">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-xs font-black border shadow-sm uppercase tracking-tighter ${usr.ativo ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"}`}
+                            className={`px-2 py-0.5 rounded-full text-xs font-black border shadow-sm tracking-tight ${usr.ativo ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"}`}
                           >
                             {usr.ativo ? "Ativo" : "Inativo"}
                           </span>

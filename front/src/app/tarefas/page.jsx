@@ -79,13 +79,13 @@ export default function Tarefas() {
           <Loader2 size={24} className="animate-spin text-sky-500" />
         </div>
       ) : taskList.length === 0 ? (
-        <div className="text-center py-16 text-slate-400 font-medium italic bg-slate-50/10 text-xs uppercase">
+        <div className="text-center py-16 text-slate-400 font-medium italic bg-slate-50/10 text-xs">
           {emptyMessage}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
-            <thead className="bg-slate-50/80 text-slate-500 font-black text-xs uppercase border-b border-slate-100 italic tracking-tighter">
+            <thead className="bg-slate-50/80 text-slate-500 font-black text-xs border-b border-slate-100 italic tracking-tight">
               <tr>
                 <th className="py-2 px-4 italic w-10">St.</th>
                 <th className="py-2 px-4 italic">Tarefa</th>
@@ -136,7 +136,7 @@ export default function Tarefas() {
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Lista de Tarefas</h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-wider">Gestão Pessoal e de Equipes</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold tracking-wider">Gestão Pessoal e de Equipes</p>
           </div>
           <button
             onClick={() => setModalData({})}

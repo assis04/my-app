@@ -31,7 +31,7 @@ export default function Button({
     <button
       disabled={disabled || loading}
       className={`
-        inline-flex items-center justify-center font-black uppercase tracking-tight
+        inline-flex items-center justify-center font-black tracking-tight
         transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none
         ${VARIANTS[variant] || VARIANTS.primary}
         ${SIZES[size] || SIZES.md}

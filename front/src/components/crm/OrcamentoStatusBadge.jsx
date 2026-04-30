@@ -27,7 +27,7 @@ export default function OrcamentoStatusBadge({ status, size = 'sm', showDot = tr
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-bold border uppercase tracking-tighter ${sizeClasses} ${palette.bg} ${palette.text} ${palette.border}`}
+      className={`inline-flex items-center gap-1.5 rounded-full font-bold border tracking-tight ${sizeClasses} ${palette.bg} ${palette.text} ${palette.border}`}
     >
       {showDot && <span className={`w-1.5 h-1.5 rounded-full ${palette.dot}`} aria-hidden />}
       {status}

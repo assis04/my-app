@@ -79,7 +79,7 @@ export default function FiliaisPage() {
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Filiais</h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-wider">{filiais.length} filial{filiais.length !== 1 ? 'is' : ''} estratégica{filiais.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold tracking-wider">{filiais.length} filial{filiais.length !== 1 ? 'is' : ''} estratégica{filiais.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-3">
             {isAdmin && (
@@ -100,8 +100,8 @@ export default function FiliaisPage() {
               <Building2 size={24} className="text-sky-500 group-hover:text-white transition-colors" />
             </div>
             <div>
-              <p className="text-2xl font-black text-slate-900 tracking-tighter">{filiais.length}</p>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Unidades Ativas</p>
+              <p className="text-2xl font-black text-slate-900 tracking-tight">{filiais.length}</p>
+              <p className="text-xs font-bold text-slate-400 tracking-tight">Unidades Ativas</p>
             </div>
           </div>
           <div className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-premium hover:shadow-floating transition-all active:scale-[0.98] cursor-pointer group">
@@ -109,10 +109,10 @@ export default function FiliaisPage() {
               <Users size={24} className="text-emerald-500 group-hover:text-white transition-colors" />
             </div>
             <div>
-              <p className="text-2xl font-black text-slate-900 tracking-tighter">
+              <p className="text-2xl font-black text-slate-900 tracking-tight">
                 {filiais.reduce((acc, f) => acc + (f._count?.users || 0), 0)}
               </p>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Colaboradores</p>
+              <p className="text-xs font-bold text-slate-400 tracking-tight">Colaboradores</p>
             </div>
           </div>
         </div>
@@ -149,14 +149,14 @@ export default function FiliaisPage() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-20 bg-slate-50/10 rounded-2xl border border-dashed border-slate-100 group">
               <Building2 size={40} className="mx-auto text-slate-200 mb-4 group-hover:text-sky-200 transition-colors" />
-              <p className="text-slate-400 font-bold text-xs uppercase">
+              <p className="text-slate-400 font-bold text-xs">
                 {search ? 'Nenhum resultado encontrado.' : 'Nenhuma unidade cadastrada.'}
               </p>
             </div>
           ) : (
             <div className="w-full overflow-hidden rounded-2xl border border-slate-100">
               <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
-                <thead className="bg-slate-50/80 text-slate-500 font-black text-xs uppercase border-b border-slate-100 italic tracking-tighter">
+                <thead className="bg-slate-50/80 text-slate-500 font-black text-xs border-b border-slate-100 italic tracking-tight">
                   <tr>
                     <th className="py-2 px-4 italic">Unidade</th>
                     <th className="py-2 px-4 italic">Gerente</th>
@@ -175,35 +175,35 @@ export default function FiliaisPage() {
                             <Building2 size={14} className="text-slate-400 group-hover:text-sky-500 transition-colors" />
                           </div>
                           <div className="flex flex-col leading-tight">
-                            <span className="font-black text-slate-900 tracking-tight group-hover:text-sky-700 transition-colors uppercase">{f.nome}</span>
-                            <span className="text-xs font-bold text-slate-400 truncate max-w-[150px] uppercase tracking-tighter">{f.endereco || 'N/A'}</span>
+                            <span className="font-black text-slate-900 tracking-tight group-hover:text-sky-700 transition-colors">{f.nome}</span>
+                            <span className="text-xs font-bold text-slate-400 truncate max-w-[150px] tracking-tight">{f.endereco || 'N/A'}</span>
                           </div>
                         </div>
                       </td>
                       <td className="py-2 px-4">
                         {f.manager ? (
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center text-xs text-white font-black group-hover:from-sky-400 group-hover:to-sky-600 transition-all shadow-sm uppercase">
+                            <div className="w-6 h-6 rounded-lg bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center text-xs text-white font-black group-hover:from-sky-400 group-hover:to-sky-600 transition-all shadow-sm">
                               {f.manager.nome.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors uppercase tracking-tighter">{f.manager.nome}</span>
+                            <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors tracking-tight">{f.manager.nome}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-300 font-bold text-xs uppercase italic tracking-widest">Vago</span>
+                          <span className="text-slate-300 font-bold text-xs italic tracking-tight">Vago</span>
                         )}
                       </td>
                       <td className="py-2 px-4 text-center">
-                        <span className="bg-sky-50 text-sky-400 border border-sky-100 px-3 py-0.5 rounded-xl text-xs font-black group-hover:bg-sky-500 group-hover:text-white transition-all shadow-xs uppercase">
+                        <span className="bg-sky-50 text-sky-400 border border-sky-100 px-3 py-0.5 rounded-xl text-xs font-black group-hover:bg-sky-500 group-hover:text-white transition-all shadow-xs">
                           {f._count?.users ?? 0}
                         </span>
                       </td>
                       <td className="py-2 px-4 text-center">
-                        <span className="bg-emerald-50 text-emerald-400 border border-emerald-100 px-3 py-0.5 rounded-xl text-xs font-black group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xs uppercase">
+                        <span className="bg-emerald-50 text-emerald-400 border border-emerald-100 px-3 py-0.5 rounded-xl text-xs font-black group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xs">
                           {f._count?.equipes ?? 0}
                         </span>
                       </td>
                       <td className="py-2 px-4">
-                        <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 uppercase tracking-tighter">
+                        <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 tracking-tight">
                           {new Date(f.createdAt).toLocaleDateString('pt-BR')}
                         </span>
                       </td>
@@ -211,7 +211,7 @@ export default function FiliaisPage() {
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => handleViewTeam(f.id)}
-                            className="bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 px-3 py-1.5 rounded-xl transition-all text-xs font-black flex items-center gap-1.5 shadow-xs active:scale-95 uppercase"
+                            className="bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 px-3 py-1.5 rounded-xl transition-all text-xs font-black flex items-center gap-1.5 shadow-xs active:scale-95"
                           >
                             <Users size={12} /> Ver
                           </button>

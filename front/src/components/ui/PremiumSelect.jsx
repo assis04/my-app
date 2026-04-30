@@ -59,7 +59,7 @@ export default function PremiumSelect({
         <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
           <div className="max-h-60 overflow-y-auto custom-scrollbar p-2">
             {options.length === 0 ? (
-              <div className="p-4 text-center text-slate-400 text-sm font-black uppercase tracking-widest">
+              <div className="p-4 text-center text-slate-400 text-sm font-black tracking-tight">
                 Nenhuma opção disponível
               </div>
             ) : (

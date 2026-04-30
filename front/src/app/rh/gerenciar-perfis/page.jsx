@@ -62,7 +62,7 @@ export default function GerenciarPerfis() {
         <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gestão de Perfis</h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-wider">Definição de papéis e níveis de acesso</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-bold tracking-wider">Definição de papéis e níveis de acesso</p>
           </div>
           <PermissionGate permission="rh:perfis:create">
             <button 
@@ -90,7 +90,7 @@ export default function GerenciarPerfis() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
-                  <thead className="bg-slate-50/80 text-slate-500 font-black text-xs uppercase border-b border-slate-100 italic tracking-tighter">
+                  <thead className="bg-slate-50/80 text-slate-500 font-black text-xs border-b border-slate-100 italic tracking-tight">
                     <tr>
                       <th className="py-2 px-4 w-16 italic">REF</th>
                       <th className="py-2 px-4 italic">Identificador</th>
@@ -101,17 +101,17 @@ export default function GerenciarPerfis() {
                   <tbody className="divide-y divide-slate-50">
                     {rolesList.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="text-center py-16 text-slate-400 font-bold uppercase text-xs">Nenhum perfil configurado.</td>
+                        <td colSpan="4" className="text-center py-16 text-slate-400 font-bold text-xs">Nenhum perfil configurado.</td>
                       </tr>
                     ) : rolesList.map((role) => (
                       <tr key={role.id} className="hover:bg-slate-50 transition-all group">
-                        <td className="py-2 px-4 font-black text-slate-400 text-xs tracking-tighter italic">#{role.id}</td>
+                        <td className="py-2 px-4 font-black text-slate-400 text-xs tracking-tight italic">#{role.id}</td>
                         <td className="py-2 px-4">
-                          <span className="text-xs font-black text-sky-600 bg-sky-50/50 px-3 py-1 rounded-lg border border-sky-100 shadow-xs group-hover:bg-sky-500 group-hover:text-white transition-all uppercase tracking-tighter">
+                          <span className="text-xs font-black text-sky-600 bg-sky-50/50 px-3 py-1 rounded-lg border border-sky-100 shadow-xs group-hover:bg-sky-500 group-hover:text-white transition-all tracking-tight">
                             {role.nome.toUpperCase()}
                           </span>
                         </td>
-                        <td className="py-2 px-4 font-bold text-slate-500 italic max-w-xs truncate uppercase text-xs tracking-tight">
+                        <td className="py-2 px-4 font-bold text-slate-500 italic max-w-xs truncate text-xs tracking-tight">
                           {role.descricao || 'Sem descrição formal.'}
                         </td>
                         <td className="py-2 px-4">
