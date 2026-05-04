@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authMiddleware } from '../config/authMiddleware.js';
 import { authorizeRoles } from '../config/roleMiddleware.js';
+import { validate } from '../config/validateMiddleware.js';
+import { createFilialSchema, updateFilialSchema } from '../validators/filialValidator.js';
 import {
   listFiliais,
   getFilial,
@@ -16,8 +18,8 @@ router.get('/', authMiddleware, listFiliais);
 router.get('/:id', authMiddleware, getFilial);
 
 // Apenas ADM pode criar, editar e remover
-router.post('/', authMiddleware, authorizeRoles('ADM', 'admin', 'Administrador'), createFilial);
-router.put('/:id', authMiddleware, authorizeRoles('ADM', 'admin', 'Administrador'), updateFilial);
+router.post('/', authMiddleware, authorizeRoles('ADM', 'admin', 'Administrador'), validate(createFilialSchema), createFilial);
+router.put('/:id', authMiddleware, authorizeRoles('ADM', 'admin', 'Administrador'), validate(updateFilialSchema), updateFilial);
 router.delete('/:id', authMiddleware, authorizeRoles('ADM', 'admin', 'Administrador'), deleteFilial);
 
 export default router;
