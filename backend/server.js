@@ -20,20 +20,19 @@ app.set('trust proxy', 1);
 
 // Middlewares de Segurança
 app.use(helmet());
-// CORS: aceita origens do .env (CORS_ORIGIN + CORS_LOCAL_ORIGINS)
+// CORS: aceita origens do .env (CORS_ORIGIN, separadas por vírgula)
 const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
-const localOrigins = env.CORS_LOCAL_ORIGINS ? env.CORS_LOCAL_ORIGINS.split(',').map(o => o.trim()).filter(Boolean) : [];
-const allOrigins = [...allowedOrigins, ...localOrigins];
 
 app.use(cors({
   origin: (origin, callback) => {
     // Requests sem origin (ex: curl, mobile apps) — permitir
     if (!origin) return callback(null, true);
-    if (allOrigins.includes(origin)) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error('Bloqueado pelo CORS'));
   },
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

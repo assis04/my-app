@@ -18,14 +18,12 @@ function parseCookies(cookieHeader) {
 let io;
 
 const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
-const localOrigins = env.CORS_LOCAL_ORIGINS ? env.CORS_LOCAL_ORIGINS.split(',').map(o => o.trim()).filter(Boolean) : [];
-const allOrigins = [...allowedOrigins, ...localOrigins];
 
 export function initSocket(server) {
   io = new Server(server, {
     cors: {
       origin: (origin, callback) => {
-        if (!origin || allOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
         callback(new Error('Bloqueado pelo CORS'));
