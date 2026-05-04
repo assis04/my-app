@@ -10,11 +10,14 @@ export function validate(schema, source = 'body') {
     const result = schema.safeParse(req[source]);
 
     if (!result.success) {
-      const firstMessage = result.error.errors[0]?.message || 'Dados inválidos.';
+      // Zod 4 expõe `issues`. Versões antigas tinham `errors`. Aceitar ambos
+      // mantém o middleware resiliente a futuros upgrades.
+      const issues = result.error.issues || result.error.errors || [];
+      const firstMessage = issues[0]?.message || 'Dados inválidos.';
       return res.status(400).json({
         message: firstMessage,
-        errors: result.error.errors.map(err => ({
-          field: err.path.join('.'),
+        errors: issues.map(err => ({
+          field: Array.isArray(err.path) ? err.path.join('.') : '',
           message: err.message,
         })),
       });
