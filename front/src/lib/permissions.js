@@ -134,9 +134,9 @@ export const ROLE_DEFAULT_PERMISSIONS = {
 export const SYSTEM_MODULES = [
   {
     category: "Recursos Humanos (RH)",
-    color: "text-(--gold)",
-    borderColor: "border-(--gold)/40",
-    bgColor: "bg-(--gold-soft)/50",
+    color: "text-(--success)",
+    borderColor: "border-(--success)/40",
+    bgColor: "bg-(--success-soft)/50",
     modules: [
       { key: PERMISSIONS.RH_USERS_READ,    label: "Usuários - Visualizar" },
       { key: PERMISSIONS.RH_USERS_CREATE,  label: "Usuários - Criar" },
@@ -151,9 +151,9 @@ export const SYSTEM_MODULES = [
   },
   {
     category: "CRM & Funil de Vendas",
-    color: "text-(--success)",
-    borderColor: "border-(--success)/40",
-    bgColor: "bg-(--success-soft)/50",
+    color: "text-(--gold)",
+    borderColor: "border-(--gold)/40",
+    bgColor: "bg-(--gold-soft)/50",
     modules: [
       { key: PERMISSIONS.LEADS_READ_ALL,    label: "Todos os Leads - Ver" },
       { key: PERMISSIONS.LEADS_READ_BRANCH, label: "Leads da Filial - Ver" },
@@ -172,8 +172,8 @@ export const SYSTEM_MODULES = [
   {
     category: "Operação Kanban",
     color: "text-(--gold-hover)",
-    borderColor: "border-(--gold)/40",
-    bgColor: "bg-(--gold-soft)/50",
+    borderColor: "border-(--gold-hover)/40",
+    bgColor: "bg-(--gold-soft)/30",
     modules: [
       { key: PERMISSIONS.KANBAN_READ_ALL,    label: "Ver todos os Kanbans" },
       { key: PERMISSIONS.KANBAN_READ_BRANCH, label: "Ver Kanban da Filial" },
@@ -185,9 +185,9 @@ export const SYSTEM_MODULES = [
   },
   {
     category: "Gestão de Tarefas",
-    color: "text-(--gold)",
-    borderColor: "border-(--gold)/40",
-    bgColor: "bg-(--gold-soft)/50",
+    color: "text-(--text-primary)",
+    borderColor: "border-(--border)",
+    bgColor: "bg-(--surface-3)",
     modules: [
       { key: PERMISSIONS.TASKS_MANAGE_ALL,    label: "Gerenciar Todas as Tarefas" },
       { key: PERMISSIONS.TASKS_MANAGE_BRANCH, label: "Gerenciar Tarefas da Filial" },
@@ -196,9 +196,9 @@ export const SYSTEM_MODULES = [
   },
   {
     category: "Business Intelligence",
-    color: "text-(--gold)",
-    borderColor: "border-(--gold)",
-    bgColor: "bg-(--gold-soft)/50",
+    color: "text-(--success)",
+    borderColor: "border-(--success)/30",
+    bgColor: "bg-(--surface-3)",
     modules: [
       { key: PERMISSIONS.REPORTS_READ_ALL,    label: "Ver Relatórios de Todas as Filiais" },
       { key: PERMISSIONS.REPORTS_READ_BRANCH, label: "Ver Relatórios da Filial" },
@@ -219,8 +219,8 @@ export const SYSTEM_MODULES = [
   {
     category: "Painel Administrativo",
     color: "text-(--text-primary)",
-    borderColor: "border-(--border)",
-    bgColor: "bg-(--surface-1)/50",
+    borderColor: "border-(--gold)/40",
+    bgColor: "bg-(--surface-4)",
     modules: [
       { key: PERMISSIONS.CONFIG_MANAGE, label: "Configurações Globais do Sistema" },
     ]

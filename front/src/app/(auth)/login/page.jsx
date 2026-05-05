@@ -4,17 +4,6 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 
-function WardrobeIcon({ size = 40, className = '' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="3" y="2" width="18" height="20" rx="2" />
-      <line x1="12" y1="2" x2="12" y2="22" />
-      <line x1="9" y1="10" x2="9" y2="14" />
-      <line x1="15" y1="10" x2="15" y2="14" />
-    </svg>
-  );
-}
-
 export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -47,11 +36,8 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10">
         <div className="bg-(--surface-2) rounded-3xl p-10 sm:p-12 shadow-2xl border border-(--border-subtle)">
           <div className="flex flex-col items-center mb-12">
-            <div className="w-20 h-20 bg-(--gold) rounded-3xl flex items-center justify-center mb-8 shadow-xl ring-8 ring-(--gold)">
-              <WardrobeIcon size={40} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-black text-(--text-primary) tracking-tight text-center">Moveis Valcenter</h1>
-            <p className="text-(--text-muted) mt-2 font-medium text-center text-sm">Autenticação Segura</p>
+            <img src="/Valcenter.svg" alt="Móveis Valcenter" className="w-64 h-auto mb-6" />
+            <p className="text-(--text-muted) font-medium text-center text-sm tracking-wider uppercase">Autenticação Segura</p>
           </div>
           
           {error && (

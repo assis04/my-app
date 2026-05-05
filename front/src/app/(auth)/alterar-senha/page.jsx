@@ -65,8 +65,9 @@ export default function AlterarSenha() {
       <div className="w-full max-w-md relative z-10">
         <div className="bg-(--surface-2) rounded-3xl p-10 sm:p-12 shadow-2xl border border-(--border-subtle)">
           <div className="flex flex-col items-center mb-10">
-            <div className="w-20 h-20 bg-(--gold) rounded-3xl flex items-center justify-center mb-8 shadow-xl ring-8 ring-(--gold)">
-              <ShieldCheck size={36} className="text-white" />
+            <img src="/Valcenter.svg" alt="Móveis Valcenter" className="w-56 h-auto mb-8" />
+            <div className="w-12 h-12 bg-(--gold-soft) border border-(--gold)/40 rounded-2xl flex items-center justify-center mb-4">
+              <ShieldCheck size={24} className="text-(--gold)" />
             </div>
             <h1 className="text-2xl font-black text-(--text-primary) tracking-tight text-center">Primeiro Acesso</h1>
             <p className="text-(--text-muted) mt-2 font-medium text-center text-sm max-w-[260px]">

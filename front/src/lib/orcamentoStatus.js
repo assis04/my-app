@@ -37,25 +37,30 @@ export const MOTIVOS_CANCELAMENTO = Object.freeze([
 
 /**
  * Paleta para OrcamentoStatusBadge — classes Tailwind (bg + text + border + dot).
+ * Cada status tem identidade visual distinta:
+ *  - Nova: gold sólido (acabou de chegar, alta atenção)
+ *  - Não Responde: gold ghost (aguardando, warm)
+ *  - Standby: surface-3 muted (pausado, frio)
+ *  - Cancelado: danger ghost (terminal negativo)
  */
 export const STATUS_COLORS = Object.freeze({
   [OrcamentoStatus.NOVA]: {
-    bg: 'bg-(--gold-soft)',
-    text: 'text-(--gold-hover)',
-    border: 'border-(--gold)/40',
-    dot: 'bg-(--gold)',
+    bg: 'bg-(--gold)',
+    text: 'text-(--on-gold)',
+    border: 'border-(--gold-hover)',
+    dot: 'bg-(--on-gold)',
   },
   [OrcamentoStatus.NAO_RESPONDE]: {
     bg: 'bg-(--gold-soft)',
-    text: 'text-(--gold)',
-    border: 'border-(--gold)/40',
-    dot: 'bg-(--gold)',
+    text: 'text-(--gold-hover)',
+    border: 'border-(--gold)/30',
+    dot: 'bg-(--gold-hover)',
   },
   [OrcamentoStatus.STANDBY]: {
-    bg: 'bg-(--gold-soft)',
-    text: 'text-(--gold)',
-    border: 'border-(--gold)',
-    dot: 'bg-(--gold)',
+    bg: 'bg-(--surface-3)',
+    text: 'text-(--text-muted)',
+    border: 'border-(--border)',
+    dot: 'bg-(--text-muted)',
   },
   [OrcamentoStatus.CANCELADO]: {
     bg: 'bg-(--danger-soft)',

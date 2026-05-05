@@ -35,49 +35,58 @@ export const STATUS_ORDER = Object.freeze([
 
 /**
  * Paleta para LeadStatusBadge. Classes Tailwind (bg + text + border).
- * Mantém consistência visual entre list, detail e timeline.
+ * Cada status tem identidade visual distinta — não confundir entre si.
+ *
+ * Hierarquia visual:
+ *  - Frio/early (Em prospecção): surface neutra, texto secundário
+ *  - Esperando (Aguardando Planta): gold ghost suave
+ *  - Agendados (Vídeo, Visita): gold ghost com bordas de intensidade crescente
+ *  - Ativo (Em Atendimento Loja): gold sólido — destaque máximo, raro
+ *  - Terminal positivo (Venda): success sólido
+ *  - Continuação (Pós-venda): success ghost
+ *  - Terminal negativo (Cancelado): danger ghost
  */
 export const STATUS_COLORS = Object.freeze({
   [LeadStatus.EM_PROSPECCAO]: {
     bg: 'bg-(--surface-3)',
-    text: 'text-(--text-primary)',
-    border: 'border-(--border)',
-    dot: 'bg-(--surface-3)',
+    text: 'text-(--text-secondary)',
+    border: 'border-(--border-subtle)',
+    dot: 'bg-(--text-faint)',
   },
   [LeadStatus.AGUARDANDO_PLANTA]: {
-    bg: 'bg-(--gold-soft)',
-    text: 'text-(--gold)',
-    border: 'border-(--gold)/40',
-    dot: 'bg-(--gold)',
+    bg: 'bg-(--gold-soft)/60',
+    text: 'text-(--gold-hover)',
+    border: 'border-(--gold)/30',
+    dot: 'bg-(--gold-hover)',
   },
   [LeadStatus.AGENDADO_VIDEO]: {
     bg: 'bg-(--gold-soft)',
-    text: 'text-(--gold-hover)',
+    text: 'text-(--gold)',
     border: 'border-(--gold)/40',
     dot: 'bg-(--gold)',
   },
   [LeadStatus.AGENDADO_VISITA]: {
     bg: 'bg-(--gold-soft)',
     text: 'text-(--gold)',
-    border: 'border-(--gold)/40',
-    dot: 'bg-(--gold)',
-  },
-  [LeadStatus.EM_ATENDIMENTO_LOJA]: {
-    bg: 'bg-(--gold-soft)',
-    text: 'text-(--gold)',
     border: 'border-(--gold)',
     dot: 'bg-(--gold)',
   },
+  [LeadStatus.EM_ATENDIMENTO_LOJA]: {
+    bg: 'bg-(--gold)',
+    text: 'text-(--on-gold)',
+    border: 'border-(--gold-hover)',
+    dot: 'bg-(--on-gold)',
+  },
   [LeadStatus.VENDA]: {
-    bg: 'bg-(--success-soft)',
-    text: 'text-(--success)',
-    border: 'border-(--success)/40',
-    dot: 'bg-(--success)',
+    bg: 'bg-(--success)',
+    text: 'text-white',
+    border: 'border-(--success)',
+    dot: 'bg-white',
   },
   [LeadStatus.POS_VENDA]: {
     bg: 'bg-(--success-soft)',
     text: 'text-(--success)',
-    border: 'border-(--success)',
+    border: 'border-(--success)/40',
     dot: 'bg-(--success)',
   },
   [LeadStatus.CANCELADO]: {
