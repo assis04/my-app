@@ -19,7 +19,7 @@ export default function UserModal({ userObj = null, onClose, onRefresh }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-(--surface-4)/10 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-(--surface-2)/90 backdrop-blur-xl border border-white/40 w-full max-w-4xl rounded-2xl shadow-floating flex flex-col max-h-[92vh] overflow-hidden translate-y-0 transform transition-all page-transition">
+      <div className="bg-(--surface-2)/90 backdrop-blur-xl border border-(--border-subtle) w-full max-w-4xl rounded-2xl shadow-floating flex flex-col max-h-[92vh] overflow-hidden translate-y-0 transform transition-all page-transition">
         
         <div className="flex justify-between items-center mb-8 text-(--text-primary)">
           <h2 className="text-xl sm:text-3xl font-black tracking-tight flex items-center gap-4">

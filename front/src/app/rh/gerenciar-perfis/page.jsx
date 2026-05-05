@@ -74,7 +74,7 @@ export default function GerenciarPerfis() {
           </PermissionGate>
         </header>
 
-        <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-6 shadow-floating mb-6">
+        <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 md:p-6 shadow-floating mb-6">
           <h2 className="text-base font-black text-(--text-primary) flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-(--gold-soft) rounded-xl flex items-center justify-center border border-(--gold-soft) shadow-sm">
               <Shield size={18} className="text-(--gold)" />

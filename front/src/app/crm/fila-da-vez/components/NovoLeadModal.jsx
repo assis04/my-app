@@ -123,7 +123,7 @@ export default function NovoLeadModal({
 
   return (
     <div className="fixed inset-0 z-110 flex items-center justify-center bg-(--surface-4)/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-(--surface-2)/90 backdrop-blur-xl border border-white/40 w-full max-w-4xl rounded-3xl shadow-floating flex flex-col max-h-[95vh] overflow-hidden translate-y-0 transform transition-all page-transition">
+      <div className="bg-(--surface-2)/90 backdrop-blur-xl border border-(--border-subtle) w-full max-w-4xl rounded-3xl shadow-floating flex flex-col max-h-[95vh] overflow-hidden translate-y-0 transform transition-all page-transition">
 
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-(--border-subtle) shrink-0 bg-(--surface-2)">

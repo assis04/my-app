@@ -261,7 +261,7 @@ export default function EditLeadPage() {
       )}
 
       {/* 1. Informações do Lead (identificação + cônjuge + atribuição) */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6 mb-6">
+      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6 mb-6">
         <LeadFormFields
           form={form}
           onChange={handleChange}
@@ -274,7 +274,7 @@ export default function EditLeadPage() {
       </div>
 
       {/* 2. Status + Temperatura + Ações rápidas */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
+      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
             <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Status</label>
@@ -371,7 +371,7 @@ export default function EditLeadPage() {
       </div>
 
       {/* Timeline de histórico */}
-      <div className="mt-8 glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
+      <div className="mt-8 glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
         <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1 mb-4">
           <History size={12} className="text-(--gold)" /> Histórico do Lead
         </h3>

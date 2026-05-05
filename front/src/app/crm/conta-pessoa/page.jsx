@@ -134,7 +134,7 @@ export default function ContaPessoaPage() {
       </div>
 
       {/* Filtros */}
-      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-white/60 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
+      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-(--border-subtle) shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           <div className="relative group">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) font-black group-focus-within:text-(--gold) transition-colors" size={14} />

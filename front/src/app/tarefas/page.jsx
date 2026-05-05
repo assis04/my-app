@@ -148,7 +148,7 @@ export default function Tarefas() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-start">
            {/* Coluna Esquerda: Minhas Tarefas */}
-           <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-5 shadow-floating">
+           <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 md:p-5 shadow-floating">
               <h2 className="text-base font-black text-(--text-primary) mb-4 flex items-center gap-2">
                  <div className="w-6 h-6 bg-(--gold-soft) rounded-lg flex items-center justify-center text-(--gold)"><CheckSquare size={14}/></div>
                  MINHAS TAREFAS
@@ -157,7 +157,7 @@ export default function Tarefas() {
            </div>
 
            {/* Coluna Direita: Tarefas da Equipe */}
-           <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-5 shadow-floating">
+           <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 md:p-5 shadow-floating">
               <h2 className="text-base font-black text-(--text-primary) mb-4 flex items-center gap-2">
                  <div className="w-6 h-6 bg-(--gold-soft) rounded-lg flex items-center justify-center text-(--gold)"><CheckSquare size={14}/></div>
                  TAREFAS DA EQUIPE

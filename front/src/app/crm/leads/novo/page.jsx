@@ -100,7 +100,7 @@ export default function NovoLeadPage() {
         </div>
       )}
 
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6">
+      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6">
         <LeadFormFields
           form={form}
           onChange={handleChange}

@@ -256,7 +256,7 @@ export default function CaptacaoFilaPage() {
           </div>
         </div>
 
-          <div className="w-full relative glass-card border border-white/60 rounded-3xl p-1 shadow-floating overflow-hidden transition-all bg-(--surface-2)/40 backdrop-blur-xl">
+          <div className="w-full relative glass-card border border-(--border-subtle) rounded-3xl p-1 shadow-floating overflow-hidden transition-all bg-(--surface-2)/40 backdrop-blur-xl">
             <div className="absolute top-0 left-0 w-1.5 h-full bg-(--gold)" />
             
             {queueLoading && queue.length === 0 && (
@@ -274,7 +274,7 @@ export default function CaptacaoFilaPage() {
           </div>
         </div>
 
-        <div className="max-w-[1600px] mx-auto glass-card border border-white/60 rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
+        <div className="max-w-[1600px] mx-auto glass-card border border-(--border-subtle) rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
           <h2 className="text-base font-black text-(--text-primary) mb-4 flex items-center gap-2 tracking-tight">
             <div className="w-8 h-8 bg-(--gold-soft) rounded-xl flex items-center justify-center border border-(--gold-soft) shadow-sm">
               <FolderOpen size={18} className="text-(--gold)" />

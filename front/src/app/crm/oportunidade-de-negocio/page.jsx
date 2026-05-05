@@ -105,7 +105,7 @@ export default function OportunidadeDeNegocioPage() {
   return (
     <div className="max-w-[1600px] mx-auto">
       {/* Filtros */}
-      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-white/60 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
+      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-(--border-subtle) shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-base font-black text-(--text-primary) flex items-center gap-2 tracking-tight">

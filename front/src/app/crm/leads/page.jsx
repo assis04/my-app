@@ -319,7 +319,7 @@ export default function LeadsListPage() {
           </div>
         </div>
 
-        <div className="glass-card border border-white/60 rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
+        <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
           {/* Filtros e Ações de Topo */}
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-4 gap-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full xl:w-auto">

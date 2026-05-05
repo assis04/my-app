@@ -172,7 +172,7 @@ export default function OrcamentoDetailPage() {
       )}
 
       {/* Painel Status + Ações */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
+      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
             <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">
@@ -216,7 +216,7 @@ export default function OrcamentoDetailPage() {
       </div>
 
       {/* Lead vinculado */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6">
+      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6">
         <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1 mb-4">
           <Briefcase size={12} className="text-(--gold)" /> Lead Vinculado
         </h3>

@@ -87,7 +87,7 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-(--surface-4)/10 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-(--surface-2)/95 backdrop-blur-xl border border-white/40 w-full max-w-4xl rounded-2xl shadow-floating flex flex-col max-h-[92vh] overflow-hidden translate-y-0 transform transition-all page-transition">
+      <div className="bg-(--surface-2)/95 backdrop-blur-xl border border-(--border-subtle) w-full max-w-4xl rounded-2xl shadow-floating flex flex-col max-h-[92vh] overflow-hidden translate-y-0 transform transition-all page-transition">
 
         {/* Header */}
         <div className="flex justify-between items-center p-8 border-b border-(--border-subtle) shrink-0">
