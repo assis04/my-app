@@ -108,17 +108,6 @@ export const STATUSES_REQUIRING_DATETIME = Object.freeze([
 ]);
 
 /**
- * Estados terminais — Venda, Pós-venda, Cancelado.
- */
-export function isTerminalStatus(status) {
-  return (
-    status === LeadStatus.VENDA ||
-    status === LeadStatus.POS_VENDA ||
-    status === LeadStatus.CANCELADO
-  );
-}
-
-/**
  * Venda e Pós-venda exigem permissão `crm:leads:edit-after-sale` para edição.
  */
 export function requiresAdminToEdit(status) {

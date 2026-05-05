@@ -70,10 +70,6 @@ export const STATUS_COLORS = Object.freeze({
   },
 });
 
-export function isTerminalStatus(status) {
-  return status === OrcamentoStatus.CANCELADO;
-}
-
 /**
  * Retorna transições válidas via endpoint PUT /orcamentos/:id/status.
  * Cancelamento e reativação usam endpoints dedicados e NÃO aparecem aqui.

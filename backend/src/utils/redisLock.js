@@ -117,14 +117,6 @@ export async function getDefaultBackend() {
   return _defaultBackend;
 }
 
-/**
- * Reseta o backend default. Use SOMENTE em testes.
- */
-export function __resetDefaultBackendForTests() {
-  _defaultBackend = null;
-  _warnedInMemory = false;
-}
-
 // ─── API pública ──────────────────────────────────────────────────────────
 
 /**
