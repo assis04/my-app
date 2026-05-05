@@ -65,7 +65,7 @@ export default function ConfirmDialog({
       role="presentation"
     >
       <div
-        className="bg-(--surface-2) rounded-3xl shadow-(--shadow-floating) w-full max-w-sm border border-(--border-subtle) animate-in fade-in zoom-in-95 duration-200"
+        className="bg-(--surface-2) rounded-3xl shadow-(--shadow-floating) w-full max-w-sm border border-(--border) animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
         role="alertdialog"
         aria-modal="true"

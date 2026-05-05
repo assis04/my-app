@@ -33,7 +33,7 @@ export default function LeadDetailsDrawer({ lead, isOpen, onClose }) {
       />
 
       {/* Drawer */}
-      <div className={`fixed inset-y-0 right-0 z-101 w-full max-w-md bg-(--surface-2) shadow-(--shadow-floating) border-l border-(--border-subtle) flex flex-col transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 z-101 w-full max-w-md bg-(--surface-2) shadow-(--shadow-floating) border-l border-(--border) flex flex-col transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
         {/* Header */}
         <div className="flex items-center justify-between p-8 border-b border-(--border-subtle) shrink-0">

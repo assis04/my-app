@@ -4,12 +4,13 @@
 :root {
   color-scheme: dark;
 
-  /* Surfaces (warm-leaning ink black, never #000) */
+  /* Surfaces (warm-leaning ink black, never #000)
+     Tiers escalonados o suficiente pra criar lift visível sem perder o tom warm. */
   --bg-base:    #0A0908;
-  --surface-1:  #121110;
-  --surface-2:  #191715;
-  --surface-3:  #211F1C;
-  --surface-4:  #2A2724;
+  --surface-1:  #15120F;
+  --surface-2:  #1F1A15;
+  --surface-3:  #2A241E;
+  --surface-4:  #38302A;
 
   /* Text (bone white, never #FFF) */
   --text-primary:   #EAEAEA;
@@ -25,8 +26,8 @@
   --on-gold:     #0A0908;
 
   /* Border */
-  --border:         #3A352E;
-  --border-subtle:  #211F1C;
+  --border:         #4A4036;
+  --border-subtle:  #2A241E;
 
   /* Status (sage / gold / terracotta — never aggressive red) */
   --success:       #7FB069;
@@ -49,10 +50,10 @@
 /* 💎 Design Tokens */
 @theme {
   --color-bg-base:        #0A0908;
-  --color-surface-1:      #121110;
-  --color-surface-2:      #191715;
-  --color-surface-3:      #211F1C;
-  --color-surface-4:      #2A2724;
+  --color-surface-1:      #15120F;
+  --color-surface-2:      #1F1A15;
+  --color-surface-3:      #2A241E;
+  --color-surface-4:      #38302A;
 
   --color-text-primary:   #EAEAEA;
   --color-text-secondary: #C4BFB6;
@@ -63,8 +64,8 @@
   --color-gold-hover:     #C99A00;
   --color-on-gold:        #0A0908;
 
-  --color-border:         #3A352E;
-  --color-border-subtle:  #211F1C;
+  --color-border:         #4A4036;
+  --color-border-subtle:  #2A241E;
 
   --color-success:        #7FB069;
   --color-warning:        #E9B601;
@@ -78,8 +79,8 @@
   --radius-2xl: 32px;
   --radius-3xl: 40px;
 
-  --shadow-premium:  0 10px 40px -10px rgba(0, 0, 0, 0.6);
-  --shadow-floating: 0 24px 60px -12px rgba(0, 0, 0, 0.7);
+  --shadow-premium:  0 10px 40px -10px rgba(0, 0, 0, 0.7);
+  --shadow-floating: 0 32px 72px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(74, 64, 54, 0.6);
 }
 
 html, body {

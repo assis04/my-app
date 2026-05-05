@@ -42,7 +42,7 @@ export default function ModalBase({ open, onClose, title, subtitle, maxWidth = '
       role="presentation"
     >
       <div
-        className={`bg-(--surface-2) rounded-3xl shadow-(--shadow-floating) w-full ${maxWidth} max-h-[90vh] flex flex-col border border-(--border-subtle) animate-in fade-in zoom-in-95 duration-200`}
+        className={`bg-(--surface-2) rounded-3xl shadow-(--shadow-floating) w-full ${maxWidth} max-h-[90vh] flex flex-col border border-(--border) animate-in fade-in zoom-in-95 duration-200`}
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
