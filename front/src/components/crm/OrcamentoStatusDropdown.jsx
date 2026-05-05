@@ -46,13 +46,13 @@ export default function OrcamentoStatusDropdown({ status, onTransition, submitti
         disabled={!interactive}
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
           interactive
-            ? 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm active:scale-95 cursor-pointer'
-            : 'border-slate-100 bg-slate-50 cursor-not-allowed opacity-80'
+            ? 'border-(--border) bg-(--surface-2) hover:border-(--gold)/40 hover:shadow-sm active:scale-95 cursor-pointer'
+            : 'border-(--border-subtle) bg-(--surface-1) cursor-not-allowed opacity-80'
         }`}
         title={!hasTransitions ? 'Sem transições disponíveis' : disabled ? 'Sem permissão' : 'Alterar status'}
       >
         <OrcamentoStatusBadge status={status} showDot />
-        {interactive && <ChevronDown size={12} className="text-slate-400" aria-hidden />}
+        {interactive && <ChevronDown size={12} className="text-(--text-muted)" aria-hidden />}
       </button>
 
       <ModalBase
@@ -66,14 +66,14 @@ export default function OrcamentoStatusDropdown({ status, onTransition, submitti
             <button
               onClick={handleClose}
               disabled={submitting}
-              className="flex-1 py-2.5 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 tracking-tight disabled:opacity-50"
+              className="flex-1 py-2.5 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 tracking-tight disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               onClick={handleSubmit}
               disabled={!selected || submitting}
-              className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 tracking-tight"
+              className="flex-1 bg-(--gold) text-(--on-gold) py-2.5 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight"
             >
               {submitting ? <><Loader2 size={13} className="animate-spin" /> Aplicando...</> : <><Send size={13} /> Aplicar</>}
             </button>
@@ -90,8 +90,8 @@ export default function OrcamentoStatusDropdown({ status, onTransition, submitti
                 onClick={() => setSelected(target)}
                 className={`w-full p-3 rounded-2xl border text-left transition-all active:scale-[0.98] ${
                   active
-                    ? 'border-sky-400 bg-sky-50 shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-(--gold) bg-(--gold-soft) shadow-sm'
+                    : 'border-(--border) hover:border-(--border) hover:bg-(--surface-1)'
                 }`}
               >
                 <OrcamentoStatusBadge status={target} />

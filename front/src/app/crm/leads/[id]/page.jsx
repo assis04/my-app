@@ -213,7 +213,7 @@ export default function EditLeadPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 size={24} className="animate-spin text-sky-500" />
+        <Loader2 size={24} className="animate-spin text-(--gold)" />
       </div>
     );
   }
@@ -224,21 +224,21 @@ export default function EditLeadPage() {
   return (
     <div className="mb-4 max-w-[900px] mx-auto">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-3 mb-6 border-b border-slate-200 pb-3">
-        <button onClick={() => router.push('/crm/leads')} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all shrink-0">
+      <div className="flex flex-wrap items-center gap-3 mb-6 border-b border-(--border) pb-3">
+        <button onClick={() => router.push('/crm/leads')} className="p-2 text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-1) rounded-xl transition-all shrink-0">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
-            Editar Lead <span className="text-sky-500">#{String(leadId).padStart(4, '0')}</span>
+          <h1 className="text-xl sm:text-2xl font-black text-(--text-primary) tracking-tight truncate">
+            Editar Lead <span className="text-(--gold)">#{String(leadId).padStart(4, '0')}</span>
           </h1>
           {conta && (
-            <p className="text-sm text-slate-400 font-bold mt-0.5 truncate">
+            <p className="text-sm text-(--text-muted) font-bold mt-0.5 truncate">
               Conta vinculada: {conta.nome} {conta.sobrenome || ''} &middot; {formatPhone(conta.celular)}
             </p>
           )}
         </div>
-        <button onClick={handleDelete} className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all tracking-tight shadow-xs active:scale-95 shrink-0">
+        <button onClick={handleDelete} className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-(--danger) bg-(--danger-soft) border border-(--danger)/30 hover:bg-(--danger-soft) transition-all tracking-tight shadow-xs active:scale-95 shrink-0">
           <Trash2 size={13} /> Excluir
         </button>
       </div>
@@ -247,21 +247,21 @@ export default function EditLeadPage() {
       {formDisabled && <PostSaleReadOnlyBanner status={leadStatus} />}
 
       {displayError && (
-        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-(--danger-soft) border border-(--danger)/30 text-(--danger) p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{displayError}</p>
         </div>
       )}
 
       {displaySuccess && (
-        <div className="bg-emerald-50 border border-emerald-100 text-emerald-600 p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-(--success-soft) border border-(--success)/30 text-(--success) p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <CheckCircle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{displaySuccess}</p>
         </div>
       )}
 
       {/* 1. Informações do Lead (identificação + cônjuge + atribuição) */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl space-y-6 mb-6">
+      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6 mb-6">
         <LeadFormFields
           form={form}
           onChange={handleChange}
@@ -274,10 +274,10 @@ export default function EditLeadPage() {
       </div>
 
       {/* 2. Status + Temperatura + Ações rápidas */}
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl mb-6 space-y-5">
+      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-black text-slate-400 px-1 tracking-tight">Status</label>
+            <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Status</label>
             <LeadStatusDropdown
               status={leadStatus}
               onTransition={actions.transitionStatus}
@@ -292,7 +292,7 @@ export default function EditLeadPage() {
                 type="button"
                 onClick={() => setShowCancel(true)}
                 disabled={actions.busy || formDisabled}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-rose-500 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-(--danger) bg-(--danger-soft) border border-(--danger)/30 hover:bg-(--danger-soft) transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <XCircle size={13} /> Cancelar Lead
               </button>
@@ -302,7 +302,7 @@ export default function EditLeadPage() {
                 type="button"
                 onClick={() => setShowReactivate(true)}
                 disabled={actions.busy}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-(--success) bg-(--success-soft) border border-(--success)/30 hover:bg-(--success-soft) transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50"
               >
                 <RefreshCw size={13} /> Reativar
               </button>
@@ -312,7 +312,7 @@ export default function EditLeadPage() {
 
         {/* Temperatura */}
         <div className="space-y-1.5">
-          <label className="text-sm font-black text-slate-400 px-1 tracking-tight">Temperatura</label>
+          <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Temperatura</label>
           <TemperaturaPicker
             value={temperatura}
             onSelect={(t) => actions.setTemperatura(t)}
@@ -326,16 +326,16 @@ export default function EditLeadPage() {
         <button
           type="button"
           onClick={() => router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`)}
-          className="w-full flex items-center gap-3 p-3 mb-6 rounded-2xl border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-all shadow-sm active:scale-[0.99]"
+          className="w-full flex items-center gap-3 p-3 mb-6 rounded-2xl border border-(--gold) bg-(--gold-soft) hover:bg-(--gold-soft) transition-all shadow-sm active:scale-[0.99]"
         >
-          <div className="p-2 bg-violet-500 text-white rounded-xl shrink-0">
+          <div className="p-2 bg-(--gold) text-(--on-gold) rounded-xl shrink-0">
             <Briefcase size={14} />
           </div>
           <div className="flex-1 text-left min-w-0">
-            <p className="text-sm font-black text-violet-700 tracking-tight">
+            <p className="text-sm font-black text-(--gold) tracking-tight">
               Orçamento vinculado
             </p>
-            <p className="text-base font-bold text-violet-900 truncate">
+            <p className="text-base font-bold text-(--gold) truncate">
               {orcamento.numero}
             </p>
           </div>
@@ -345,13 +345,13 @@ export default function EditLeadPage() {
 
       {/* Footer — Botões */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
-        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm tracking-tight">
+        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 shadow-sm tracking-tight">
           Voltar
         </button>
         <button
           onClick={handleSave}
           disabled={saving || formDisabled}
-          className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 tracking-tight"
+          className="flex-1 bg-(--gold) text-(--on-gold) py-3 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight"
         >
           {saving ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Save size={14} /> Salvar Alterações</>}
         </button>
@@ -359,7 +359,7 @@ export default function EditLeadPage() {
           <button
             onClick={handleOrcamentoAction}
             disabled={creatingOrcamento}
-            className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-base flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 tracking-tight disabled:opacity-50"
+            className="flex-1 bg-(--gold) text-(--on-gold) py-3 rounded-2xl  hover:shadow-2xl transition-all font-black text-base flex justify-center items-center gap-2 shadow-xl  active:scale-95 tracking-tight disabled:opacity-50"
           >
             {creatingOrcamento
               ? <><Loader2 size={14} className="animate-spin" /> Criando...</>
@@ -371,9 +371,9 @@ export default function EditLeadPage() {
       </div>
 
       {/* Timeline de histórico */}
-      <div className="mt-8 glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl">
-        <h3 className="text-sky-600 font-black text-sm tracking-tight flex items-center gap-2 px-1 mb-4">
-          <History size={12} className="text-sky-400" /> Histórico do Lead
+      <div className="mt-8 glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
+        <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1 mb-4">
+          <History size={12} className="text-(--gold)" /> Histórico do Lead
         </h3>
         <LeadHistoryTimeline
           leadId={leadId}

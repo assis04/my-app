@@ -78,14 +78,14 @@ export default function StatusTransitionModal({
           <button
             onClick={handleClose}
             disabled={submitting}
-            className="flex-1 py-2.5 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 tracking-tight disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-2.5 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 tracking-tight"
+            className="flex-1 bg-(--gold) text-(--on-gold) py-2.5 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight"
           >
             {submitting ? <><Loader2 size={13} className="animate-spin" /> Aplicando...</> : <><Send size={13} /> Aplicar</>}
           </button>
@@ -93,7 +93,7 @@ export default function StatusTransitionModal({
       }
     >
       {validTargets.length === 0 ? (
-        <p className="text-base text-slate-500 font-medium text-center py-4">
+        <p className="text-base text-(--text-secondary) font-medium text-center py-4">
           Nenhuma transição disponível a partir de <strong>{currentStatus}</strong>.
           {currentStatus === 'Cancelado' && ' Use "Reativar" para restaurar.'}
         </p>
@@ -110,8 +110,8 @@ export default function StatusTransitionModal({
                   onClick={() => setSelected(target)}
                   className={`w-full p-3 rounded-2xl border text-left transition-all active:scale-[0.98] ${
                     active
-                      ? 'border-sky-400 bg-sky-50 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-(--gold) bg-(--gold-soft) shadow-sm'
+                      : 'border-(--border) hover:border-(--border) hover:bg-(--surface-1)'
                   }`}
                 >
                   <LeadStatusBadge status={target} />
@@ -123,7 +123,7 @@ export default function StatusTransitionModal({
           {/* Datetime condicional */}
           {needsDatetime && (
             <div className="space-y-1.5">
-              <label className="text-sm font-black text-slate-400 px-1 tracking-tight">
+              <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">
                 Agendar para *
               </label>
               <input
@@ -137,7 +137,7 @@ export default function StatusTransitionModal({
 
           {/* Motivo opcional */}
           <div className="space-y-1.5">
-            <label className="text-sm font-black text-slate-400 px-1 tracking-tight">
+            <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">
               Motivo (opcional)
             </label>
             <textarea

@@ -45,14 +45,14 @@ export default function CancelLeadDialog({ open, onClose, onSubmit, submitting =
           <button
             onClick={handleClose}
             disabled={submitting}
-            className="flex-1 py-2.5 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 tracking-tight disabled:opacity-50"
           >
             Voltar
           </button>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-linear-to-r from-rose-500 to-rose-600 text-white py-2.5 rounded-2xl hover:shadow-rose-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-rose-900/10 active:scale-95 tracking-tight"
+            className="flex-1 bg-(--danger) text-white py-2.5 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight"
           >
             {submitting ? <><Loader2 size={13} className="animate-spin" /> Cancelando...</> : <><XCircle size={13} /> Cancelar Lead</>}
           </button>
@@ -60,12 +60,12 @@ export default function CancelLeadDialog({ open, onClose, onSubmit, submitting =
       }
     >
       <div className="space-y-3">
-        <p className="text-base text-slate-500 font-medium">
+        <p className="text-base text-(--text-secondary) font-medium">
           O lead ficará com status <strong>Cancelado</strong> e só poderá sair desse estado via
           reativação. Qualquer oportunidade de negócio em aberto será encerrada.
         </p>
         <div className="space-y-1.5">
-          <label htmlFor={motivoId} className="text-sm font-black text-slate-400 px-1 tracking-tight">
+          <label htmlFor={motivoId} className="text-sm font-black text-(--text-muted) px-1 tracking-tight">
             Motivo do cancelamento *
           </label>
           <textarea
@@ -80,7 +80,7 @@ export default function CancelLeadDialog({ open, onClose, onSubmit, submitting =
             className="premium-input px-4 py-2 text-base w-full resize-none disabled:opacity-50"
             placeholder="Ex: cliente desistiu da compra, endereço fora da área de atendimento, etc."
           />
-          <p className="text-sm text-slate-400 px-1">
+          <p className="text-sm text-(--text-muted) px-1">
             {motivo.length}/1000 caracteres
           </p>
         </div>

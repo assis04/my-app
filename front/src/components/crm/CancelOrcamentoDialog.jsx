@@ -45,14 +45,14 @@ export default function CancelOrcamentoDialog({ open, onClose, onSubmit, submitt
           <button
             onClick={handleClose}
             disabled={submitting}
-            className="flex-1 py-2.5 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 tracking-tight disabled:opacity-50"
           >
             Voltar
           </button>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-linear-to-r from-rose-500 to-rose-600 text-white py-2.5 rounded-2xl hover:shadow-rose-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-rose-900/10 active:scale-95 tracking-tight"
+            className="flex-1 bg-(--danger) text-white py-2.5 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight"
           >
             {submitting ? <><Loader2 size={13} className="animate-spin" /> Cancelando...</> : <><XCircle size={13} /> Confirmar Cancelamento</>}
           </button>
@@ -60,7 +60,7 @@ export default function CancelOrcamentoDialog({ open, onClose, onSubmit, submitt
       }
     >
       <div className="space-y-3">
-        <p className="text-base text-slate-500 font-medium">
+        <p className="text-base text-(--text-secondary) font-medium">
           O Orçamento ficará com status <strong>Cancelado</strong> e só sairá desse estado via reativação.
         </p>
         <div className="space-y-2" role="radiogroup" aria-label="Motivo do cancelamento">
@@ -76,8 +76,8 @@ export default function CancelOrcamentoDialog({ open, onClose, onSubmit, submitt
                 disabled={submitting}
                 className={`w-full p-3 rounded-2xl border text-left text-base font-bold transition-all active:scale-[0.99] disabled:opacity-50 ${
                   active
-                    ? 'border-rose-400 bg-rose-50 text-rose-900 shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                    ? 'border-(--danger) bg-(--danger-soft) text-(--danger) shadow-sm'
+                    : 'border-(--border) hover:border-(--border) hover:bg-(--surface-1) text-(--text-primary)'
                 }`}
               >
                 {opt}

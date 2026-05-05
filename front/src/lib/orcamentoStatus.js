@@ -40,28 +40,28 @@ export const MOTIVOS_CANCELAMENTO = Object.freeze([
  */
 export const STATUS_COLORS = Object.freeze({
   [OrcamentoStatus.NOVA]: {
-    bg: 'bg-sky-50',
-    text: 'text-sky-700',
-    border: 'border-sky-200',
-    dot: 'bg-sky-500',
+    bg: 'bg-(--gold-soft)',
+    text: 'text-(--gold-hover)',
+    border: 'border-(--gold)/40',
+    dot: 'bg-(--gold)',
   },
   [OrcamentoStatus.NAO_RESPONDE]: {
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
-    border: 'border-amber-200',
-    dot: 'bg-amber-500',
+    bg: 'bg-(--gold-soft)',
+    text: 'text-(--gold)',
+    border: 'border-(--gold)/40',
+    dot: 'bg-(--gold)',
   },
   [OrcamentoStatus.STANDBY]: {
-    bg: 'bg-violet-50',
-    text: 'text-violet-700',
-    border: 'border-violet-200',
-    dot: 'bg-violet-500',
+    bg: 'bg-(--gold-soft)',
+    text: 'text-(--gold)',
+    border: 'border-(--gold)',
+    dot: 'bg-(--gold)',
   },
   [OrcamentoStatus.CANCELADO]: {
-    bg: 'bg-rose-50',
-    text: 'text-rose-700',
-    border: 'border-rose-200',
-    dot: 'bg-rose-500',
+    bg: 'bg-(--danger-soft)',
+    text: 'text-(--danger)',
+    border: 'border-(--danger)/40',
+    dot: 'bg-(--danger)',
   },
 });
 

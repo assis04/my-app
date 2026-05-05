@@ -40,18 +40,18 @@ export const LeadEventType = Object.freeze({
  * Cor do ícone reflete a tonalidade emocional do evento (sucesso/ação/negativo).
  */
 export const EVENT_ICONS = Object.freeze({
-  [LeadEventType.STATUS_CHANGED]: { Icon: ArrowRight, color: 'text-sky-500' },
-  [LeadEventType.TEMPERATURA_CHANGED]: { Icon: Thermometer, color: 'text-amber-500' },
-  [LeadEventType.VENDEDOR_TRANSFERRED]: { Icon: UserCog, color: 'text-violet-500' },
-  [LeadEventType.PREVENDEDOR_TRANSFERRED]: { Icon: UserCog, color: 'text-violet-500' },
-  [LeadEventType.AGENDA_SCHEDULED]: { Icon: Calendar, color: 'text-indigo-500' },
-  [LeadEventType.NON_GENERATED]: { Icon: Briefcase, color: 'text-emerald-500' },
-  [LeadEventType.LEAD_CANCELLED]: { Icon: XCircle, color: 'text-rose-500' },
-  [LeadEventType.LEAD_REACTIVATED]: { Icon: RefreshCw, color: 'text-emerald-500' },
-  [LeadEventType.REACTIVATED_AS_NEW_LEAD]: { Icon: GitBranch, color: 'text-emerald-500' },
-  [LeadEventType.CREATED_FROM_REACTIVATION]: { Icon: GitBranch, color: 'text-sky-500' },
-  [LeadEventType.NOTE_ADDED]: { Icon: Pencil, color: 'text-slate-500' },
-  [LeadEventType.EXTERNAL_CREATED]: { Icon: Globe, color: 'text-slate-500' },
+  [LeadEventType.STATUS_CHANGED]: { Icon: ArrowRight, color: 'text-(--gold)' },
+  [LeadEventType.TEMPERATURA_CHANGED]: { Icon: Thermometer, color: 'text-(--gold)' },
+  [LeadEventType.VENDEDOR_TRANSFERRED]: { Icon: UserCog, color: 'text-(--gold)' },
+  [LeadEventType.PREVENDEDOR_TRANSFERRED]: { Icon: UserCog, color: 'text-(--gold)' },
+  [LeadEventType.AGENDA_SCHEDULED]: { Icon: Calendar, color: 'text-(--gold)' },
+  [LeadEventType.NON_GENERATED]: { Icon: Briefcase, color: 'text-(--success)' },
+  [LeadEventType.LEAD_CANCELLED]: { Icon: XCircle, color: 'text-(--danger)' },
+  [LeadEventType.LEAD_REACTIVATED]: { Icon: RefreshCw, color: 'text-(--success)' },
+  [LeadEventType.REACTIVATED_AS_NEW_LEAD]: { Icon: GitBranch, color: 'text-(--success)' },
+  [LeadEventType.CREATED_FROM_REACTIVATION]: { Icon: GitBranch, color: 'text-(--gold)' },
+  [LeadEventType.NOTE_ADDED]: { Icon: Pencil, color: 'text-(--text-secondary)' },
+  [LeadEventType.EXTERNAL_CREATED]: { Icon: Globe, color: 'text-(--text-secondary)' },
 });
 
 /**
@@ -83,7 +83,7 @@ export const EVENT_TITLES = Object.freeze({
 export function renderEvent(event) {
   const type = event?.eventType;
   const payload = event?.payload || {};
-  const icon = EVENT_ICONS[type] || { Icon: Pencil, color: 'text-slate-400' };
+  const icon = EVENT_ICONS[type] || { Icon: Pencil, color: 'text-(--text-muted)' };
   const titleFn = EVENT_TITLES[type];
   const title = titleFn ? titleFn(payload) : type || 'Evento';
   return { Icon: icon.Icon, color: icon.color, title };

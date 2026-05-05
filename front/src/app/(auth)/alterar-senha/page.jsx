@@ -58,41 +58,41 @@ export default function AlterarSenha() {
   if (loading || !user) return null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 font-sans p-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-100/30 rounded-full blur-3xl -mr-64 -mt-64" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-100/20 rounded-full blur-3xl -ml-64 -mb-64" />
+    <div className="flex min-h-screen items-center justify-center bg-(--surface-1) font-sans p-4 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-(--gold-soft)/30 rounded-full blur-3xl -mr-64 -mt-64" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-(--gold-soft)/20 rounded-full blur-3xl -ml-64 -mb-64" />
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white rounded-3xl p-10 sm:p-12 shadow-2xl shadow-sky-900/5 border border-slate-100">
+        <div className="bg-(--surface-2) rounded-3xl p-10 sm:p-12 shadow-2xl border border-(--border-subtle)">
           <div className="flex flex-col items-center mb-10">
-            <div className="w-20 h-20 bg-linear-to-br from-sky-400 to-sky-600 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-sky-200 ring-8 ring-sky-50">
+            <div className="w-20 h-20 bg-(--gold) rounded-3xl flex items-center justify-center mb-8 shadow-xl ring-8 ring-(--gold)">
               <ShieldCheck size={36} className="text-white" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight text-center">Primeiro Acesso</h1>
-            <p className="text-slate-400 mt-2 font-medium text-center text-sm max-w-[260px]">
+            <h1 className="text-2xl font-black text-(--text-primary) tracking-tight text-center">Primeiro Acesso</h1>
+            <p className="text-(--text-muted) mt-2 font-medium text-center text-sm max-w-[260px]">
               Por segurança, crie uma nova senha pessoal para continuar.
             </p>
           </div>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-2xl mb-8 text-base font-bold text-center flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+            <div className="bg-(--danger-soft) border border-(--danger)/30 text-(--danger) px-6 py-4 rounded-2xl mb-8 text-base font-bold text-center flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-(--danger) animate-pulse" />
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="currentPassword" className="text-sm font-bold text-slate-400 ml-1">Senha Atual</label>
+              <label htmlFor="currentPassword" className="text-sm font-bold text-(--text-muted) ml-1">Senha Atual</label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-sky-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-(--text-muted) group-focus-within:text-(--gold) transition-colors">
                   <Lock size={18} />
                 </div>
                 <input
                   type={showCurrent ? 'text' : 'password'}
                   id="currentPassword"
                   required
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all font-bold placeholder:text-slate-300 shadow-xs"
+                  className="w-full bg-(--surface-1) border border-(--border) text-(--text-primary) pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-(--gold)/10 focus:border-(--gold) transition-all font-bold placeholder:text-(--text-muted) shadow-xs"
                   placeholder="••••••••"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -101,7 +101,7 @@ export default function AlterarSenha() {
                   type="button"
                   tabIndex={-1}
                   onClick={() => setShowCurrent((v) => !v)}
-                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-300 hover:text-sky-500 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-(--text-muted) hover:text-(--gold) transition-colors"
                 >
                   {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -109,16 +109,16 @@ export default function AlterarSenha() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="newPassword" className="text-sm font-bold text-slate-400 ml-1">Nova Senha</label>
+              <label htmlFor="newPassword" className="text-sm font-bold text-(--text-muted) ml-1">Nova Senha</label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-sky-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-(--text-muted) group-focus-within:text-(--gold) transition-colors">
                   <Lock size={18} />
                 </div>
                 <input
                   type={showNew ? 'text' : 'password'}
                   id="newPassword"
                   required
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all font-bold placeholder:text-slate-300 shadow-xs"
+                  className="w-full bg-(--surface-1) border border-(--border) text-(--text-primary) pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-(--gold)/10 focus:border-(--gold) transition-all font-bold placeholder:text-(--text-muted) shadow-xs"
                   placeholder="••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -127,7 +127,7 @@ export default function AlterarSenha() {
                   type="button"
                   tabIndex={-1}
                   onClick={() => setShowNew((v) => !v)}
-                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-300 hover:text-sky-500 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-(--text-muted) hover:text-(--gold) transition-colors"
                 >
                   {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -140,8 +140,8 @@ export default function AlterarSenha() {
                   const pass = rule.test(newPassword);
                   return (
                     <div key={rule.label} className="flex items-center gap-2">
-                      <span className={`w-1.5 h-1.5 rounded-full transition-colors ${pass ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                      <span className={`text-sm font-medium transition-colors ${pass ? 'text-emerald-600' : 'text-slate-400'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full transition-colors ${pass ? 'bg-(--success)' : 'bg-(--surface-3)'}`} />
+                      <span className={`text-sm font-medium transition-colors ${pass ? 'text-(--success)' : 'text-(--text-muted)'}`}>
                         {rule.label}
                       </span>
                     </div>
@@ -153,7 +153,7 @@ export default function AlterarSenha() {
             <button
               type="submit"
               disabled={submitting || !allRulesPass || !currentPassword}
-              className="w-full bg-linear-to-r from-sky-500 to-sky-600 text-white py-5 rounded-2xl hover:shadow-sky-200 hover:shadow-2xl transition-all font-black mt-8 shadow-xl shadow-sky-900/10 flex items-center justify-center gap-3 group disabled:opacity-50 active:scale-[0.98]"
+              className="w-full bg-(--gold) text-(--on-gold) py-5 rounded-2xl  hover:shadow-2xl transition-all font-black mt-8 shadow-xl flex items-center justify-center gap-3 group disabled:opacity-50 active:scale-[0.98]"
             >
               {submitting ? (
                 <Loader2 size={24} className="animate-spin" />
@@ -166,8 +166,8 @@ export default function AlterarSenha() {
             </button>
           </form>
 
-          <p className="mt-12 text-center text-slate-400 font-medium text-sm">
-            Moveis <span className="text-sky-500">Valcenter</span> &copy; {new Date().getFullYear()} &bull; Versão 4.0
+          <p className="mt-12 text-center text-(--text-muted) font-medium text-sm">
+            Moveis <span className="text-(--gold)">Valcenter</span> &copy; {new Date().getFullYear()} &bull; Versão 4.0
           </p>
         </div>
       </div>

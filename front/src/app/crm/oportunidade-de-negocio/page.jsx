@@ -105,19 +105,19 @@ export default function OportunidadeDeNegocioPage() {
   return (
     <div className="max-w-[1600px] mx-auto">
       {/* Filtros */}
-      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-white/60 shadow-floating bg-white/40 backdrop-blur-xl">
+      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-white/60 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2 tracking-tight">
+            <h2 className="text-base font-black text-(--text-primary) flex items-center gap-2 tracking-tight">
               Oportunidades de Negócio
             </h2>
-            <p className="text-sm text-slate-400 font-bold mt-0.5">
+            <p className="text-sm text-(--text-muted) font-bold mt-0.5">
               Para criar: abra um Lead em /crm/leads e clique em &quot;Nova Oportunidade&quot;.
             </p>
           </div>
           <button
             onClick={fetchOrcamentos}
-            className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95"
+            className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-xl transition-all border border-transparent hover:border-(--gold-soft) shadow-sm active:scale-95"
             title="Sincronizar"
           >
             <RefreshCw size={16} className={loading && orcamentos.length > 0 ? 'animate-spin' : ''} />
@@ -126,7 +126,7 @@ export default function OportunidadeDeNegocioPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           <div className="relative group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-black group-focus-within:text-sky-500 transition-colors" size={14} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) font-black group-focus-within:text-(--gold) transition-colors" size={14} />
             <input
               type="text"
               placeholder="Nome do cliente"
@@ -137,7 +137,7 @@ export default function OportunidadeDeNegocioPage() {
           </div>
 
           <div className="relative group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-black group-focus-within:text-sky-500 transition-colors" size={14} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) font-black group-focus-within:text-(--gold) transition-colors" size={14} />
             <input
               type="text"
               placeholder="Telefone"
@@ -183,16 +183,16 @@ export default function OportunidadeDeNegocioPage() {
 
       {/* Summary */}
       <div className="flex justify-between items-center mb-4 px-2">
-        <div className="text-zinc-500 text-sm font-black bg-slate-100/50 px-3 py-1 rounded-full border border-slate-200 tracking-tight shadow-xs italic">
+        <div className="text-(--text-muted) text-sm font-black bg-(--surface-3)/50 px-3 py-1 rounded-full border border-(--border) tracking-tight shadow-xs italic">
           {!loading && <span>{orcamentos.length} Orçamentos</span>}
         </div>
       </div>
 
       {/* Tabela */}
-      <div className="w-full bg-white border border-slate-100 rounded-2xl shadow-floating overflow-hidden mb-6">
+      <div className="w-full bg-(--surface-2) border border-(--border-subtle) rounded-2xl shadow-floating overflow-hidden mb-6">
         <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
           <div className="min-w-[1100px] w-full">
-            <div className="grid grid-cols-[120px_3fr_2fr_2fr_2fr_1.2fr_1.2fr] gap-3 py-3 bg-slate-50/50 border-b border-slate-100 text-slate-500 font-black text-sm px-4 italic tracking-tight">
+            <div className="grid grid-cols-[120px_3fr_2fr_2fr_2fr_1.2fr_1.2fr] gap-3 py-3 bg-(--surface-1)/50 border-b border-(--border-subtle) text-(--text-secondary) font-black text-sm px-4 italic tracking-tight">
               <div>Número</div>
               <div>Lead</div>
               <div>Contato</div>
@@ -204,18 +204,18 @@ export default function OportunidadeDeNegocioPage() {
 
             {loading && (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-10 h-10 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
-                <p className="text-slate-400 font-black text-sm animate-pulse">Sincronizando base...</p>
+                <div className="w-10 h-10 border-4 border-(--gold-soft) border-t-sky-500 rounded-full animate-spin" />
+                <p className="text-(--text-muted) font-black text-sm animate-pulse">Sincronizando base...</p>
               </div>
             )}
 
             {!loading && orcamentos.length === 0 && (
               <div className="text-center py-20">
-                <div className="w-12 h-12 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-3 border border-slate-100 text-slate-300">
+                <div className="w-12 h-12 bg-(--surface-1) rounded-3xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-muted)">
                   <Users size={24} />
                 </div>
-                <p className="text-slate-400 font-black text-sm">Nenhum orçamento encontrado.</p>
-                <p className="text-sm text-slate-400 font-medium mt-1">
+                <p className="text-(--text-muted) font-black text-sm">Nenhum orçamento encontrado.</p>
+                <p className="text-sm text-(--text-muted) font-medium mt-1">
                   Vá em /crm/leads e clique em &quot;Nova Oportunidade&quot; em um Lead para criar o primeiro.
                 </p>
               </div>
@@ -228,26 +228,26 @@ export default function OportunidadeDeNegocioPage() {
                   <div
                     key={orc.id}
                     onClick={() => router.push(`/crm/oportunidade-de-negocio/${orc.id}`)}
-                    className="grid grid-cols-[120px_3fr_2fr_2fr_2fr_1.2fr_1.2fr] gap-3 py-2.5 border-b border-slate-50 hover:bg-sky-50 transition-all items-center text-base px-4 group cursor-pointer"
+                    className="grid grid-cols-[120px_3fr_2fr_2fr_2fr_1.2fr_1.2fr] gap-3 py-2.5 border-b border-(--border-subtle) hover:bg-(--gold-soft) transition-all items-center text-base px-4 group cursor-pointer"
                   >
-                    <div className="truncate font-black text-sky-600 tracking-tight text-sm" title={orc.numero}>
+                    <div className="truncate font-black text-(--gold) tracking-tight text-sm" title={orc.numero}>
                       {orc.numero}
                     </div>
-                    <div className="truncate font-black text-slate-900 group-hover:text-sky-700 tracking-tight" title={lead.nome}>
+                    <div className="truncate font-black text-(--text-primary) group-hover:text-(--gold-hover) tracking-tight" title={lead.nome}>
                       {lead.nome || '—'}
                     </div>
-                    <div className="truncate text-slate-500 font-bold tracking-tight">
+                    <div className="truncate text-(--text-secondary) font-bold tracking-tight">
                       {lead.celular || '—'}
                     </div>
                     <div className="truncate" title={lead.vendedor?.nome}>
-                      <span className="bg-slate-50 px-2 py-0.5 rounded-xl text-sm font-black text-slate-400 border border-slate-100 group-hover:bg-white group-hover:text-slate-600 group-hover:border-slate-200 transition-all tracking-tight">
+                      <span className="bg-(--surface-1) px-2 py-0.5 rounded-xl text-sm font-black text-(--text-muted) border border-(--border-subtle) group-hover:bg-(--surface-2) group-hover:text-(--text-secondary) group-hover:border-(--border) transition-all tracking-tight">
                         {lead.vendedor?.nome || '—'}
                       </span>
                     </div>
-                    <div className="truncate text-slate-600 font-bold tracking-tight" title={lead.filial?.nome}>
+                    <div className="truncate text-(--text-secondary) font-bold tracking-tight" title={lead.filial?.nome}>
                       {lead.filial?.nome || '—'}
                     </div>
-                    <div className="truncate text-slate-400 font-bold text-sm tracking-tight">
+                    <div className="truncate text-(--text-muted) font-bold text-sm tracking-tight">
                       {new Date(orc.createdAt).toLocaleDateString('pt-BR')}
                     </div>
                     <div className="truncate">

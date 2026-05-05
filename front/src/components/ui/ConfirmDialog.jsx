@@ -43,16 +43,16 @@ export default function ConfirmDialog({
 
   const variantStyles = {
     danger: {
-      icon: 'bg-rose-50 text-rose-500 border-rose-100',
-      button: 'bg-linear-to-r from-rose-500 to-rose-600 text-white shadow-xl shadow-rose-900/10 hover:shadow-rose-500/40 hover:shadow-2xl',
+      icon: 'bg-(--danger-soft) text-(--danger) border border-(--danger)/40',
+      button: 'bg-transparent text-(--danger) border border-(--danger) hover:bg-(--danger-soft)',
     },
     warning: {
-      icon: 'bg-amber-50 text-amber-500 border-amber-100',
-      button: 'bg-linear-to-r from-amber-500 to-amber-600 text-white shadow-xl shadow-amber-900/10 hover:shadow-amber-500/40 hover:shadow-2xl',
+      icon: 'bg-(--gold-soft) text-(--gold) border border-(--gold)/40',
+      button: 'bg-(--gold) text-(--on-gold) hover:bg-(--gold-hover)',
     },
     info: {
-      icon: 'bg-sky-50 text-sky-500 border-sky-100',
-      button: 'bg-linear-to-r from-sky-500 to-sky-600 text-white shadow-xl shadow-sky-900/10 hover:shadow-sky-500/40 hover:shadow-2xl',
+      icon: 'bg-(--gold-soft) text-(--gold) border border-(--gold)/40',
+      button: 'bg-(--gold) text-(--on-gold) hover:bg-(--gold-hover)',
     },
   };
 
@@ -60,12 +60,12 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="bg-white rounded-3xl shadow-floating w-full max-w-sm border border-slate-100 animate-in fade-in zoom-in-95 duration-200"
+        className="bg-(--surface-2) rounded-3xl shadow-(--shadow-floating) w-full max-w-sm border border-(--border-subtle) animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
         role="alertdialog"
         aria-modal="true"
@@ -73,17 +73,17 @@ export default function ConfirmDialog({
         aria-describedby={messageId}
       >
         <div className="p-6 text-center">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 border ${styles.icon}`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 ${styles.icon}`}>
             <AlertTriangle size={22} aria-hidden="true" />
           </div>
-          <h3 id={titleId} className="text-base font-black text-slate-900 tracking-tight mb-2">{title}</h3>
-          <p id={messageId} className="text-sm text-slate-500 font-medium leading-relaxed">{message}</p>
+          <h3 id={titleId} className="text-base font-black text-(--text-primary) tracking-tight mb-2">{title}</h3>
+          <p id={messageId} className="text-sm text-(--text-secondary) font-medium leading-relaxed">{message}</p>
         </div>
         <div className="flex gap-3 p-6 pt-0">
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 py-2.5 font-black text-xs text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-xs tracking-tight disabled:opacity-50"
+            className="flex-1 py-2.5 font-black text-xs text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-3) hover:text-(--text-primary) transition-all active:scale-95 tracking-tight disabled:opacity-50"
           >
             {cancelLabel}
           </button>

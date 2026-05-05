@@ -15,18 +15,18 @@ export default function PostSaleReadOnlyBanner({ status }) {
   return (
     <div
       role="status"
-      className="flex items-start gap-3 p-4 mb-4 rounded-2xl border border-amber-200 bg-amber-50 shadow-sm animate-in slide-in-from-top-2"
+      className="flex items-start gap-3 p-4 mb-4 rounded-2xl border border-(--gold)/40 bg-(--gold-soft) shadow-sm animate-in slide-in-from-top-2"
     >
-      <div className="p-2 bg-amber-500 text-white rounded-xl shrink-0">
+      <div className="p-2 bg-(--gold) text-(--on-gold) rounded-xl shrink-0">
         <Lock size={14} />
       </div>
       <div className="flex-1">
-        <h4 className="text-base font-black text-amber-900 tracking-tight mb-0.5">
+        <h4 className="text-base font-black text-(--gold) tracking-tight mb-0.5">
           Edição bloqueada — Lead em {status}
         </h4>
-        <p className="text-base text-amber-700 font-medium leading-relaxed">
+        <p className="text-base text-(--gold) font-medium leading-relaxed">
           Após a venda, o lead entra em modo somente leitura. Apenas administradores com permissão
-          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 rounded text-sm font-mono">
+          <code className="mx-1 px-1.5 py-0.5 bg-(--gold-soft) rounded text-sm font-mono">
             crm:leads:edit-after-sale
           </code>
           podem editar. Se precisar alterar algo, peça a um administrador.
