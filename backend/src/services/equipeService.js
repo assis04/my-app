@@ -1,13 +1,19 @@
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 
+// Membros = relação Equipe->User. Soft-deleted (deletedAt!=null) não devem
+// aparecer em listagens admin — mesma regra do userService.
+const ACTIVE_MEMBROS = {
+  where: { deletedAt: null },
+};
+
 export async function listEquipes() {
   return await prisma.equipe.findMany({
     orderBy: { nome: 'asc' },
     include: {
       lider: { select: { id: true, nome: true } },
       filial: { select: { id: true, nome: true } },
-      membros: { select: { id: true, nome: true } },
+      membros: { ...ACTIVE_MEMBROS, select: { id: true, nome: true } },
     },
   });
 }
@@ -18,7 +24,7 @@ export async function getEquipe(id) {
     include: {
       lider: { select: { id: true, nome: true, email: true } },
       filial: { select: { id: true, nome: true } },
-      membros: { select: { id: true, nome: true, email: true, role: { select: { nome: true } } } },
+      membros: { ...ACTIVE_MEMBROS, select: { id: true, nome: true, email: true, role: { select: { nome: true } } } },
     },
   });
 
@@ -76,7 +82,7 @@ export async function updateEquipe(id, data) {
     include: {
       lider: { select: { id: true, nome: true } },
       filial: { select: { id: true, nome: true } },
-      membros: { select: { id: true, nome: true } },
+      membros: { ...ACTIVE_MEMBROS, select: { id: true, nome: true } },
     },
   });
   

@@ -7,7 +7,13 @@ export async function listFiliais() {
       orderBy: { nome: 'asc' },
       include: {
         manager: { select: { id: true, nome: true } },
-        _count: { select: { users: true, equipes: true } },
+        // Conta apenas users não deletados — espelha a regra do userService
+        _count: {
+          select: {
+            users: { where: { deletedAt: null } },
+            equipes: true,
+          },
+        },
       },
     });
   } catch (err) {
@@ -21,9 +27,18 @@ export async function getFilial(id) {
     where: { id: Number(id) },
     include: {
       manager: { select: { id: true, nome: true } },
-      users: { select: { id: true, nome: true, email: true } },
+      // Lista apenas users não deletados — soft delete (deletedAt) deve esconder
+      users: {
+        where: { deletedAt: null },
+        select: { id: true, nome: true, email: true },
+      },
       equipes: { select: { id: true, nome: true } },
-      _count: { select: { users: true, equipes: true } },
+      _count: {
+        select: {
+          users: { where: { deletedAt: null } },
+          equipes: true,
+        },
+      },
     },
   });
 
