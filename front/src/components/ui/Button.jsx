@@ -2,13 +2,13 @@ import { Loader2 } from 'lucide-react';
 
 const VARIANTS = {
   primary:
-    'bg-linear-to-r from-sky-500 to-sky-600 text-white shadow-xl shadow-sky-900/10 hover:shadow-sky-500/40 hover:shadow-2xl',
+    'bg-(--gold) text-(--on-gold) hover:bg-(--gold-hover) shadow-[0_8px_24px_-8px_rgba(233,182,1,0.45)]',
   secondary:
-    'bg-white text-slate-600 border border-slate-200 shadow-xs hover:bg-slate-50 hover:text-slate-900',
+    'bg-(--surface-2) text-(--text-primary) border border-(--border) hover:bg-(--surface-3) hover:border-(--gold)',
   danger:
-    'bg-linear-to-r from-rose-500 to-rose-600 text-white shadow-xl shadow-rose-900/10 hover:shadow-rose-500/40 hover:shadow-2xl',
+    'bg-transparent text-(--danger) border border-(--danger) hover:bg-(--danger-soft)',
   ghost:
-    'text-slate-400 border border-transparent hover:bg-slate-50 hover:text-slate-900 hover:border-slate-200',
+    'text-(--text-muted) border border-transparent hover:bg-(--surface-2) hover:text-(--text-primary)',
 };
 
 const SIZES = {

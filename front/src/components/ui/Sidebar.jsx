@@ -26,37 +26,37 @@ function WardrobeIcon({ size = 22, className = '' }) {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const activePill = 'bg-linear-to-r from-[#0ea5e9] to-[#0284c7] text-white shadow-lg shadow-sky-900/10';
-const inactivePill = 'text-slate-500 hover:text-slate-900 hover:bg-slate-50';
-const activeSubItem = 'text-sky-600 font-medium flex items-center gap-2';
-const inactiveSubItem = 'text-slate-400 hover:text-slate-600 transition-colors';
+const activePill = 'bg-(--gold) text-(--on-gold) shadow-[0_8px_24px_-8px_rgba(233,182,1,0.45)]';
+const inactivePill = 'text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-2)';
+const activeSubItem = 'text-(--gold) font-medium flex items-center gap-2';
+const inactiveSubItem = 'text-(--text-muted) hover:text-(--text-primary) transition-colors';
 
 function SubLink({ href, label, pathname }) {
   const isActive = pathname === href;
   return (
     <Link href={href} className={`text-base ${isActive ? activeSubItem : inactiveSubItem}`}>
-      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />}
+      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-(--gold)" />}
       {label}
     </Link>
   );
 }
 
-function SectionToggle({ href, icon: Icon, label, isActive, pathname }) {
+function SectionToggle({ href, icon: Icon, label, isActive }) {
   return (
     <Link
       href={href}
       className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${isActive ? activePill : inactivePill}`}
     >
-      <Icon size={20} className={isActive ? 'text-white' : ''} />
+      <Icon size={20} />
       {label}
-      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-(--on-gold) animate-pulse" />}
     </Link>
   );
 }
 
 function SubMenu({ children }) {
   return (
-    <div className="pl-12 flex flex-col gap-2 mt-2 border-l border-slate-100 ml-6 py-1">
+    <div className="pl-12 flex flex-col gap-2 mt-2 border-l border-(--border-subtle) ml-6 py-1">
       {children}
     </div>
   );
@@ -72,20 +72,20 @@ export function Sidebar() {
   const isFinanceiroActive = pathname.startsWith('/financeiro');
 
   return (
-    <aside aria-label="Navegação principal" className="w-64 bg-white flex flex-col justify-between py-6 shrink-0 h-screen sticky top-0 border-r border-slate-200 shadow-sm z-40">
+    <aside aria-label="Navegação principal" className="w-64 bg-(--bg-base) flex flex-col justify-between py-6 shrink-0 h-screen sticky top-0 border-r border-(--border-subtle) z-40">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-6 mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 bg-linear-to-br from-[#0ea5e9] to-[#0284c7] rounded-xl flex items-center justify-center shadow-lg shadow-sky-100">
-            <WardrobeIcon size={22} className="text-white" />
+          <div className="w-10 h-10 bg-(--gold) rounded-xl flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(233,182,1,0.45)]">
+            <WardrobeIcon size={22} className="text-(--on-gold)" />
           </div>
-          <span className="text-xl font-bold text-slate-900 tracking-wide">Moveis <span className="text-[#0ea5e9]">Valcenter</span></span>
+          <span className="text-xl font-bold text-(--text-primary) tracking-wide">Móveis <span className="text-(--gold)">Valcenter</span></span>
         </div>
 
         <nav className="flex flex-col gap-1 px-4">
 
           {/* ── CRM ── */}
           <div className="flex flex-col mb-1 mt-1">
-            <SectionToggle href="/" icon={Brain} label="CRM" isActive={isCrmActive} pathname={pathname} />
+            <SectionToggle href="/" icon={Brain} label="CRM" isActive={isCrmActive} />
 
             {isCrmActive && (
               <SubMenu>
@@ -102,7 +102,7 @@ export function Sidebar() {
 
           {/* ── Captação ── */}
           <div className="flex flex-col mb-1 mt-1">
-            <SectionToggle href="/captacao/construtoras" icon={Building2} label="Captação" isActive={isCaptacaoActive} pathname={pathname} />
+            <SectionToggle href="/captacao/construtoras" icon={Building2} label="Captação" isActive={isCaptacaoActive} />
 
             {isCaptacaoActive && (
               <SubMenu>
@@ -115,7 +115,7 @@ export function Sidebar() {
           {/* ── RH ── */}
           <PermissionGate permissions={['rh:usuarios:read', 'rh:perfis:read', 'rh:equipes:read', 'rh:filiais:read']}>
             <div className="flex flex-col mb-1 mt-1">
-              <SectionToggle href="/rh/equipes" icon={Users} label="RH" isActive={isRhActive} pathname={pathname} />
+              <SectionToggle href="/rh/equipes" icon={Users} label="RH" isActive={isRhActive} />
 
               {isRhActive && (
                 <SubMenu>
@@ -140,7 +140,7 @@ export function Sidebar() {
 
           {/* ── Financeiro ── */}
           <div className="flex flex-col mb-1 mt-1">
-            <SectionToggle href="/financeiro/tesouraria" icon={Wallet} label="Financeiro" isActive={isFinanceiroActive} pathname={pathname} />
+            <SectionToggle href="/financeiro/tesouraria" icon={Wallet} label="Financeiro" isActive={isFinanceiroActive} />
 
             {isFinanceiroActive && (
               <SubMenu>
@@ -155,9 +155,9 @@ export function Sidebar() {
             href="/kanban"
             className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname.startsWith('/kanban') ? activePill : inactivePill}`}
           >
-            <KanbanSquare size={20} className={pathname.startsWith('/kanban') ? 'text-white' : ''} />
+            <KanbanSquare size={20} />
             Gráfico Kanban
-            {pathname.startsWith('/kanban') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            {pathname.startsWith('/kanban') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-(--on-gold) animate-pulse" />}
           </Link>
 
           {/* ── Agenda ── */}
@@ -165,22 +165,22 @@ export function Sidebar() {
             href="/agenda"
             className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname.startsWith('/agenda') ? activePill : inactivePill}`}
           >
-            <CalendarDays size={20} className={pathname.startsWith('/agenda') ? 'text-white' : ''} />
+            <CalendarDays size={20} />
             Agenda
-            {pathname.startsWith('/agenda') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            {pathname.startsWith('/agenda') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-(--on-gold) animate-pulse" />}
           </Link>
 
         </nav>
       </div>
 
       <div className="px-4 pb-4">
-        <div className="h-px w-full bg-slate-100 mb-4" />
+        <div className="h-px w-full bg-(--border-subtle) mb-4" />
         <nav className="flex flex-col gap-1">
-          <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-colors font-medium">
+          <Link href="#" className="flex items-center gap-3 px-4 py-3 text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-2) rounded-full transition-colors font-medium">
             <Settings size={20} />
             Configurações
           </Link>
-          <button onClick={logout} className="flex flex-row items-center w-full gap-3 px-4 py-3 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors font-medium">
+          <button onClick={logout} className="flex flex-row items-center w-full gap-3 px-4 py-3 text-(--danger) hover:bg-(--danger-soft) rounded-full transition-colors font-medium">
             <LogOut size={20} />
             Sair do Sistema
           </button>
