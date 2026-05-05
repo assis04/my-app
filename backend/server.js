@@ -14,6 +14,7 @@ import taskRoutes from "./src/routes/taskRoutes.js";
 import { env } from "./src/config/env.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 import { initSocket } from './src/config/socket.js';
+import { start as startOutboxWorker, stop as stopOutboxWorker } from './src/workers/outboxWorker.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -67,4 +68,30 @@ initSocket(serverApp);
 const PORT = env.PORT || 3001;
 serverApp.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} with WebSocket Support 🚀`);
+  // Outbox worker — consome eventos enfileirados por leadTransitionService etc.
+  // Embarcado no mesmo processo (não há infraestrutura de worker dedicado).
+  startOutboxWorker();
 });
+
+// Graceful shutdown — para o worker primeiro, depois fecha HTTP, depois exit.
+// Isso garante que ticks em curso terminem e a tabela Outbox não fica em estado
+// inconsistente quando o container recebe SIGTERM (deploy / restart).
+function gracefulShutdown(signal) {
+  console.log(`[server] ${signal} recebido, parando outbox worker...`);
+  stopOutboxWorker();
+  serverApp.close((err) => {
+    if (err) {
+      console.error('[server] erro ao fechar HTTP:', err);
+      process.exit(1);
+    }
+    console.log('[server] HTTP fechado, saindo.');
+    process.exit(0);
+  });
+  // Fallback se HTTP não fechar em 10s (conexões keep-alive penduradas)
+  setTimeout(() => {
+    console.error('[server] timeout no shutdown, forçando exit.');
+    process.exit(1);
+  }, 10000).unref();
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

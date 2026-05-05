@@ -72,6 +72,14 @@ export const getAccounts = async (filters = {}) => {
   return api(`/api/crm/accounts${qs ? `?${qs}` : ''}`);
 };
 
+/**
+ * Detalhe de uma Account (com todos os Leads vinculados).
+ * Backend faz scoping de filial automaticamente para non-ADM.
+ */
+export const getAccountById = async (id) => {
+  return api(`/api/crm/accounts/${id}`);
+};
+
 export const getLeadById = async (id) => {
   return api(`/api/crm/leads/${id}`);
 };

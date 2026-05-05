@@ -11,6 +11,7 @@ import {
   Wallet,
   KanbanSquare,
   CalendarDays,
+  CheckSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -108,6 +109,9 @@ export function Sidebar() {
                   <PermissionGate permission="rh:equipes:read">
                     <SubLink href="/rh/equipes" label="Equipes" pathname={pathname} />
                   </PermissionGate>
+                  <PermissionGate permission="rh:filiais:read">
+                    <SubLink href="/rh/filiais" label="Filiais" pathname={pathname} />
+                  </PermissionGate>
                   <SubLink href="/rh/colaboradores" label="Colaboradores" pathname={pathname} />
                   <PermissionGate permission="rh:usuarios:read">
                     <SubLink href="/rh/gerenciar-usuarios" label="Usuários" pathname={pathname} />
@@ -135,6 +139,16 @@ export function Sidebar() {
               </SubMenu>
             )}
           </div>
+
+          {/* ── Tarefas ── */}
+          <Link
+            href="/tarefas"
+            className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium transition-all duration-300 ${pathname.startsWith('/tarefas') ? activePill : inactivePill}`}
+          >
+            <CheckSquare size={20} />
+            Tarefas
+            {pathname.startsWith('/tarefas') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-(--on-gold) animate-pulse" />}
+          </Link>
 
           {/* ── Gráfico Kanban ── */}
           <Link

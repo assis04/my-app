@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Users, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Users, RefreshCw, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import { getAccounts } from '@/services/crmApi';
@@ -9,33 +10,11 @@ import { useDebounce } from '@/hooks/useDebounce';
 import PremiumSelect from '@/components/ui/PremiumSelect';
 import { STATUS_ORDER } from '@/lib/leadStatus';
 
-function LeadsList({ leads }) {
-  if (!leads || leads.length === 0) {
-    return <span className="text-xs text-(--text-muted) font-bold italic">Nenhum lead</span>;
-  }
-  return (
-    <div className="flex flex-col gap-1 py-1">
-      {leads.map(lead => (
-        <div key={lead.id} className="flex items-center gap-2 text-xs">
-          <span className="text-(--text-muted) font-black italic">#{String(lead.id).padStart(4, '0')}</span>
-          <span className="text-(--text-primary) font-bold truncate max-w-[120px]">{lead.nome}</span>
-          <span className={`px-1.5 py-0.5 rounded-full text-xs font-black border shadow-xs tracking-tight ${
-            lead.status === 'Cancelado'
-              ? 'bg-(--danger-soft) border-(--danger)/30 text-(--danger)'
-              : 'bg-(--success-soft) border-(--success)/30 text-(--success)'
-          }`}>{lead.status}</span>
-          <span className="text-xs font-black text-(--gold) bg-(--gold-soft) px-1.5 py-0.5 rounded-lg border border-(--gold-soft) tracking-tight">{lead.etapa}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function ContaPessoaPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
   const [branches, setBranches] = useState([]);
@@ -259,39 +238,30 @@ export default function ContaPessoaPage() {
                 </tr>
               )}
               {accounts.map(acc => (
-                <React.Fragment key={acc.id}>
-                  <tr className="hover:bg-(--gold-soft)/40 transition-all group cursor-pointer" onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)}>
-                    <td className="py-1.5 px-4 text-(--text-muted) text-center text-xs font-black group-hover:text-(--gold) italic transition-colors">#{String(acc.id).padStart(4, '0')}</td>
-                    <td className="py-1.5 px-3">
-                      <span className="text-(--text-primary) text-sm font-black group-hover:text-(--gold-hover) transition-colors tracking-tight">{acc.nome}</span>
-                    </td>
-                    <td className="py-1.5 px-3 text-(--text-secondary) text-sm font-bold tracking-tight">{acc.sobrenome}</td>
-                    <td className="py-1.5 px-3 text-(--text-secondary) text-xs font-bold">{acc.celular}</td>
-                    <td className="py-1.5 px-3 text-(--text-secondary) text-xs font-bold">{acc.cep}</td>
-                    <td className="py-1.5 px-3 text-center">
-                      <span className="inline-flex items-center justify-center bg-(--gold-soft) text-(--gold) text-xs font-black border border-(--gold-soft) px-2 py-0.5 rounded-full min-w-[24px]">
-                        {acc._count?.leads ?? 0}
-                      </span>
-                    </td>
-                    <td className="py-1.5 px-3 text-(--text-muted) text-xs font-black tracking-tight italic">
-                      {acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('pt-BR') : '—'}
-                    </td>
-                    <td className="py-1.5 px-4 text-center">
-                      {expandedId === acc.id
-                        ? <ChevronUp size={14} className="text-(--gold) mx-auto" />
-                        : <ChevronDown size={14} className="text-(--text-muted) group-hover:text-(--gold) mx-auto transition-colors" />
-                      }
-                    </td>
-                  </tr>
-                  {expandedId === acc.id && (
-                    <tr>
-                      <td colSpan={8} className="bg-(--surface-1)/50 px-6 py-3 border-b border-(--border-subtle)">
-                        <div className="text-xs font-black text-(--text-muted) tracking-tight mb-1.5">Leads vinculados a esta conta:</div>
-                        <LeadsList leads={acc.leads} />
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                <tr
+                  key={acc.id}
+                  className="hover:bg-(--gold-soft)/40 transition-all group cursor-pointer"
+                  onClick={() => router.push(`/crm/conta-pessoa/${acc.id}`)}
+                >
+                  <td className="py-1.5 px-4 text-(--text-muted) text-center text-xs font-black group-hover:text-(--gold) italic transition-colors">#{String(acc.id).padStart(4, '0')}</td>
+                  <td className="py-1.5 px-3">
+                    <span className="text-(--text-primary) text-sm font-black group-hover:text-(--gold-hover) transition-colors tracking-tight">{acc.nome}</span>
+                  </td>
+                  <td className="py-1.5 px-3 text-(--text-secondary) text-sm font-bold tracking-tight">{acc.sobrenome}</td>
+                  <td className="py-1.5 px-3 text-(--text-secondary) text-xs font-bold">{acc.celular}</td>
+                  <td className="py-1.5 px-3 text-(--text-secondary) text-xs font-bold">{acc.cep}</td>
+                  <td className="py-1.5 px-3 text-center">
+                    <span className="inline-flex items-center justify-center bg-(--gold-soft) text-(--gold) text-xs font-black border border-(--gold-soft) px-2 py-0.5 rounded-full min-w-[24px]">
+                      {acc._count?.leads ?? 0}
+                    </span>
+                  </td>
+                  <td className="py-1.5 px-3 text-(--text-muted) text-xs font-black tracking-tight italic">
+                    {acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('pt-BR') : '—'}
+                  </td>
+                  <td className="py-1.5 px-4 text-center">
+                    <ChevronRight size={14} className="text-(--text-muted) group-hover:text-(--gold) mx-auto transition-colors" />
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
