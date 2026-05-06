@@ -1,10 +1,16 @@
 'use client';
 
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * Diálogo de confirmação visual (substitui window.confirm / window.alert).
+ *
+ * Renderizado via Portal pro <body> — mesma razão do ModalBase: ancestrais
+ * com backdrop-filter, transform, filter, perspective ou contain criam
+ * containing block que captura position:fixed. Portal foge dessa armadilha.
+ *
  * Props:
  *  - open: boolean
  *  - onClose: () => void
@@ -26,10 +32,16 @@ export default function ConfirmDialog({
   variant = 'danger',
 }) {
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const titleId = useId();
   const messageId = useId();
 
-  if (!open) return null;
+  // Só portala depois de montar no client — evita mismatch SSR/CSR
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!open || !mounted) return null;
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -58,7 +70,7 @@ export default function ConfirmDialog({
 
   const styles = variantStyles[variant] || variantStyles.danger;
 
-  return (
+  const dialog = (
     <div
       className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={onClose}
@@ -98,4 +110,6 @@ export default function ConfirmDialog({
       </div>
     </div>
   );
+
+  return createPortal(dialog, document.body);
 }
