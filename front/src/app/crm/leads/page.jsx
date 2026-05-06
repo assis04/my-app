@@ -15,7 +15,10 @@ import { useRouter } from 'next/navigation';
 import { isAdmin, isSeller } from '@/lib/roles';
 import { useDebounce } from '@/hooks/useDebounce';
 import { INITIAL_LEAD_FORM, STATUS_OPTIONS, ETAPA_OPTIONS, validateLeadForm } from '@/lib/leadConstants';
+import { requiresAdminToEdit } from '@/lib/leadStatus';
+import { CRM_PERMISSIONS, hasPermission } from '@/lib/permissions';
 import LeadFormFields from '@/components/crm/LeadFormFields';
+import TemperaturaButtons from '@/components/crm/TemperaturaButtons';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 
@@ -370,6 +373,7 @@ export default function LeadsListPage() {
                       <input type="checkbox" checked={selectedIds.length === leads.length && leads.length > 0} onChange={toggleSelectAll}
                         className="w-3.5 h-3.5 rounded accent-sky-500 cursor-pointer" />
                     </th>
+                    <th className="py-2 px-3 text-center w-[110px]">Temp</th>
                     <th className="py-2 px-3 text-center w-[50px]">ID</th>
                     <th className="py-2 px-3">Status</th>
                     <th className="py-2 px-3">Etapa</th>
@@ -385,19 +389,33 @@ export default function LeadsListPage() {
                 </thead>
                 <tbody className="divide-y divide-(--border-subtle)">
                   {loading && leads.length === 0 && (
-                    <tr><td colSpan={12} className="py-12 text-center"><p className="text-(--text-muted) font-black text-sm animate-pulse">Carregando...</p></td></tr>
+                    <tr><td colSpan={13} className="py-12 text-center"><p className="text-(--text-muted) font-black text-sm animate-pulse">Carregando...</p></td></tr>
                   )}
                   {!loading && leads.length === 0 && (
-                    <tr><td colSpan={12} className="py-12 text-center">
+                    <tr><td colSpan={13} className="py-12 text-center">
                       <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-2 border border-(--border-subtle) text-(--text-faint)"><Users size={20} /></div>
                       <p className="text-(--text-muted) font-black text-sm">Nenhum lead encontrado.</p>
                     </td></tr>
                   )}
-                  {leads.map(lead => (
+                  {leads.map(lead => {
+                    const tempLocked = requiresAdminToEdit(lead.status) && !hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE);
+                    return (
                     <tr key={lead.id} className="hover:bg-(--gold-soft)/40 transition-all group">
                       <td className="py-1.5 px-3">
                         <input type="checkbox" checked={selectedIds.includes(lead.id)} onChange={() => toggleSelect(lead.id)}
                           className="w-3.5 h-3.5 rounded accent-sky-500 cursor-pointer" />
+                      </td>
+                      <td className="py-1.5 px-3 text-center" onClick={e => e.stopPropagation()}>
+                        <TemperaturaButtons
+                          leadId={lead.id}
+                          value={lead.temperatura}
+                          disabled={tempLocked || lead.status === 'Cancelado'}
+                          onChange={(updatedLead) => {
+                            setLeads(prev => prev.map(l =>
+                              l.id === lead.id ? { ...l, temperatura: updatedLead.temperatura } : l,
+                            ));
+                          }}
+                        />
                       </td>
                       <td className="py-1.5 px-3 text-(--text-muted) text-center text-sm font-black group-hover:text-(--gold) italic transition-colors">#{String(lead.id).padStart(4, '0')}</td>
                       <td className="py-1.5 px-3">
@@ -439,7 +457,8 @@ export default function LeadsListPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -19,7 +19,6 @@ import OrcamentoStatusBadge from '@/components/crm/OrcamentoStatusBadge';
 
 import LeadFormFields from '@/components/crm/LeadFormFields';
 import LeadStatusDropdown from '@/components/crm/LeadStatusDropdown';
-import TemperaturaPicker from '@/components/crm/TemperaturaPicker';
 import CancelLeadDialog from '@/components/crm/CancelLeadDialog';
 import ReactivateLeadDialog from '@/components/crm/ReactivateLeadDialog';
 import PostSaleReadOnlyBanner from '@/components/crm/PostSaleReadOnlyBanner';
@@ -41,7 +40,6 @@ export default function EditLeadPage() {
   const [saveSuccess, setSaveSuccess] = useState('');
   const [form, setForm] = useState(INITIAL_LEAD_FORM);
   const [leadStatus, setLeadStatus] = useState(LeadStatus.EM_PROSPECCAO);
-  const [temperatura, setTemperatura] = useState(null);
   const [conta, setConta] = useState(null);
   const [history, setHistory] = useState([]);
   const [showCancel, setShowCancel] = useState(false);
@@ -68,7 +66,6 @@ export default function EditLeadPage() {
         preVendedorId: lead.preVendedorId ? String(lead.preVendedorId) : '',
       });
       setLeadStatus(lead.status || LeadStatus.EM_PROSPECCAO);
-      setTemperatura(lead.temperatura || null);
       setConta(lead.conta || null);
       setHistory(Array.isArray(lead.history) ? lead.history : []);
     } catch (err) {
@@ -273,7 +270,7 @@ export default function EditLeadPage() {
         />
       </div>
 
-      {/* 2. Status + Temperatura + Ações rápidas */}
+      {/* 2. Status + Ações rápidas (temperatura agora é editada na listagem) */}
       <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
@@ -308,16 +305,6 @@ export default function EditLeadPage() {
               </button>
             )}
           </div>
-        </div>
-
-        {/* Temperatura */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Temperatura</label>
-          <TemperaturaPicker
-            value={temperatura}
-            onSelect={(t) => actions.setTemperatura(t)}
-            disabled={actions.busy || formDisabled || isCancelado}
-          />
         </div>
       </div>
 

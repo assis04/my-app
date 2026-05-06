@@ -27,6 +27,10 @@ const OPTIONS = [
 ];
 
 /**
+ * @deprecated Substituído por TemperaturaButtons (versão compacta inline na
+ * listagem de Leads). Mantido como fallback caso algum form precise do picker
+ * com labels visíveis. Verificar uso e remover quando confirmado órfão.
+ *
  * Chip picker para os 3 valores canônicos de temperatura.
  *
  * Props:
