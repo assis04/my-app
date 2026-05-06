@@ -172,13 +172,13 @@ export default function CaptacaoFilaPage() {
 
   const RenderedQueue = useMemo(() => {
     return queue.map((agent, index) => (
-      <div key={agent.id} className="flex flex-col sm:flex-row sm:items-center py-0.5 border-b border-slate-50 last:border-0 gap-2 sm:gap-0 transition-all hover:bg-slate-50/80 px-3 rounded-xl group">
-        <span className="w-8 text-slate-300 font-black text-base italic tracking-tight group-hover:text-sky-400 transition-colors">
+      <div key={agent.id} className="flex flex-col sm:flex-row sm:items-center py-0.5 border-b border-(--border-subtle) last:border-0 gap-2 sm:gap-0 transition-all hover:bg-(--surface-1)/80 px-3 rounded-xl group">
+        <span className="w-8 text-(--text-muted) font-black text-base italic tracking-tight group-hover:text-(--gold) transition-colors">
           {String(index + 1).padStart(2, '0')}
         </span>
         
         <div className="flex items-center gap-2 flex-1">
-          <span className="text-slate-400 whitespace-nowrap text-xs font-black tracking-tight italic">Atribuir:</span>
+          <span className="text-(--text-muted) whitespace-nowrap text-xs font-black tracking-tight italic">Atribuir:</span>
           <form onSubmit={(e) => submitDirectLead(agent.id, agent.nome, e)} className="w-full sm:w-auto flex items-center relative">
             <input 
               type="text" 
@@ -186,27 +186,27 @@ export default function CaptacaoFilaPage() {
               value={phoneInputs[agent.id] || ''}
               onChange={(e) => handlePhoneChange(agent.id, e.target.value)}
               disabled={!agent.isAvailable}
-              className="bg-white border border-slate-200 rounded-xl h-7 px-3 w-full sm:w-64 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5 text-slate-900 text-sm disabled:opacity-50 disabled:bg-slate-100 transition-all font-bold placeholder:text-slate-300 shadow-xs"
+              className="bg-(--surface-2) border border-(--border) rounded-xl h-7 px-3 w-full sm:w-64 outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/5 text-(--text-primary) text-sm disabled:opacity-50 disabled:bg-(--surface-3) transition-all font-bold placeholder:text-(--text-muted) shadow-xs"
             />
             {agent.isAvailable && index === firstAvailableIndex && !phoneInputs[agent.id] && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-sky-100 text-sky-600 px-1 py-0.5 rounded text-xs font-black pointer-events-none">OK</div>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-(--gold-soft) text-(--gold) px-1 py-0.5 rounded text-xs font-black pointer-events-none">OK</div>
             )}
             <button type="submit" className="hidden">Submit</button>
           </form>
         </div>
 
-        <div className="flex-1 text-slate-900 flex items-center justify-between pl-4">
+        <div className="flex-1 text-(--text-primary) flex items-center justify-between pl-4">
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-black text-base text-slate-900 group-hover:text-sky-700 transition-colors leading-tight tracking-tight">{agent.nome}</span>
-              <span className="text-xs font-bold text-slate-400 leading-none mt-0 italic tracking-tight">Vendedor</span>
+              <span className="font-black text-base text-(--text-primary) group-hover:text-(--gold-hover) transition-colors leading-tight tracking-tight">{agent.nome}</span>
+              <span className="text-xs font-bold text-(--text-muted) leading-none mt-0 italic tracking-tight">Vendedor</span>
             </div>
             {!agent.isAvailable ? (
-              <span className="text-xs font-black text-rose-600 border border-rose-100 bg-rose-50 px-1.5 py-0.5 rounded-full shadow-xs">Ausente</span>
+              <span className="text-xs font-black text-(--danger) border border-(--danger)/30 bg-(--danger-soft) px-1.5 py-0.5 rounded-full shadow-xs">Ausente</span>
             ) : agent.isAvailable && index === firstAvailableIndex ? (
-              <span className="text-xs font-black text-emerald-600 border border-emerald-100 bg-emerald-50 px-1.5 py-0.5 rounded-full shadow-xs">Na Vez</span>
+              <span className="text-xs font-black text-(--success) border border-(--success)/30 bg-(--success-soft) px-1.5 py-0.5 rounded-full shadow-xs">Na Vez</span>
             ) : (
-              <span className="text-xs font-black text-sky-400 border border-sky-100 bg-sky-50 px-1.5 py-0.5 rounded-full shadow-xs tracking-tight">Livre</span>
+              <span className="text-xs font-black text-(--gold) border border-(--gold-soft) bg-(--gold-soft) px-1.5 py-0.5 rounded-full shadow-xs tracking-tight">Livre</span>
             )}
           </div>
           
@@ -216,7 +216,7 @@ export default function CaptacaoFilaPage() {
                  handleToggleAgentStatus(agent.id, !agent.isAvailable)
                    .catch(err => alert(err.message || "Erro ao mudar status"));
                }}
-               className="text-xs font-black tracking-tight text-sky-600 hover:text-white hover:bg-sky-600 px-2.5 py-1 rounded-xl border border-sky-100 bg-sky-50 transition-all shadow-xs active:scale-95 whitespace-nowrap"
+               className="text-xs font-black tracking-tight text-(--gold) hover:text-(--on-gold) hover:bg-(--gold) px-2.5 py-1 rounded-xl border border-(--gold-soft) bg-(--gold-soft) transition-all shadow-xs active:scale-95 whitespace-nowrap"
              >
                {user?.id === agent.id ? 'Meu Status' : 'Trocar'}
              </button>
@@ -231,15 +231,15 @@ export default function CaptacaoFilaPage() {
   return (
     <>
         <div className="mb-4 max-w-[1600px] mx-auto">
-          <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-slate-200 pb-3">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-(--border) pb-3">
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Fila da Vez</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-(--text-primary) tracking-tight">Fila da Vez</h1>
             </div>
 
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={refetch}
-                className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all border border-transparent hover:border-sky-100 shadow-sm active:scale-95"
+                className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-xl transition-all border border-transparent hover:border-(--gold-soft) shadow-sm active:scale-95"
                 title="Sincronizar Fila"
               >
                 <RefreshCw size={16} className={queueLoading ? 'animate-spin' : ''} />
@@ -256,16 +256,16 @@ export default function CaptacaoFilaPage() {
           </div>
         </div>
 
-          <div className="w-full relative glass-card border border-white/60 rounded-3xl p-1 shadow-floating overflow-hidden transition-all bg-white/40 backdrop-blur-xl">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-sky-500" />
+          <div className="w-full relative glass-card border border-(--border-subtle) rounded-3xl p-1 shadow-floating overflow-hidden transition-all bg-(--surface-2)/40 backdrop-blur-xl">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-(--gold)" />
             
             {queueLoading && queue.length === 0 && (
-               <div className="text-slate-400 py-3 opacity-70 flex items-center justify-center font-black text-xs animate-pulse">
+               <div className="text-(--text-muted) py-3 opacity-70 flex items-center justify-center font-black text-xs animate-pulse">
                  Sincronizando...
                </div>
             )}
             {queue.length === 0 && !queueLoading && (
-               <div className="text-slate-400 py-4 text-center font-black text-xs italic">Vazio.</div>
+               <div className="text-(--text-muted) py-4 text-center font-black text-xs italic">Vazio.</div>
             )}
             
             <div className="space-y-0">
@@ -274,10 +274,10 @@ export default function CaptacaoFilaPage() {
           </div>
         </div>
 
-        <div className="max-w-[1600px] mx-auto glass-card border border-white/60 rounded-3xl p-4 shadow-floating mb-2 bg-white/40 backdrop-blur-xl">
-          <h2 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2 tracking-tight">
-            <div className="w-8 h-8 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-sm">
-              <FolderOpen size={18} className="text-sky-500" />
+        <div className="max-w-[1600px] mx-auto glass-card border border-(--border-subtle) rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
+          <h2 className="text-base font-black text-(--text-primary) mb-4 flex items-center gap-2 tracking-tight">
+            <div className="w-8 h-8 bg-(--gold-soft) rounded-xl flex items-center justify-center border border-(--gold-soft) shadow-sm">
+              <FolderOpen size={18} className="text-(--gold)" />
             </div>
             Histórico de atendimento
           </h2>
@@ -291,9 +291,9 @@ export default function CaptacaoFilaPage() {
                   placeholder="Localizar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white text-sm text-slate-900 pl-9 pr-4 h-9 rounded-2xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5 outline-none transition-all placeholder:text-slate-300 font-bold shadow-xs tracking-tight"
+                  className="w-full bg-(--surface-2) text-sm text-(--text-primary) pl-9 pr-4 h-9 rounded-2xl border border-(--border) focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/5 outline-none transition-all placeholder:text-(--text-muted) font-bold shadow-xs tracking-tight"
                 />
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--text-muted)" />
               </div>
               
               <PremiumSelect 
@@ -316,20 +316,20 @@ export default function CaptacaoFilaPage() {
               />
 
               <div className="relative flex items-center gap-2">
-                <div className={`flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-1 h-9 shadow-xs transition-all w-full ${filterData ? 'ring-2 ring-sky-500/20 border-sky-200' : ''}`}>
-                  <div className="pl-3 text-slate-400">
+                <div className={`flex items-center gap-2 bg-(--surface-2) border border-(--border) rounded-2xl px-1 h-9 shadow-xs transition-all w-full ${filterData ? 'ring-2 ring-(--gold)/20 border-(--gold)/40' : ''}`}>
+                  <div className="pl-3 text-(--text-muted)">
                     <Calendar size={14} />
                   </div>
                   <input 
                     type="date" 
                     value={filterData}
                     onChange={(e) => setFilterData(e.target.value)}
-                    className="bg-transparent text-sm text-slate-900 pr-2 py-0 outline-none font-bold cursor-pointer tracking-tight"
+                    className="bg-transparent text-sm text-(--text-primary) pr-2 py-0 outline-none font-bold cursor-pointer tracking-tight"
                   />
                   {filterData && (
                     <button 
                       onClick={() => setFilterData('')}
-                      className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors mr-1"
+                      className="p-1 hover:bg-(--surface-3) rounded-lg text-(--text-muted) transition-colors mr-1"
                     >
                       <X size={12} />
                     </button>
@@ -340,15 +340,15 @@ export default function CaptacaoFilaPage() {
             
             <div className="flex items-center gap-3 w-full xl:w-auto justify-end">
               <div className="flex-col items-end mr-1 hidden xl:flex leading-none">
-                <span className="text-xs text-slate-300 font-black tracking-tight italic leading-none">Unidade</span>
-                <span className="text-xs font-black text-sky-500 tracking-tight leading-none mt-0.5">
+                <span className="text-xs text-(--text-muted) font-black tracking-tight italic leading-none">Unidade</span>
+                <span className="text-xs font-black text-(--gold) tracking-tight leading-none mt-0.5">
                   {branches.find(b => String(b.id) === String(selectedBranchId))?.nome || 'GLOBAL'}
                 </span>
               </div>
 
               <button 
                 onClick={openNewLeadModal}
-                className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-4 py-2 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl font-black shadow-xl shadow-sky-900/10 transition-all text-xs active:scale-95 whitespace-nowrap tracking-tight"
+                className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 py-2 rounded-2xl  hover:shadow-2xl font-black shadow-xl transition-all text-xs active:scale-95 whitespace-nowrap tracking-tight"
               >
                 Novo 
                 <Plus size={14} />
@@ -356,10 +356,10 @@ export default function CaptacaoFilaPage() {
             </div>
           </div>
 
-          <div className="w-full overflow-hidden rounded-2xl border border-slate-100 bg-white">
+          <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
-                <thead className="bg-slate-50/50 text-slate-400 font-black text-xs tracking-tight italic border-b border-slate-100">
+              <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
+                <thead className="bg-(--surface-1)/50 text-(--text-muted) font-black text-xs tracking-tight italic border-b border-(--border-subtle)">
                   <tr>
                     <th className="py-2 px-4 text-center w-[50px]">ID</th>
                     <th className="py-2 px-3">Status</th>
@@ -372,14 +372,14 @@ export default function CaptacaoFilaPage() {
                     <th className="py-2 px-4 text-right">Age</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-(--border-subtle)">
                   {filteredHistory.length === 0 && (
                     <tr>
                       <td colSpan={9} className="py-12 text-center">
-                        <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-slate-100 text-slate-200">
+                        <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-2 border border-(--border-subtle) text-(--text-faint)">
                            <FolderOpen size={20} />
                         </div>
-                        <p className="text-slate-300 font-black text-xs">Sem registros.</p>
+                        <p className="text-(--text-muted) font-black text-xs">Sem registros.</p>
                       </td>
                     </tr>
                   )}
@@ -387,32 +387,32 @@ export default function CaptacaoFilaPage() {
                     <tr 
                       key={lead.id} 
                       onClick={() => setSelectedLead(lead)}
-                      className="hover:bg-sky-50/40 transition-all group cursor-pointer"
+                      className="hover:bg-(--gold-soft)/40 transition-all group cursor-pointer"
                     >
-                      <td className="py-1.5 px-4 text-slate-300 text-center text-xs font-black group-hover:text-sky-500 italic transition-colors">#{String(lead.id).padStart(4, '0')}</td>
+                      <td className="py-1.5 px-4 text-(--text-muted) text-center text-xs font-black group-hover:text-(--gold) italic transition-colors">#{String(lead.id).padStart(4, '0')}</td>
                       <td className="py-1.5 px-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-black border shadow-xs tracking-tight ${
-                          lead.status === 'Ativo' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'
+                          lead.status === 'Ativo' ? 'bg-(--success-soft) border-(--success)/30 text-(--success)' : 'bg-(--danger-soft) border-(--danger)/30 text-(--danger)'
                         }`}>
                           {lead.status === 'Ativo' ? '● Ativo' : '● Inativo'}
                         </span>
                       </td>
                       <td className="py-1.5 px-3">
-                        <span className="text-xs font-black text-sky-500 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-100 tracking-tight">{lead.etapa || 'Novo'}</span>
+                        <span className="text-xs font-black text-(--gold) bg-(--gold-soft) px-2 py-0.5 rounded-lg border border-(--gold-soft) tracking-tight">{lead.etapa || 'Novo'}</span>
                       </td>
                       <td className="py-1.5 px-3">
                         <div className="flex flex-col leading-tight">
-                          <span className="text-slate-900 text-sm font-black group-hover:text-sky-700 transition-colors tracking-tight truncate max-w-[150px]">{lead.nome || '—'}</span>
-                          <span className="text-xs text-slate-400 font-bold tracking-tight">{lead.celular || lead.telefone || '—'}</span>
+                          <span className="text-(--text-primary) text-sm font-black group-hover:text-(--gold-hover) transition-colors tracking-tight truncate max-w-[150px]">{lead.nome || '—'}</span>
+                          <span className="text-xs text-(--text-muted) font-bold tracking-tight">{lead.celular || lead.telefone || '—'}</span>
                         </div>
                       </td>
                       <td className="py-1.5 px-3">
-                        <span className="text-slate-400 text-xs font-black bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 tracking-tight">{(lead.vendedor || lead.user)?.nome || '???'}</span>
+                        <span className="text-(--text-muted) text-xs font-black bg-(--surface-1) px-2 py-0.5 rounded-lg border border-(--border-subtle) tracking-tight">{(lead.vendedor || lead.user)?.nome || '???'}</span>
                       </td>
                       <td className="py-1.5 px-3">
                         <div className="flex flex-col leading-none">
-                          <span className="text-xs font-black text-sky-400 tracking-tight italic">{lead.canal || 'N/D'}</span>
-                          <span className="text-xs font-bold text-slate-400 tracking-tight">{lead.origem || '—'}</span>
+                          <span className="text-xs font-black text-(--gold) tracking-tight italic">{lead.canal || 'N/D'}</span>
+                          <span className="text-xs font-bold text-(--text-muted) tracking-tight">{lead.origem || '—'}</span>
                         </div>
                       </td>
                       <td className="py-1.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -421,18 +421,18 @@ export default function CaptacaoFilaPage() {
                             href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/crm/leads/${lead.id}/planta`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex p-1 text-sky-400 hover:text-sky-600 transition-all active:scale-90"
+                            className="inline-flex p-1 text-(--gold) hover:text-(--gold) transition-all active:scale-90"
                           >
                             <FileUp size={14} />
                           </a>
                         ) : (
-                          <span className="text-slate-100 text-xs font-black">—</span>
+                          <span className="text-(--text-faint) text-xs font-black">—</span>
                         )}
                       </td>
-                      <td className="py-1.5 px-3 text-slate-400 text-xs font-black tracking-tight italic">
+                      <td className="py-1.5 px-3 text-(--text-muted) text-xs font-black tracking-tight italic">
                         {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('pt-BR') : '—'}
                       </td>
-                      <td className="py-1.5 px-4 text-slate-300 text-xs font-black text-right italic tracking-tight">{timeAgo(lead.createdAt)}</td>
+                      <td className="py-1.5 px-4 text-(--text-muted) text-xs font-black text-right italic tracking-tight">{timeAgo(lead.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>

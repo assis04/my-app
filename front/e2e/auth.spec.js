@@ -5,7 +5,7 @@ test.describe('Autenticação', () => {
     await page.goto('/login');
     await page.getByLabel(/e-?mail/i).fill('inexistente@example.com');
     await page.getByLabel(/senha/i).fill('senha-errada-12345');
-    await page.getByRole('button', { name: /entrar|login/i }).click();
+    await page.getByRole('button', { name: /entrar|login|acessar/i }).click();
 
     // Mensagem genérica (boa prática — não revela se email existe)
     await expect(
@@ -24,7 +24,7 @@ test.describe('Autenticação', () => {
     await page.goto('/login');
     await page.getByLabel(/e-?mail/i).fill(email);
     await page.getByLabel(/senha/i).fill(password);
-    await page.getByRole('button', { name: /entrar|login/i }).click();
+    await page.getByRole('button', { name: /entrar|login|acessar/i }).click();
 
     await page.waitForURL(/^(?!.*\/login)/, { timeout: 10_000 });
     await expect(page).not.toHaveURL(/\/login/);

@@ -83,24 +83,24 @@ export default function NovoLeadPage() {
   return (
     <div className="mb-4 max-w-[900px] mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6 border-b border-slate-200 pb-3">
-        <button onClick={() => router.push('/crm/leads')} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
+      <div className="flex items-center gap-3 mb-6 border-b border-(--border) pb-3">
+        <button onClick={() => router.push('/crm/leads')} className="p-2 text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-1) rounded-xl transition-all">
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Novo Lead</h1>
-          <p className="text-sm text-slate-400 font-bold mt-0.5">O vínculo com a Conta será feito automaticamente</p>
+          <h1 className="text-2xl font-black text-(--text-primary) tracking-tight">Novo Lead</h1>
+          <p className="text-sm text-(--text-muted) font-bold mt-0.5">O vínculo com a Conta será feito automaticamente</p>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-100 text-rose-600 p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-(--danger-soft) border border-(--danger)/30 text-(--danger) p-3 rounded-2xl text-base flex items-start gap-2 shadow-sm mb-4 animate-in slide-in-from-top-2">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <p className="font-bold">{error}</p>
         </div>
       )}
 
-      <div className="glass-card border border-white/60 rounded-3xl p-6 shadow-floating bg-white/40 backdrop-blur-xl space-y-6">
+      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6">
         <LeadFormFields
           form={form}
           onChange={handleChange}
@@ -113,13 +113,13 @@ export default function NovoLeadPage() {
 
       {/* Footer — Botões */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
-        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-base text-slate-400 border border-slate-200 rounded-2xl hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95 shadow-sm tracking-tight">
+        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 shadow-sm tracking-tight">
           Cancelar
         </button>
-        <button onClick={handleSave} disabled={loading} className="flex-1 bg-linear-to-r from-sky-500 to-sky-600 text-white py-3 rounded-2xl hover:shadow-sky-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-sky-900/10 active:scale-95 tracking-tight">
+        <button onClick={handleSave} disabled={loading} className="flex-1 bg-(--gold) text-(--on-gold) py-3 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight">
           {loading ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Save size={14} /> Salvar Lead</>}
         </button>
-        <button onClick={handleSaveAndOportunidade} disabled={loading} className="flex-1 bg-linear-to-r from-violet-500 to-violet-600 text-white py-3 rounded-2xl hover:shadow-violet-500/40 hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-violet-900/10 active:scale-95 tracking-tight">
+        <button onClick={handleSaveAndOportunidade} disabled={loading} className="flex-1 bg-(--gold) text-(--on-gold) py-3 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl  active:scale-95 tracking-tight">
           {loading ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Briefcase size={14} /> Nova Oportunidade</>}
         </button>
       </div>

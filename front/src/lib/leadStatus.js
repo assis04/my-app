@@ -35,56 +35,65 @@ export const STATUS_ORDER = Object.freeze([
 
 /**
  * Paleta para LeadStatusBadge. Classes Tailwind (bg + text + border).
- * Mantém consistência visual entre list, detail e timeline.
+ * Cada status tem identidade visual distinta — não confundir entre si.
+ *
+ * Hierarquia visual:
+ *  - Frio/early (Em prospecção): surface neutra, texto secundário
+ *  - Esperando (Aguardando Planta): gold ghost suave
+ *  - Agendados (Vídeo, Visita): gold ghost com bordas de intensidade crescente
+ *  - Ativo (Em Atendimento Loja): gold sólido — destaque máximo, raro
+ *  - Terminal positivo (Venda): success sólido
+ *  - Continuação (Pós-venda): success ghost
+ *  - Terminal negativo (Cancelado): danger ghost
  */
 export const STATUS_COLORS = Object.freeze({
   [LeadStatus.EM_PROSPECCAO]: {
-    bg: 'bg-slate-100',
-    text: 'text-slate-700',
-    border: 'border-slate-200',
-    dot: 'bg-slate-400',
+    bg: 'bg-(--surface-3)',
+    text: 'text-(--text-secondary)',
+    border: 'border-(--border-subtle)',
+    dot: 'bg-(--text-faint)',
   },
   [LeadStatus.AGUARDANDO_PLANTA]: {
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
-    border: 'border-amber-200',
-    dot: 'bg-amber-500',
+    bg: 'bg-(--gold-soft)/60',
+    text: 'text-(--gold-hover)',
+    border: 'border-(--gold)/30',
+    dot: 'bg-(--gold-hover)',
   },
   [LeadStatus.AGENDADO_VIDEO]: {
-    bg: 'bg-sky-50',
-    text: 'text-sky-700',
-    border: 'border-sky-200',
-    dot: 'bg-sky-500',
+    bg: 'bg-(--gold-soft)',
+    text: 'text-(--gold)',
+    border: 'border-(--gold)/40',
+    dot: 'bg-(--gold)',
   },
   [LeadStatus.AGENDADO_VISITA]: {
-    bg: 'bg-indigo-50',
-    text: 'text-indigo-700',
-    border: 'border-indigo-200',
-    dot: 'bg-indigo-500',
+    bg: 'bg-(--gold-soft)',
+    text: 'text-(--gold)',
+    border: 'border-(--gold)',
+    dot: 'bg-(--gold)',
   },
   [LeadStatus.EM_ATENDIMENTO_LOJA]: {
-    bg: 'bg-violet-50',
-    text: 'text-violet-700',
-    border: 'border-violet-200',
-    dot: 'bg-violet-500',
+    bg: 'bg-(--gold)',
+    text: 'text-(--on-gold)',
+    border: 'border-(--gold-hover)',
+    dot: 'bg-(--on-gold)',
   },
   [LeadStatus.VENDA]: {
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
-    border: 'border-emerald-200',
-    dot: 'bg-emerald-500',
+    bg: 'bg-(--success)',
+    text: 'text-white',
+    border: 'border-(--success)',
+    dot: 'bg-white',
   },
   [LeadStatus.POS_VENDA]: {
-    bg: 'bg-teal-50',
-    text: 'text-teal-700',
-    border: 'border-teal-200',
-    dot: 'bg-teal-500',
+    bg: 'bg-(--success-soft)',
+    text: 'text-(--success)',
+    border: 'border-(--success)/40',
+    dot: 'bg-(--success)',
   },
   [LeadStatus.CANCELADO]: {
-    bg: 'bg-rose-50',
-    text: 'text-rose-700',
-    border: 'border-rose-200',
-    dot: 'bg-rose-500',
+    bg: 'bg-(--danger-soft)',
+    text: 'text-(--danger)',
+    border: 'border-(--danger)/40',
+    dot: 'bg-(--danger)',
   },
 });
 
@@ -97,17 +106,6 @@ export const STATUSES_REQUIRING_DATETIME = Object.freeze([
   LeadStatus.AGENDADO_VIDEO,
   LeadStatus.AGENDADO_VISITA,
 ]);
-
-/**
- * Estados terminais — Venda, Pós-venda, Cancelado.
- */
-export function isTerminalStatus(status) {
-  return (
-    status === LeadStatus.VENDA ||
-    status === LeadStatus.POS_VENDA ||
-    status === LeadStatus.CANCELADO
-  );
-}
 
 /**
  * Venda e Pós-venda exigem permissão `crm:leads:edit-after-sale` para edição.

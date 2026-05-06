@@ -11,7 +11,6 @@ export function DashboardShell({ children }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Páginas sem sidebar (login, register, etc.)
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/alterar-senha');
 
   if (isAuthPage) {
@@ -23,9 +22,9 @@ export function DashboardShell({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans relative page-transition">
+    <div className="flex h-screen bg-(--bg-base) text-(--text-primary) font-sans relative page-transition">
       <button
-        className="md:hidden absolute top-4 left-4 z-50 bg-white p-2 rounded-xl border border-slate-200 text-slate-600 shadow-sm transition-all hover:bg-slate-50"
+        className="md:hidden absolute top-4 left-4 z-50 bg-(--surface-2) p-2 rounded-xl border border-(--border) text-(--text-muted) shadow-(--shadow-premium) transition-all hover:bg-(--surface-3) hover:text-(--text-primary)"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         <Menu size={24} />
@@ -33,7 +32,7 @@ export function DashboardShell({ children }) {
 
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/10 z-30 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -44,7 +43,7 @@ export function DashboardShell({ children }) {
         <Sidebar />
       </div>
 
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 w-full pt-16 md:pt-6 bg-slate-50">
+      <main className="flex-1 p-4 md:p-6 overflow-y-auto min-w-0 w-full pt-16 md:pt-6 bg-(--bg-base)">
         {children}
       </main>
     </div>

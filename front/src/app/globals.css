@@ -1,19 +1,76 @@
 @import "tailwindcss";
 
-/* 🎨 Light Mode Design System */
+/* 🌑 Valcenter — Black & Gold (Dark) */
 :root {
-  --background: #f8fafc; /* Slate-50 */
-  --card: #ffffff;
-  --primary: #0284c7; /* Sky-600 */
-  --primary-hover: #0369a1; /* Sky-700 */
-  --text-main: #0f172a; /* Slate-900 */
-  --text-muted: #64748b; /* Slate-500 */
-  --border: #e2e8f0; /* Slate-200 */
-  --sidebar-bg: #ffffff;
+  color-scheme: dark;
+
+  /* Surfaces (warm-leaning ink black, never #000)
+     Tiers escalonados o suficiente pra criar lift visível sem perder o tom warm. */
+  --bg-base:    #0A0908;
+  --surface-1:  #15120F;
+  --surface-2:  #1F1A15;
+  --surface-3:  #2A241E;
+  --surface-4:  #38302A;
+
+  /* Text (bone white, never #FFF) */
+  --text-primary:   #EAEAEA;
+  --text-secondary: #C4BFB6;
+  --text-muted:     #9E988E;
+  --text-faint:     #6F6A62;
+
+  /* Brand */
+  --gold:        #E9B601;
+  --gold-hover:  #C99A00;
+  --gold-soft:   color-mix(in srgb, #E9B601 12%, transparent);
+  --gold-faint:  color-mix(in srgb, #E9B601  8%, transparent);
+  --on-gold:     #0A0908;
+
+  /* Border */
+  --border:         #4A4036;
+  --border-subtle:  #2A241E;
+
+  /* Status (sage / gold / terracotta — never aggressive red) */
+  --success:       #7FB069;
+  --success-soft:  color-mix(in srgb, #7FB069 14%, transparent);
+  --warning:       #E9B601;
+  --warning-soft:  color-mix(in srgb, #E9B601 14%, transparent);
+  --danger:        #E26D5C;
+  --danger-soft:   color-mix(in srgb, #E26D5C 14%, transparent);
+
+  /* Legacy aliases — mantém compatibilidade enquanto faço a migração */
+  --background:    var(--bg-base);
+  --card:          var(--surface-2);
+  --primary:       var(--gold);
+  --primary-hover: var(--gold-hover);
+  --text-main:     var(--text-primary);
+  --border:        var(--border);
+  --sidebar-bg:    var(--bg-base);
 }
 
-/* 💎 Design System Tokens */
+/* 💎 Design Tokens */
 @theme {
+  --color-bg-base:        #0A0908;
+  --color-surface-1:      #15120F;
+  --color-surface-2:      #1F1A15;
+  --color-surface-3:      #2A241E;
+  --color-surface-4:      #38302A;
+
+  --color-text-primary:   #EAEAEA;
+  --color-text-secondary: #C4BFB6;
+  --color-text-muted:     #9E988E;
+  --color-text-faint:     #6F6A62;
+
+  --color-gold:           #E9B601;
+  --color-gold-hover:     #C99A00;
+  --color-on-gold:        #0A0908;
+
+  --color-border:         #4A4036;
+  --color-border-subtle:  #2A241E;
+
+  --color-success:        #7FB069;
+  --color-warning:        #E9B601;
+  --color-danger:         #E26D5C;
+
   --radius-xs: 8px;
   --radius-sm: 12px;
   --radius-md: 16px;
@@ -21,36 +78,35 @@
   --radius-xl: 24px;
   --radius-2xl: 32px;
   --radius-3xl: 40px;
-  
-  --shadow-premium: 0 10px 40px -10px rgba(15, 23, 42, 0.05);
-  --shadow-floating: 0 20px 50px -12px rgba(15, 23, 42, 0.12);
+
+  --shadow-premium:  0 10px 40px -10px rgba(0, 0, 0, 0.7);
+  --shadow-floating: 0 32px 72px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(74, 64, 54, 0.6);
 }
 
 html, body {
-  background-color: var(--background);
-  color: var(--text-main);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   cursor: auto;
-  transition: background-color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* 🧊 Glassmorphism Effects */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: color-mix(in srgb, var(--surface-2) 65%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
   box-shadow: var(--shadow-premium);
 }
 
-/* 🔹 Custom Scrollbar (Premium & Minimalist) */
+/* 🔹 Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -61,14 +117,14 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--surface-3);
   border-radius: 10px;
   border: 1px solid transparent;
   transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--text-muted);
 }
 
 /* ⚡️ Smooth Transitions */
@@ -78,38 +134,41 @@ html, body {
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom Scrollbar for elements */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: var(--surface-3);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--surface-3) transparent;
 }
 
-/* フォーム Elements (Premium Inputs & Selects) */
-input[type="text"], 
-input[type="email"], 
-input[type="password"], 
+/* ✨ Form Elements (Premium Inputs & Selects) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
 input[type="tel"],
+input[type="number"],
+input[type="search"],
+textarea,
 select {
-  @apply selection:bg-sky-100 selection:text-sky-900;
+  @apply selection:bg-(--gold-soft) selection:text-(--gold);
+  color-scheme: dark;
 }
 
 .premium-select {
-  @apply appearance-none bg-white text-slate-900 rounded-2xl border border-slate-200 
-         outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 
-         transition-all font-bold cursor-pointer shadow-xs w-full;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E");
+  @apply appearance-none bg-(--surface-1) text-(--text-primary) rounded-2xl border border-(--border)
+         outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold-soft)
+         transition-all font-bold cursor-pointer w-full;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239E988E' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 1rem;
@@ -117,23 +176,27 @@ select {
 }
 
 .premium-select:hover {
-  @apply border-slate-300 bg-white;
+  @apply border-(--gold) bg-(--surface-2);
 }
 
 .premium-input {
-  @apply bg-white text-slate-900 rounded-2xl border border-slate-200 
-         outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 
-         transition-all font-bold placeholder:text-slate-300 shadow-xs w-full;
+  @apply bg-(--surface-1) text-(--text-primary) rounded-2xl border border-(--border)
+         outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold-soft)
+         transition-all font-bold w-full;
+}
+
+.premium-input::placeholder {
+  color: var(--text-faint);
 }
 
 .premium-input:hover {
-  @apply border-slate-300 bg-white;
+  @apply border-(--gold) bg-(--surface-2);
 }
 
 option {
-  @apply bg-white text-slate-900 font-medium py-2;
+  @apply bg-(--surface-2) text-(--text-primary) font-medium py-2;
 }
 
 option:disabled {
-  @apply text-slate-400;
+  @apply text-(--text-faint);
 }

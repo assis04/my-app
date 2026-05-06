@@ -13,7 +13,7 @@ async function login(page, email, password) {
   await page.goto('/login');
   await page.getByLabel(/e-?mail/i).fill(email);
   await page.getByLabel(/senha/i).fill(password);
-  await page.getByRole('button', { name: /entrar|login/i }).click();
+  await page.getByRole('button', { name: /entrar|login|acessar/i }).click();
   await page.waitForURL(/^(?!.*\/login)/, { timeout: 10_000 });
 }
 

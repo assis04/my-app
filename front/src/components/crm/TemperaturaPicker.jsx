@@ -7,26 +7,30 @@ const OPTIONS = [
     value: 'Muito interessado',
     label: 'Muito interessado',
     Icon: Flame,
-    activeClasses: 'bg-rose-500 text-white border-rose-500 shadow-rose-500/30',
-    idleClasses: 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100',
+    activeClasses: 'bg-(--danger) text-white border-(--danger)',
+    idleClasses: 'bg-(--danger-soft) text-(--danger) border-(--danger)/40 hover:bg-(--danger-soft)',
   },
   {
     value: 'Interessado',
     label: 'Interessado',
     Icon: ThermometerSun,
-    activeClasses: 'bg-amber-500 text-white border-amber-500 shadow-amber-500/30',
-    idleClasses: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100',
+    activeClasses: 'bg-(--gold) text-(--on-gold) border-(--gold)',
+    idleClasses: 'bg-(--gold-soft) text-(--gold) border-(--gold)/40 hover:bg-(--gold-soft)',
   },
   {
     value: 'Sem interesse',
     label: 'Sem interesse',
     Icon: Snowflake,
-    activeClasses: 'bg-sky-500 text-white border-sky-500 shadow-sky-500/30',
-    idleClasses: 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100',
+    activeClasses: 'bg-(--surface-3) text-(--text-muted) border-(--border)',
+    idleClasses: 'bg-(--surface-2) text-(--text-faint) border-(--border-subtle) hover:bg-(--surface-3)',
   },
 ];
 
 /**
+ * @deprecated Substituído por TemperaturaButtons (versão compacta inline na
+ * listagem de Leads). Mantido como fallback caso algum form precise do picker
+ * com labels visíveis. Verificar uso e remover quando confirmado órfão.
+ *
  * Chip picker para os 3 valores canônicos de temperatura.
  *
  * Props:

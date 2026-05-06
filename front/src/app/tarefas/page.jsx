@@ -73,19 +73,19 @@ export default function Tarefas() {
   );
 
   const renderTable = (taskList, emptyMessage) => (
-    <div className="w-full overflow-hidden rounded-2xl border border-slate-100 bg-white">
+    <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
       {loadingTasks ? (
-        <div className="flex justify-center py-12 bg-slate-50/10">
-          <Loader2 size={24} className="animate-spin text-sky-500" />
+        <div className="flex justify-center py-12 bg-(--surface-1)/10">
+          <Loader2 size={24} className="animate-spin text-(--gold)" />
         </div>
       ) : taskList.length === 0 ? (
-        <div className="text-center py-16 text-slate-400 font-medium italic bg-slate-50/10 text-xs">
+        <div className="text-center py-16 text-(--text-muted) font-medium italic bg-(--surface-1)/10 text-xs">
           {emptyMessage}
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap text-slate-600 border-collapse">
-            <thead className="bg-slate-50/80 text-slate-500 font-black text-xs border-b border-slate-100 italic tracking-tight">
+          <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
+            <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) italic tracking-tight">
               <tr>
                 <th className="py-2 px-4 italic w-10">St.</th>
                 <th className="py-2 px-4 italic">Tarefa</th>
@@ -93,31 +93,31 @@ export default function Tarefas() {
                 <th className="py-2 px-4 text-right italic">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-(--border-subtle)">
               {taskList.map((task) => (
-                <tr key={task.id} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={task.id} className="hover:bg-(--surface-1)/50 transition-colors group">
                   <td className="py-1.5 px-4 w-10">
-                     <button onClick={() => toggleTaskStatus(task.id, task.status)} className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${task.status === 'CONCLUIDA' ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-emerald-400'}`}>
+                     <button onClick={() => toggleTaskStatus(task.id, task.status)} className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${task.status === 'CONCLUIDA' ? 'bg-(--success) border-(--success) text-white' : 'bg-(--surface-2) border-(--border) text-transparent hover:border-(--success)'}`}>
                         <CheckCircle2 size={14} />
                      </button>
                   </td>
                   <td className="py-1.5 px-4">
-                    <div className={`font-bold ${task.status === 'CONCLUIDA' ? 'line-through text-slate-400' : 'text-slate-800'} ${isAdmin ? 'text-sm' : 'text-sm'}`}>
+                    <div className={`font-bold ${task.status === 'CONCLUIDA' ? 'line-through text-(--text-muted)' : 'text-(--text-primary)'} ${isAdmin ? 'text-sm' : 'text-sm'}`}>
                       {task.titulo}
                     </div>
                     {task.assignedToEquipe && (
-                       <div className="text-xs text-purple-600 font-bold bg-purple-50 inline-block px-1.5 rounded mt-0.5">Equipe: {task.assignedToEquipe.nome}</div>
+                       <div className="text-xs text-(--gold) font-bold bg-(--gold-soft) inline-block px-1.5 rounded mt-0.5">Equipe: {task.assignedToEquipe.nome}</div>
                     )}
                   </td>
-                  <td className="py-1.5 px-4 font-bold text-xs text-slate-500">
+                  <td className="py-1.5 px-4 font-bold text-xs text-(--text-secondary)">
                     {task.dataVencimento ? new Date(task.dataVencimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}
                   </td>
                   <td className="py-1.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setModalData(task)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors">
+                      <button onClick={() => setModalData(task)} className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-lg transition-colors">
                         <Edit size={14} />
                       </button>
-                      <button onClick={() => handleDelete(task.id, task.titulo)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                      <button onClick={() => handleDelete(task.id, task.titulo)} className="p-1.5 text-(--text-muted) hover:text-(--danger) hover:bg-(--danger-soft) rounded-lg transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -133,14 +133,14 @@ export default function Tarefas() {
 
   return (
     <>
-        <header className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
+        <header className="flex justify-between items-center mb-6 pb-4 border-b border-(--border)">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Lista de Tarefas</h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-bold tracking-wider">Gestão Pessoal e de Equipes</p>
+            <h1 className="text-2xl font-black text-(--text-primary) tracking-tight">Lista de Tarefas</h1>
+            <p className="text-xs text-(--text-secondary) mt-0.5 font-bold tracking-wider">Gestão Pessoal e de Equipes</p>
           </div>
           <button
             onClick={() => setModalData({})}
-            className="flex items-center gap-2 bg-linear-to-r from-sky-500 to-sky-600 text-white px-5 py-2.5 rounded-full hover:shadow-sky-200/50 hover:shadow-xl font-bold shadow-lg shadow-sky-900/10 transition-all text-sm active:scale-95 whitespace-nowrap"
+            className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-5 py-2.5 rounded-full  hover:shadow-xl font-bold shadow-lg transition-all text-sm active:scale-95 whitespace-nowrap"
           >
             Nova Tarefa <Plus size={16} />
           </button>
@@ -148,18 +148,18 @@ export default function Tarefas() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-start">
            {/* Coluna Esquerda: Minhas Tarefas */}
-           <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-5 shadow-floating">
-              <h2 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2">
-                 <div className="w-6 h-6 bg-sky-100 rounded-lg flex items-center justify-center text-sky-600"><CheckSquare size={14}/></div>
+           <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 md:p-5 shadow-floating">
+              <h2 className="text-base font-black text-(--text-primary) mb-4 flex items-center gap-2">
+                 <div className="w-6 h-6 bg-(--gold-soft) rounded-lg flex items-center justify-center text-(--gold)"><CheckSquare size={14}/></div>
                  MINHAS TAREFAS
               </h2>
               {renderTable(filteredMinhas, "Você não tem atividades pendentes.")}
            </div>
 
            {/* Coluna Direita: Tarefas da Equipe */}
-           <div className="glass-card border border-white/60 rounded-3xl p-4 md:p-5 shadow-floating">
-              <h2 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2">
-                 <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600"><CheckSquare size={14}/></div>
+           <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 md:p-5 shadow-floating">
+              <h2 className="text-base font-black text-(--text-primary) mb-4 flex items-center gap-2">
+                 <div className="w-6 h-6 bg-(--gold-soft) rounded-lg flex items-center justify-center text-(--gold)"><CheckSquare size={14}/></div>
                  TAREFAS DA EQUIPE
               </h2>
               {renderTable(filteredEquipe, "Sua equipe não possui tarefas em aberto.")}

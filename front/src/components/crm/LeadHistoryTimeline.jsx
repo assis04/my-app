@@ -48,10 +48,10 @@ export default function LeadHistoryTimeline({
   if (events.length === 0) {
     return (
       <div className="text-center py-8">
-        <div className="inline-flex p-3 bg-slate-50 rounded-2xl mb-2">
-          <History size={18} className="text-slate-400" />
+        <div className="inline-flex p-3 bg-(--surface-1) rounded-2xl mb-2">
+          <History size={18} className="text-(--text-muted)" />
         </div>
-        <p className="text-base text-slate-400 font-medium">Nenhum evento registrado ainda.</p>
+        <p className="text-base text-(--text-muted) font-medium">Nenhum evento registrado ainda.</p>
       </div>
     );
   }
@@ -64,14 +64,14 @@ export default function LeadHistoryTimeline({
         return (
           <article
             key={event.id}
-            className="flex items-start gap-3 p-3 rounded-2xl border border-slate-100 bg-white/40 backdrop-blur-sm hover:border-slate-200 transition-all"
+            className="flex items-start gap-3 p-3 rounded-2xl border border-(--border-subtle) bg-(--surface-2)/40 backdrop-blur-sm hover:border-(--border) transition-all"
           >
-            <div className={`p-2 bg-slate-50 rounded-xl shrink-0 ${color}`}>
+            <div className={`p-2 bg-(--surface-1) rounded-xl shrink-0 ${color}`}>
               <Icon size={14} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-base font-bold text-slate-800 leading-snug">{title}</p>
-              <p className="text-sm text-slate-400 font-medium mt-0.5">
+              <p className="text-base font-bold text-(--text-primary) leading-snug">{title}</p>
+              <p className="text-sm text-(--text-muted) font-medium mt-0.5">
                 {author} · {formatRelative(event.createdAt)}
               </p>
             </div>
@@ -80,7 +80,7 @@ export default function LeadHistoryTimeline({
       })}
 
       {error && (
-        <p className="text-base text-rose-500 font-bold text-center py-2">{error}</p>
+        <p className="text-base text-(--danger) font-bold text-center py-2">{error}</p>
       )}
 
       {nextCursor && (
@@ -88,7 +88,7 @@ export default function LeadHistoryTimeline({
           type="button"
           onClick={handleLoadMore}
           disabled={loading}
-          className="w-full py-2.5 text-sm font-black text-sky-600 border border-sky-100 bg-sky-50/50 rounded-2xl hover:bg-sky-100 transition-all active:scale-95 tracking-tight disabled:opacity-50 flex justify-center items-center gap-2"
+          className="w-full py-2.5 text-sm font-black text-(--gold) border border-(--gold-soft) bg-(--gold-soft)/50 rounded-2xl hover:bg-(--gold-soft) transition-all active:scale-95 tracking-tight disabled:opacity-50 flex justify-center items-center gap-2"
         >
           {loading ? <><Loader2 size={11} className="animate-spin" /> Carregando...</> : 'Ver mais eventos'}
         </button>

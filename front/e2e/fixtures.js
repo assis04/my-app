@@ -31,7 +31,7 @@ export const test = base.extend({
     await page.goto('/login');
     await page.getByLabel(/e-?mail/i).fill(email);
     await page.getByLabel(/senha/i).fill(password);
-    await page.getByRole('button', { name: /entrar|login/i }).click();
+    await page.getByRole('button', { name: /entrar|login|acessar/i }).click();
 
     // Aguarda redirect pra home autenticada (ou alterar-senha se mustChangePassword)
     await page.waitForURL(/^(?!.*\/login)/, { timeout: 10_000 });

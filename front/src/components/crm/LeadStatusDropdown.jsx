@@ -41,13 +41,13 @@ export default function LeadStatusDropdown({
         disabled={!interactive}
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
           interactive
-            ? 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm active:scale-95 cursor-pointer'
-            : 'border-slate-100 bg-slate-50 cursor-not-allowed opacity-80'
+            ? 'border-(--border) bg-(--surface-2) hover:border-(--gold)/40 hover:shadow-sm active:scale-95 cursor-pointer'
+            : 'border-(--border-subtle) bg-(--surface-1) cursor-not-allowed opacity-80'
         }`}
         title={!hasTransitions ? 'Sem transições disponíveis' : disabled ? 'Sem permissão para alterar' : 'Alterar status'}
       >
         <LeadStatusBadge status={status} showDot />
-        {interactive && <ChevronDown size={12} className="text-slate-400" aria-hidden />}
+        {interactive && <ChevronDown size={12} className="text-(--text-muted)" aria-hidden />}
       </button>
 
       <StatusTransitionModal
