@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useCallback, useId } from 'react';
+import { useEffect, useCallback, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /**
- * Modal base com overlay padronizado.
+ * Modal base com overlay padronizado, renderizado via Portal pro <body>.
+ *
+ * Por que Portal: ancestrais com `backdrop-filter`, `transform`, `filter`,
+ * `perspective` ou `contain` criam containing block que captura `position: fixed`
+ * — o modal vira filho posicional desse ancestral em vez do viewport. Resultado:
+ * modal descentralizado, backdrop cortado, layout "quebrado". Portal foge dessa
+ * armadilha ao reparentar o nó pra <body>.
+ *
  * Props:
  *  - open: boolean
  *  - onClose: () => void
@@ -17,6 +25,12 @@ import { X } from 'lucide-react';
 export default function ModalBase({ open, onClose, title, subtitle, maxWidth = 'max-w-lg', children, footer }) {
   const titleId = useId();
   const subtitleId = useId();
+  const [mounted, setMounted] = useState(false);
+
+  // Só portala depois de montar no client — evita mismatch SSR/CSR
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleEsc = useCallback((e) => {
     if (e.key === 'Escape') onClose();
@@ -33,9 +47,9 @@ export default function ModalBase({ open, onClose, title, subtitle, maxWidth = '
     };
   }, [open, handleEsc]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  const modal = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={onClose}
@@ -78,4 +92,6 @@ export default function ModalBase({ open, onClose, title, subtitle, maxWidth = '
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
