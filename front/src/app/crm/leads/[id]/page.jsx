@@ -1,10 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  ArrowLeft, Save, Briefcase, Loader2,
-  AlertTriangle, Trash2, CheckCircle, XCircle, RefreshCw, History,
-} from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import { formatPhone } from '@/lib/utils';
@@ -15,17 +12,38 @@ import { friendlyErrorMessage } from '@/lib/apiError';
 import { LeadStatus, requiresAdminToEdit } from '@/lib/leadStatus';
 import { hasPermission, CRM_PERMISSIONS } from '@/lib/permissions';
 import { getOrcamentoByLeadId, createOrcamento } from '@/services/crmApi';
-import OrcamentoStatusBadge from '@/components/crm/OrcamentoStatusBadge';
 
 import LeadFormFields from '@/components/crm/LeadFormFields';
-import LeadStatusDropdown from '@/components/crm/LeadStatusDropdown';
 import CancelLeadDialog from '@/components/crm/CancelLeadDialog';
 import ReactivateLeadDialog from '@/components/crm/ReactivateLeadDialog';
 import PostSaleReadOnlyBanner from '@/components/crm/PostSaleReadOnlyBanner';
-import LeadHistoryTimeline from '@/components/crm/LeadHistoryTimeline';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useLeadActions } from '@/hooks/useLeadActions';
+
+import LeadHeader from './components/LeadHeader';
+import LeadAside from './components/LeadAside';
+import DirtyBar from './components/DirtyBar';
+
+/**
+ * Constrói o objeto de form a partir do payload do GET /leads/:id.
+ * Centralizado pra que o snapshot inicial e o re-fetch sigam a mesma forma.
+ */
+function buildFormFromLead(lead) {
+  return {
+    nome: lead.nome || '',
+    sobrenome: lead.sobrenome || '',
+    celular: lead.celular ? formatPhone(lead.celular) : '',
+    email: lead.email || '',
+    cep: lead.cep || '',
+    conjugeNome: lead.conjugeNome || '',
+    conjugeSobrenome: lead.conjugeSobrenome || '',
+    conjugeCelular: lead.conjugeCelular ? formatPhone(lead.conjugeCelular) : '',
+    conjugeEmail: lead.conjugeEmail || '',
+    origemCanal: lead.origemCanal || '',
+    preVendedorId: lead.preVendedorId ? String(lead.preVendedorId) : '',
+  };
+}
 
 export default function EditLeadPage() {
   const { user, loading: authLoading } = useAuth();
@@ -48,26 +66,34 @@ export default function EditLeadPage() {
   const [creatingOrcamento, setCreatingOrcamento] = useState(false);
   const { confirm, confirmProps } = useConfirm();
 
+  // Snapshot do form imediatamente após fetch — fonte da verdade pra dirty tracking.
+  const initialFormRef = useRef(null);
+
   const fetchLead = useCallback(async () => {
     setLoading(true);
     try {
-      const lead = await api(`/api/crm/leads/${leadId}`);
-      setForm({
-        nome: lead.nome || '',
-        sobrenome: lead.sobrenome || '',
-        celular: lead.celular ? formatPhone(lead.celular) : '',
-        email: lead.email || '',
-        cep: lead.cep || '',
-        conjugeNome: lead.conjugeNome || '',
-        conjugeSobrenome: lead.conjugeSobrenome || '',
-        conjugeCelular: lead.conjugeCelular ? formatPhone(lead.conjugeCelular) : '',
-        conjugeEmail: lead.conjugeEmail || '',
-        origemCanal: lead.origemCanal || '',
-        preVendedorId: lead.preVendedorId ? String(lead.preVendedorId) : '',
-      });
+      // Promise.all corta latência cumulativa (~300-600ms → ~150-200ms)
+      const [lead, orc, sellersRaw] = await Promise.all([
+        api(`/api/crm/leads/${leadId}`),
+        getOrcamentoByLeadId(leadId).catch((err) => {
+          // 404 é estado válido (sem orçamento vinculado)
+          if (err?.status === 404) return null;
+          console.warn('Falha ao buscar Orçamento vinculado:', err);
+          return null;
+        }),
+        api('/users/lookup').catch(() => []),
+      ]);
+
+      const newForm = buildFormFromLead(lead);
+      setForm(newForm);
+      initialFormRef.current = newForm; // captura snapshot — base do dirty
       setLeadStatus(lead.status || LeadStatus.EM_PROSPECCAO);
       setConta(lead.conta || null);
       setHistory(Array.isArray(lead.history) ? lead.history : []);
+      setOrcamento(orc);
+
+      const sellersList = Array.isArray(sellersRaw) ? sellersRaw : (sellersRaw?.data ?? []);
+      setSellers(sellersList.filter((u) => u.ativo !== false).map((u) => ({ id: u.id, nome: u.nome })));
     } catch (err) {
       setSaveError(friendlyErrorMessage(err) || 'Erro ao carregar lead.');
     } finally {
@@ -77,39 +103,50 @@ export default function EditLeadPage() {
 
   const actions = useLeadActions(leadId, fetchLead);
 
-  const fetchOrcamento = useCallback(async () => {
-    try {
-      const orc = await getOrcamentoByLeadId(leadId);
-      setOrcamento(orc);
-    } catch (err) {
-      // 404 significa "sem orçamento vinculado" — estado válido, não é erro
-      if (err?.status !== 404) {
-        console.warn('Falha ao buscar Orçamento vinculado:', err);
-      }
-      setOrcamento(null);
-    }
-  }, [leadId]);
-
   useEffect(() => {
-    if (!authLoading && user) {
-      fetchLead();
-      fetchOrcamento();
-      api('/users/lookup').then(raw => {
-        const res = Array.isArray(raw) ? raw : (raw?.data ?? []);
-        setSellers(res.filter(u => u.ativo !== false).map(u => ({ id: u.id, nome: u.nome })));
-      }).catch(() => {});
+    if (!authLoading && user) fetchLead();
+  }, [user, authLoading, fetchLead]);
+
+  // Dirty tracking — compara JSON do form atual com snapshot inicial
+  const { isDirty, dirtyCount } = useMemo(() => {
+    if (!initialFormRef.current) return { isDirty: false, dirtyCount: 0 };
+    let count = 0;
+    for (const key of Object.keys(form)) {
+      if ((form[key] ?? '') !== (initialFormRef.current[key] ?? '')) count++;
     }
-  }, [user, authLoading, fetchLead, fetchOrcamento]);
+    return { isDirty: count > 0, dirtyCount: count };
+  }, [form]);
+
+  // beforeunload: avisa se user tenta fechar/recarregar com mudanças pendentes
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
     setSaveSuccess('');
     actions.clearFeedback();
   };
 
+  const handleDiscard = () => {
+    if (!initialFormRef.current) return;
+    setForm(initialFormRef.current);
+    setSaveError('');
+    setSaveSuccess('');
+  };
+
   const handleSave = async () => {
     const validationError = validateLeadForm(form);
-    if (validationError) { setSaveError(validationError); return; }
+    if (validationError) {
+      setSaveError(validationError);
+      return;
+    }
 
     setSaveError('');
     setSaveSuccess('');
@@ -131,7 +168,11 @@ export default function EditLeadPage() {
         preVendedorId: form.preVendedorId || null,
       };
       await api(`/api/crm/leads/${leadId}`, { method: 'PUT', body: payload });
-      setSaveSuccess('Lead atualizado com sucesso.');
+      setSaveSuccess('Alterações salvas.');
+      // Atualiza snapshot pra zerar dirty state
+      initialFormRef.current = form;
+      // Toast efêmero — some sozinho após 3s
+      setTimeout(() => setSaveSuccess(''), 3000);
     } catch (err) {
       setSaveError(friendlyErrorMessage(err));
     } finally {
@@ -161,15 +202,9 @@ export default function EditLeadPage() {
     if (ok) setShowCancel(false);
   };
 
-  const handleOrcamentoAction = async () => {
+  const handleCreateOrcamento = async () => {
     setSaveError('');
     setSaveSuccess('');
-    // Já existe → navega direto
-    if (orcamento?.id) {
-      router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`);
-      return;
-    }
-    // Senão → cria + navega
     setCreatingOrcamento(true);
     try {
       const novo = await createOrcamento(leadId);
@@ -184,7 +219,6 @@ export default function EditLeadPage() {
     const res = await actions.reactivateLead({ modo, motivo });
     if (res) {
       setShowReactivate(false);
-      // Modo 'novo' retorna { leadAntigo, leadNovo } — redirecionar pro novo lead.
       if (modo === 'novo' && res.leadNovo?.id) {
         router.push(`/crm/leads/${res.leadNovo.id}`);
       }
@@ -193,15 +227,9 @@ export default function EditLeadPage() {
 
   const isVendedor = isSeller(user);
   const isAdm = isAdmin(user);
-
-  // Bloqueio pós-venda: Venda/Pós-venda exigem permissão edit-after-sale
   const isPostSale = useMemo(() => requiresAdminToEdit(leadStatus), [leadStatus]);
-  const canEditAfterSale = useMemo(
-    () => hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE),
-    [user],
-  );
+  const canEditAfterSale = useMemo(() => hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE), [user]);
   const formDisabled = isPostSale && !canEditAfterSale;
-
   const isCancelado = leadStatus === LeadStatus.CANCELADO;
   const isTerminalSale = leadStatus === LeadStatus.VENDA || leadStatus === LeadStatus.POS_VENDA;
 
@@ -219,28 +247,21 @@ export default function EditLeadPage() {
   const displaySuccess = saveSuccess || actions.success;
 
   return (
-    <div className="mb-4 max-w-[900px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-wrap items-center gap-3 mb-6 border-b border-(--border) pb-3">
-        <button onClick={() => router.push('/crm/leads')} className="p-2 text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-1) rounded-xl transition-all shrink-0">
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-black text-(--text-primary) tracking-tight truncate">
-            Editar Lead <span className="text-(--gold)">#{String(leadId).padStart(4, '0')}</span>
-          </h1>
-          {conta && (
-            <p className="text-sm text-(--text-muted) font-bold mt-0.5 truncate">
-              Conta vinculada: {conta.nome} {conta.sobrenome || ''} &middot; {formatPhone(conta.celular)}
-            </p>
-          )}
-        </div>
-        <button onClick={handleDelete} className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-(--danger) bg-(--danger-soft) border border-(--danger)/30 hover:bg-(--danger-soft) transition-all tracking-tight shadow-xs active:scale-95 shrink-0">
-          <Trash2 size={13} /> Excluir
-        </button>
-      </div>
+    <div className="max-w-[1400px] mx-auto pb-24">
+      <LeadHeader
+        leadId={leadId}
+        form={form}
+        leadStatus={leadStatus}
+        onStatusTransition={actions.transitionStatus}
+        busy={actions.busy}
+        formDisabled={formDisabled}
+        isCancelado={isCancelado}
+        onCancelLead={() => setShowCancel(true)}
+        onReactivate={() => setShowReactivate(true)}
+        onDelete={handleDelete}
+      />
 
-      {/* Alertas: banner pós-venda + feedback de erro/sucesso (sempre topo) */}
+      {/* Banner pós-venda + feedback (no fluxo do conteúdo, não no header) */}
       {formDisabled && <PostSaleReadOnlyBanner status={leadStatus} />}
 
       {displayError && (
@@ -257,116 +278,44 @@ export default function EditLeadPage() {
         </div>
       )}
 
-      {/* 1. Informações do Lead (identificação + cônjuge + atribuição) */}
-      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl space-y-6 mb-6">
-        <LeadFormFields
-          form={form}
-          onChange={handleChange}
-          sellers={sellers}
-          isVendedor={isVendedor}
-          isAdm={isAdm}
-          userName={user?.nome}
-          disabled={formDisabled}
-        />
-      </div>
-
-      {/* 2. Status + Ações rápidas (temperatura agora é editada na listagem) */}
-      <div className="glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl mb-6 space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Status</label>
-            <LeadStatusDropdown
-              status={leadStatus}
-              onTransition={actions.transitionStatus}
-              submitting={actions.busy}
+      {/* Layout principal: 8/4 em xl, stacked abaixo */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <main className="xl:col-span-8">
+          <div className="bg-(--surface-2) border border-(--border-subtle) rounded-3xl p-6 shadow-floating space-y-6">
+            <LeadFormFields
+              form={form}
+              onChange={handleChange}
+              sellers={sellers}
+              isVendedor={isVendedor}
+              isAdm={isAdm}
+              userName={user?.nome}
               disabled={formDisabled}
             />
           </div>
+        </main>
 
-          <div className="flex flex-wrap gap-2">
-            {!isCancelado && (
-              <button
-                type="button"
-                onClick={() => setShowCancel(true)}
-                disabled={actions.busy || formDisabled}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-(--danger) bg-(--danger-soft) border border-(--danger)/30 hover:bg-(--danger-soft) transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <XCircle size={13} /> Cancelar Lead
-              </button>
-            )}
-            {isCancelado && (
-              <button
-                type="button"
-                onClick={() => setShowReactivate(true)}
-                disabled={actions.busy}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-black text-(--success) bg-(--success-soft) border border-(--success)/30 hover:bg-(--success-soft) transition-all tracking-tight shadow-xs active:scale-95 disabled:opacity-50"
-              >
-                <RefreshCw size={13} /> Reativar
-              </button>
-            )}
-          </div>
+        <div className="xl:col-span-4">
+          <LeadAside
+            conta={conta}
+            orcamento={orcamento}
+            history={history}
+            leadId={leadId}
+            isTerminalSale={isTerminalSale}
+            isCancelado={isCancelado}
+            creatingOrcamento={creatingOrcamento}
+            onCreateOrcamento={handleCreateOrcamento}
+          />
         </div>
       </div>
 
-      {/* 3. Orçamento vinculado (só aparece se já existir um) */}
-      {orcamento && (
-        <button
-          type="button"
-          onClick={() => router.push(`/crm/oportunidade-de-negocio/${orcamento.id}`)}
-          className="w-full flex items-center gap-3 p-3 mb-6 rounded-2xl border border-(--gold) bg-(--gold-soft) hover:bg-(--gold-soft) transition-all shadow-sm active:scale-[0.99]"
-        >
-          <div className="p-2 bg-(--gold) text-(--on-gold) rounded-xl shrink-0">
-            <Briefcase size={14} />
-          </div>
-          <div className="flex-1 text-left min-w-0">
-            <p className="text-sm font-black text-(--gold) tracking-tight">
-              Orçamento vinculado
-            </p>
-            <p className="text-base font-bold text-(--gold) truncate">
-              {orcamento.numero}
-            </p>
-          </div>
-          <OrcamentoStatusBadge status={orcamento.status} size="xs" />
-        </button>
-      )}
-
-      {/* Footer — Botões */}
-      <div className="flex flex-col sm:flex-row gap-3 mt-6">
-        <button onClick={() => router.push('/crm/leads')} className="flex-1 py-3 font-bold text-base text-(--text-muted) border border-(--border) rounded-2xl hover:bg-(--surface-1) hover:text-(--text-primary) transition-all active:scale-95 shadow-sm tracking-tight">
-          Voltar
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving || formDisabled}
-          className="flex-1 bg-(--gold) text-(--on-gold) py-3 rounded-2xl  hover:shadow-2xl transition-all font-black text-base disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl active:scale-95 tracking-tight"
-        >
-          {saving ? <><Loader2 size={14} className="animate-spin" /> Salvando...</> : <><Save size={14} /> Salvar Alterações</>}
-        </button>
-        {!isTerminalSale && !isCancelado && (
-          <button
-            onClick={handleOrcamentoAction}
-            disabled={creatingOrcamento}
-            className="flex-1 bg-(--gold) text-(--on-gold) py-3 rounded-2xl  hover:shadow-2xl transition-all font-black text-base flex justify-center items-center gap-2 shadow-xl  active:scale-95 tracking-tight disabled:opacity-50"
-          >
-            {creatingOrcamento
-              ? <><Loader2 size={14} className="animate-spin" /> Criando...</>
-              : orcamento
-                ? <><Briefcase size={14} /> Abrir Orçamento {orcamento.numero}</>
-                : <><Briefcase size={14} /> Nova Oportunidade</>}
-          </button>
-        )}
-      </div>
-
-      {/* Timeline de histórico */}
-      <div className="mt-8 glass-card border border-(--border-subtle) rounded-3xl p-6 shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
-        <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1 mb-4">
-          <History size={12} className="text-(--gold)" /> Histórico do Lead
-        </h3>
-        <LeadHistoryTimeline
-          leadId={leadId}
-          initialEvents={history}
-        />
-      </div>
+      <DirtyBar
+        isDirty={isDirty && !formDisabled}
+        isSaving={saving}
+        dirtyCount={dirtyCount}
+        onSave={handleSave}
+        onDiscard={handleDiscard}
+        disabled={formDisabled}
+      />
 
       <CancelLeadDialog
         open={showCancel}
