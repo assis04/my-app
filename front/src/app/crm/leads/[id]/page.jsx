@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import { formatPhone } from '@/lib/utils';
 import { useRouter, useParams } from 'next/navigation';
 import { isAdmin, isSeller } from '@/lib/roles';
-import { INITIAL_LEAD_FORM, validateLeadForm } from '@/lib/leadConstants';
+import { INITIAL_LEAD_FORM, validateLeadFormFields } from '@/lib/leadConstants';
 import { friendlyErrorMessage } from '@/lib/apiError';
 import { LeadStatus, requiresAdminToEdit } from '@/lib/leadStatus';
 import { hasPermission, CRM_PERMISSIONS } from '@/lib/permissions';
@@ -24,6 +24,7 @@ import { useLeadActions } from '@/hooks/useLeadActions';
 import LeadHeader from './components/LeadHeader';
 import LeadAside from './components/LeadAside';
 import DirtyBar from './components/DirtyBar';
+import LeadDetailSkeleton from './components/LeadDetailSkeleton';
 
 /**
  * Constrói o objeto de form a partir do payload do GET /leads/:id.
@@ -57,6 +58,7 @@ export default function EditLeadPage() {
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
   const [form, setForm] = useState(INITIAL_LEAD_FORM);
+  const [errors, setErrors] = useState({});
   const [leadStatus, setLeadStatus] = useState(LeadStatus.EM_PROSPECCAO);
   const [conta, setConta] = useState(null);
   const [history, setHistory] = useState([]);
@@ -132,22 +134,53 @@ export default function EditLeadPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
     setSaveSuccess('');
     actions.clearFeedback();
+    // Limpa erro daquele campo enquanto o usuário corrige (UX: erro some ao editar)
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  // Valida só o campo focado quando perde o foco — feedback imediato
+  const handleBlur = (field) => {
+    const fullErrors = validateLeadFormFields(form);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (fullErrors[field]) {
+        next[field] = fullErrors[field];
+      } else {
+        delete next[field];
+      }
+      return next;
+    });
   };
 
   const handleDiscard = () => {
     if (!initialFormRef.current) return;
     setForm(initialFormRef.current);
+    setErrors({});
     setSaveError('');
     setSaveSuccess('');
   };
 
-  const handleSave = async () => {
-    const validationError = validateLeadForm(form);
-    if (validationError) {
-      setSaveError(validationError);
+  const handleSave = useCallback(async () => {
+    const fieldErrors = validateLeadFormFields(form);
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+      // Foca o primeiro campo inválido — UX padrão de form
+      const firstField = Object.keys(fieldErrors)[0];
+      const el = document.querySelector(`[data-field="${firstField}"]`);
+      if (el) {
+        el.focus({ preventScroll: false });
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
+    setErrors({});
     setSaveError('');
     setSaveSuccess('');
     setSaving(true);
@@ -178,7 +211,20 @@ export default function EditLeadPage() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [form, leadId]);
+
+  // Atalho Cmd+S / Ctrl+S — salva quando dirty + não está salvando.
+  // Declarado APÓS handleSave para evitar TDZ na deps array.
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (isDirty && !saving) handleSave();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isDirty, saving, handleSave]);
 
   const handleDelete = () => {
     confirm({
@@ -235,13 +281,8 @@ export default function EditLeadPage() {
 
   if (authLoading) return null;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 size={24} className="animate-spin text-(--gold)" />
-      </div>
-    );
-  }
+  // Skeleton com layout idêntico ao final — reduz "flash" do spinner
+  if (loading) return <LeadDetailSkeleton />;
 
   const displayError = saveError || actions.error;
   const displaySuccess = saveSuccess || actions.success;
@@ -285,6 +326,8 @@ export default function EditLeadPage() {
             <LeadFormFields
               form={form}
               onChange={handleChange}
+              onBlur={handleBlur}
+              errors={errors}
               sellers={sellers}
               isVendedor={isVendedor}
               isAdm={isAdm}

@@ -50,11 +50,52 @@ export const INITIAL_LEAD_FORM = {
   preVendedorId: '',
 };
 
+/**
+ * Validação form-level legacy — retorna a primeira mensagem ou null.
+ * Mantida por compatibilidade. Em telas novas, prefira validateLeadFormFields.
+ */
 export function validateLeadForm(form) {
-  if (!form.nome.trim()) return 'Nome é obrigatório.';
-  if (!form.celular.replace(/\D/g, '')) return 'Celular é obrigatório.';
-  if (form.celular.replace(/\D/g, '').length < 10) return 'Celular deve ter pelo menos 10 dígitos.';
-  if (!form.cep.replace(/\D/g, '')) return 'CEP é obrigatório.';
-  if (form.cep.replace(/\D/g, '').length < 8) return 'CEP deve ter 8 dígitos.';
-  return null;
+  const errors = validateLeadFormFields(form);
+  const first = Object.values(errors)[0];
+  return first || null;
+}
+
+/**
+ * Validação por campo — retorna map { fieldName: 'erro' } só com chaves
+ * dos campos inválidos. Permite UX inline (erro no campo, não global).
+ *
+ * Email não é obrigatório, mas se preenchido valida formato básico.
+ */
+export function validateLeadFormFields(form) {
+  const errors = {};
+
+  if (!form.nome?.trim()) {
+    errors.nome = 'Nome é obrigatório.';
+  } else if (form.nome.trim().length < 2) {
+    errors.nome = 'Nome deve ter pelo menos 2 caracteres.';
+  }
+
+  const celularDigits = (form.celular || '').replace(/\D/g, '');
+  if (!celularDigits) {
+    errors.celular = 'Celular é obrigatório.';
+  } else if (celularDigits.length < 10) {
+    errors.celular = 'Celular deve ter pelo menos 10 dígitos.';
+  }
+
+  const cepDigits = (form.cep || '').replace(/\D/g, '');
+  if (!cepDigits) {
+    errors.cep = 'CEP é obrigatório.';
+  } else if (cepDigits.length < 8) {
+    errors.cep = 'CEP deve ter 8 dígitos.';
+  }
+
+  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    errors.email = 'Formato de e-mail inválido.';
+  }
+
+  if (form.conjugeEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.conjugeEmail.trim())) {
+    errors.conjugeEmail = 'Formato de e-mail inválido.';
+  }
+
+  return errors;
 }
