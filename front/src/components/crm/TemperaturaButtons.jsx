@@ -2,25 +2,18 @@
 
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  CircleDashed,
-  ThermometerSun,
-  Flame,
-  Snowflake,
-  Loader2,
-  Check,
-} from 'lucide-react';
+import { Check } from 'lucide-react';
 import { setLeadTemperatura } from '@/services/crmApi';
 import { friendlyErrorMessage } from '@/lib/apiError';
 
 /**
  * Dropdown compacto pra setar temperatura do Lead inline na listagem.
  *
- * Trigger circular 28px (icon-only com cor do estado atual) — preserva a
- * densidade visual original dos 3 botões. Click abre popover via Portal
- * com as 4 opções e labels completos. Portal escapa containing blocks
- * criados por ancestrais com `backdrop-filter`/`transform` (mesmo motivo
- * pelo qual ModalBase usa Portal).
+ * Trigger é uma bolinha sólida 16px com a cor do estado atual — densidade
+ * máxima, identifica o estado por cor pura. Click abre popover via Portal
+ * com as 4 opções e labels completos (dot colorida + texto). Portal escapa
+ * containing blocks criados por ancestrais com `backdrop-filter`/`transform`
+ * (mesmo motivo pelo qual ModalBase usa Portal).
  *
  * Valores canônicos (espelham backend/src/domain/leadTemperatura.js):
  *  - 'Sem contato'      (default, ainda não houve interação)
@@ -40,31 +33,27 @@ import { friendlyErrorMessage } from '@/lib/apiError';
 //   Pouco interesse → amarelo (gold, brand — interesse moderado)
 //   Muito interesse → verde   (success — prioridade positiva)
 //   Sem interesse   → vermelho (danger — terminal negativo)
-// Triggers usam fundo sólido pra máxima legibilidade no contexto da tabela.
+// Trigger é uma bolinha sólida (sem ícone) pra densidade máxima na listagem.
 const OPTIONS = [
   {
     value: 'Sem contato',
-    Icon: CircleDashed,
-    triggerActive: 'bg-(--text-muted) text-(--bg-base) border-(--text-muted)',
-    iconClass: 'text-(--text-muted)',
+    triggerColor: 'bg-(--text-muted) border-(--text-muted)',
+    dotColor: 'bg-(--text-muted)',
   },
   {
     value: 'Pouco interesse',
-    Icon: ThermometerSun,
-    triggerActive: 'bg-(--gold) text-(--on-gold) border-(--gold-hover)',
-    iconClass: 'text-(--gold)',
+    triggerColor: 'bg-(--gold) border-(--gold-hover)',
+    dotColor: 'bg-(--gold)',
   },
   {
     value: 'Muito interesse',
-    Icon: Flame,
-    triggerActive: 'bg-(--success) text-(--bg-base) border-(--success)',
-    iconClass: 'text-(--success)',
+    triggerColor: 'bg-(--success) border-(--success)',
+    dotColor: 'bg-(--success)',
   },
   {
     value: 'Sem interesse',
-    Icon: Snowflake,
-    triggerActive: 'bg-(--danger) text-(--bg-base) border-(--danger)',
-    iconClass: 'text-(--danger)',
+    triggerColor: 'bg-(--danger) border-(--danger)',
+    dotColor: 'bg-(--danger)',
   },
 ];
 
@@ -150,8 +139,6 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
     }
   };
 
-  const TriggerIcon = current?.Icon || CircleDashed;
-
   return (
     <>
       <button
@@ -167,17 +154,14 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           setOpen((v) => !v);
         }}
         className={`
-          inline-flex items-center justify-center w-7 h-7 rounded-full border
+          inline-block w-4 h-4 rounded-full border-2 align-middle
           transition-all disabled:opacity-50 disabled:cursor-not-allowed
+          hover:scale-110
+          ${pending ? 'animate-pulse' : ''}
           ${error ? 'ring-2 ring-(--danger)/40' : ''}
-          ${current.triggerActive}
+          ${current.triggerColor}
         `}
-      >
-        {pending
-          ? <Loader2 size={12} className="animate-spin" />
-          : <TriggerIcon size={13} />
-        }
-      </button>
+      />
 
       {open && coords && createPortal(
         <div
@@ -188,7 +172,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           style={{ top: coords.top, left: coords.left }}
           onClick={(e) => e.stopPropagation()}
         >
-          {OPTIONS.map(({ value: optValue, Icon, iconClass }) => {
+          {OPTIONS.map(({ value: optValue, dotColor }) => {
             const isActive = displayValue === optValue;
             return (
               <button
@@ -205,7 +189,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
               >
-                <Icon size={14} className={iconClass} aria-hidden />
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
                 <span className="flex-1">{optValue}</span>
                 {isActive && <Check size={13} className="text-(--gold)" aria-hidden />}
               </button>
