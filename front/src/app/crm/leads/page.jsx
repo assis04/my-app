@@ -11,11 +11,11 @@ import { api } from '@/services/api';
 import { getLeads, deleteLead, transferLeads, updateEtapaLote } from '@/services/crmApi';
 import { formatPhone } from '@/lib/utils';
 import PremiumSelect from '@/components/ui/PremiumSelect';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { isAdmin, isSeller } from '@/lib/roles';
 import { useDebounce } from '@/hooks/useDebounce';
-import { INITIAL_LEAD_FORM, STATUS_OPTIONS, ETAPA_OPTIONS, validateLeadForm } from '@/lib/leadConstants';
-import { requiresAdminToEdit } from '@/lib/leadStatus';
+import { INITIAL_LEAD_FORM, ETAPA_OPTIONS, validateLeadForm } from '@/lib/leadConstants';
+import { requiresAdminToEdit, STATUS_COLORS, STATUS_ORDER } from '@/lib/leadStatus';
 import { CRM_PERMISSIONS, hasPermission } from '@/lib/permissions';
 import LeadFormFields from '@/components/crm/LeadFormFields';
 import TemperaturaButtons from '@/components/crm/TemperaturaButtons';
@@ -181,16 +181,86 @@ function EtapaModal({ onClose, onConfirm }) {
 }
 
 
+// ── StatusInline: dot + texto colorido (formato minimal, sem pill) ────────
+// Usado nas linhas da tabela. Mais leve visualmente que LeadStatusBadge,
+// preservando reconhecimento por cor via STATUS_COLORS.
+function StatusInline({ status }) {
+  const palette = STATUS_COLORS[status];
+  if (!palette) {
+    return <span className="text-sm text-(--text-muted)">{status || '—'}</span>;
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-sm font-medium">
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${palette.dot}`} aria-hidden />
+      <span className={`${palette.text} truncate`}>{status}</span>
+    </span>
+  );
+}
+
+// ── StatusTabs: navegação primária via chips segmented ────────────────────
+// Substitui o dropdown de Status (que era 1-cliques-pra-abrir + 1 pra escolher).
+// "Todos" é o estado neutro (sem filtro). Cada chip tem dot da cor canônica
+// pra reconhecimento visual independente de leitura.
+function StatusTabs({ value, onChange }) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Filtrar por status"
+      className="flex items-center gap-1 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin"
+    >
+      <StatusChip active={!value} onClick={() => onChange('')}>Todos</StatusChip>
+      {STATUS_ORDER.map((s) => (
+        <StatusChip
+          key={s}
+          active={value === s}
+          dot={STATUS_COLORS[s]?.dot}
+          onClick={() => onChange(s)}
+        >
+          {s}
+        </StatusChip>
+      ))}
+    </div>
+  );
+}
+
+function StatusChip({ active, dot, onClick, children }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`
+        inline-flex items-center gap-1.5 h-8 px-3 rounded-full whitespace-nowrap
+        text-sm font-medium tracking-tight transition-all shrink-0
+        ${active
+          ? 'bg-(--surface-3) text-(--text-primary) border border-(--border) shadow-xs'
+          : 'text-(--text-muted) border border-transparent hover:text-(--text-primary) hover:bg-(--surface-2)'}
+      `}
+    >
+      {dot && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} aria-hidden />}
+      {children}
+    </button>
+  );
+}
+
 // ── Página Principal ──────────────────────────────────────────────────────
 export default function LeadsListPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URL é source of truth pros filtros (q + status + page).
+  // Refresh-safe, shareable, back/forward funciona naturalmente.
+  const urlSearch = searchParams.get('q') || '';
+  const filterStatus = searchParams.get('status') || '';
+  const urlPage = Number(searchParams.get('page') || 1);
 
   const [leads, setLeads] = useState([]);
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [searchTerm, setSearchTerm] = useState(urlSearch);
   const [selectedIds, setSelectedIds] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
@@ -202,13 +272,31 @@ export default function LeadsListPage() {
 
   const debouncedSearch = useDebounce(searchTerm);
 
-  const fetchLeads = useCallback(async (page = 1) => {
+  // Helper canônico pra escrever na URL. `replace` (não push) — evita poluir
+  // o history a cada keystroke. Valores undefined/'' são removidos da URL.
+  const updateParams = useCallback((updates) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v === '' || v == null) params.delete(k);
+      else params.set(k, String(v));
+    });
+    const qs = params.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
+  }, [router, pathname, searchParams]);
+
+  // Debounced search → URL. Reseta página pra 1 ao mudar termo.
+  useEffect(() => {
+    if (debouncedSearch === urlSearch) return;
+    updateParams({ q: debouncedSearch || undefined, page: undefined });
+  }, [debouncedSearch, urlSearch, updateParams]);
+
+  const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getLeads({
-        search: debouncedSearch.trim() || undefined,
+        search: urlSearch.trim() || undefined,
         status: filterStatus || undefined,
-        page,
+        page: urlPage,
         limit: 50,
       });
       setLeads(result.data);
@@ -218,7 +306,7 @@ export default function LeadsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filterStatus]);
+  }, [urlSearch, filterStatus, urlPage]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -235,6 +323,14 @@ export default function LeadsListPage() {
   useEffect(() => {
     if (!authLoading && user) fetchLeads();
   }, [authLoading, user, fetchLeads]);
+
+  const handleStatusChange = (status) => {
+    updateParams({ status: status || undefined, page: undefined });
+  };
+
+  const handlePageChange = (page) => {
+    updateParams({ page: page > 1 ? page : undefined });
+  };
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -289,73 +385,60 @@ export default function LeadsListPage() {
     fetchLeads();
   };
 
-  const statusColor = (s) => {
-    const map = {
-      'Prospecção': 'bg-(--gold-soft) border-(--gold-soft) text-(--gold)',
-      'Qualificação': 'bg-(--gold-soft) border-(--gold)/30 text-(--gold)',
-      'Apresentação': 'bg-(--gold-soft) border-(--gold) text-(--gold)',
-      'Negociação': 'bg-(--gold-soft) border-(--gold)/30 text-(--gold)',
-      'Fechado': 'bg-(--success-soft) border-(--success)/30 text-(--success)',
-      'Perdido': 'bg-(--danger-soft) border-(--danger)/30 text-(--danger)',
-    };
-    return map[s] || 'bg-(--surface-1) border-(--border-subtle) text-(--text-secondary)';
-  };
-
   if (authLoading) return null;
 
   return (
     <>
       <div className="mb-4 max-w-[1800px] mx-auto">
         {/* Header */}
-        <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-(--border) pb-3">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-(--border-subtle) pb-3">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-black text-(--text-primary) tracking-tight">Leads</h1>
-            <p className="text-sm text-(--text-muted) font-bold mt-0.5">{pagination.total} registro{pagination.total !== 1 ? 's' : ''}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-(--text-primary) tracking-tight">Leads</h1>
+            <p className="text-sm text-(--text-muted) mt-0.5">{pagination.total} registro{pagination.total !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={fetchLeads} className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-xl transition-all border border-transparent hover:border-(--gold-soft) shadow-sm active:scale-95" title="Atualizar">
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             </button>
-            <button onClick={() => setShowNovoLead(true)} className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 py-2 rounded-2xl  hover:shadow-2xl font-black shadow-xl transition-all text-sm active:scale-95 whitespace-nowrap tracking-tight">
+            <button onClick={() => setShowNovoLead(true)} className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 py-2 rounded-2xl hover:shadow-2xl font-semibold shadow-lg transition-all text-sm active:scale-95 whitespace-nowrap tracking-tight">
               Novo Lead <Plus size={14} />
             </button>
           </div>
         </div>
 
         <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
+          {/* Status Tabs — navegação primária */}
+          <div className="mb-3 pb-3 border-b border-(--border-subtle)">
+            <StatusTabs value={filterStatus} onChange={handleStatusChange} />
+          </div>
+
           {/* Filtros e Ações de Topo */}
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-4 gap-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full xl:w-auto">
-              <div className="relative group min-w-[260px]">
+            <div className="flex items-center gap-2 w-full xl:w-auto">
+              <div className="relative group flex-1 xl:w-[360px] xl:flex-none">
                 <input type="text" placeholder="Buscar nome, celular, CEP..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full bg-(--surface-2) text-base text-(--text-primary) pl-9 pr-4 h-9 rounded-2xl border border-(--border) focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/5 outline-none transition-all placeholder:text-(--text-muted) font-bold shadow-xs tracking-tight" />
+                  className="w-full bg-(--surface-2) text-sm text-(--text-primary) pl-9 pr-4 h-9 rounded-2xl border border-(--border) focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/5 outline-none transition-all placeholder:text-(--text-muted) font-medium shadow-xs" />
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--text-muted)" />
               </div>
-              <PremiumSelect placeholder="Status" options={STATUS_OPTIONS} value={filterStatus} onChange={e => setFilterStatus(e.target.value)} />
-              {filterStatus && (
-                <button onClick={() => setFilterStatus('')} className="flex items-center gap-1 text-sm text-(--text-muted) hover:text-(--danger) font-black tracking-tight transition-colors self-center">
-                  <X size={12} /> Limpar
-                </button>
-              )}
             </div>
 
             {/* Ações de Topo + Ações em Lote */}
             <div className="flex items-center gap-2 flex-wrap">
               {/* Importar / Exportar */}
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-sm font-black text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--success)/40 hover:bg-(--success-soft) hover:text-(--success) transition-all tracking-tight shadow-xs">
+              <button className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--success)/40 hover:bg-(--success-soft) hover:text-(--success) transition-all shadow-xs">
                 <Upload size={12} /> Importar
               </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-sm font-black text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--success)/40 hover:bg-(--success-soft) hover:text-(--success) transition-all tracking-tight shadow-xs">
+              <button className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--success)/40 hover:bg-(--success-soft) hover:text-(--success) transition-all shadow-xs">
                 <Download size={12} /> Exportar
               </button>
 
               {selectedIds.length > 0 && (
                 <>
-                  <span className="text-sm font-black text-(--gold) tracking-tight ml-2">{selectedIds.length} selecionado{selectedIds.length > 1 ? 's' : ''}</span>
-                  <button onClick={() => setShowTransfer(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-sm font-black text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold)/40 hover:bg-(--gold-soft) hover:text-(--gold) transition-all tracking-tight shadow-xs">
+                  <span className="text-sm font-semibold text-(--gold) ml-2">{selectedIds.length} selecionado{selectedIds.length > 1 ? 's' : ''}</span>
+                  <button onClick={() => setShowTransfer(true)} className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold)/40 hover:bg-(--gold-soft) hover:text-(--gold) transition-all shadow-xs">
                     <ArrowRightLeft size={12} /> Transferir
                   </button>
-                  <button onClick={() => setShowEtapa(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-sm font-black text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold) hover:bg-(--gold-soft) hover:text-(--gold) transition-all tracking-tight shadow-xs">
+                  <button onClick={() => setShowEtapa(true)} className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold) hover:bg-(--gold-soft) hover:text-(--gold) transition-all shadow-xs">
                     <Route size={12} /> Definir Etapa
                   </button>
                 </>
@@ -366,46 +449,45 @@ export default function LeadsListPage() {
           {/* Tabela */}
           <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-base whitespace-nowrap text-(--text-secondary) border-collapse">
-                <thead className="bg-(--surface-1)/50 text-(--text-muted) font-black text-sm tracking-tight italic border-b border-(--border-subtle)">
+              <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
+                <thead className="bg-(--surface-1)/40 text-(--text-faint) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                   <tr>
-                    <th className="py-2 px-3 w-[40px]">
+                    <th className="py-2.5 px-3 w-[40px]">
                       <input type="checkbox" checked={selectedIds.length === leads.length && leads.length > 0} onChange={toggleSelectAll}
-                        className="w-3.5 h-3.5 rounded accent-sky-500 cursor-pointer" />
+                        className="w-3.5 h-3.5 rounded accent-(--gold) cursor-pointer" />
                     </th>
-                    <th className="py-2 px-3 text-center w-[110px]">Temp</th>
-                    <th className="py-2 px-3 text-center w-[50px]">ID</th>
-                    <th className="py-2 px-3">Status</th>
-                    <th className="py-2 px-3">Etapa</th>
-                    <th className="py-2 px-3">Nome</th>
-                    <th className="py-2 px-3">Celular</th>
-                    <th className="py-2 px-3">CEP</th>
-                    <th className="py-2 px-3">Conta</th>
-                    <th className="py-2 px-3">Pré-vendedor</th>
-                    <th className="py-2 px-3">Origem</th>
-                    <th className="py-2 px-3">Data</th>
-                    <th className="py-2 px-4 text-right">Ações</th>
+                    <th className="py-2.5 px-3 text-center w-[40px]">Temp</th>
+                    <th className="py-2.5 px-3">Nome</th>
+                    <th className="py-2.5 px-3">Telefone</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-3">Etapa</th>
+                    <th className="py-2.5 px-3">Conta</th>
+                    <th className="py-2.5 px-3">Pré-vendedor</th>
+                    <th className="py-2.5 px-3">CEP</th>
+                    <th className="py-2.5 px-3">Origem</th>
+                    <th className="py-2.5 px-3">Data</th>
+                    <th className="py-2.5 px-4 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-(--border-subtle)">
                   {loading && leads.length === 0 && (
-                    <tr><td colSpan={13} className="py-12 text-center"><p className="text-(--text-muted) font-black text-sm animate-pulse">Carregando...</p></td></tr>
+                    <tr><td colSpan={12} className="py-12 text-center"><p className="text-(--text-muted) text-sm animate-pulse">Carregando...</p></td></tr>
                   )}
                   {!loading && leads.length === 0 && (
-                    <tr><td colSpan={13} className="py-12 text-center">
+                    <tr><td colSpan={12} className="py-12 text-center">
                       <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-2 border border-(--border-subtle) text-(--text-faint)"><Users size={20} /></div>
-                      <p className="text-(--text-muted) font-black text-sm">Nenhum lead encontrado.</p>
+                      <p className="text-(--text-muted) text-sm">Nenhum lead encontrado.</p>
                     </td></tr>
                   )}
                   {leads.map(lead => {
                     const tempLocked = requiresAdminToEdit(lead.status) && !hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE);
                     return (
-                    <tr key={lead.id} className="hover:bg-(--gold-soft)/40 transition-all group">
-                      <td className="py-1.5 px-3">
+                    <tr key={lead.id} className="hover:bg-(--surface-1)/60 transition-colors group">
+                      <td className="py-2 px-3">
                         <input type="checkbox" checked={selectedIds.includes(lead.id)} onChange={() => toggleSelect(lead.id)}
-                          className="w-3.5 h-3.5 rounded accent-sky-500 cursor-pointer" />
+                          className="w-3.5 h-3.5 rounded accent-(--gold) cursor-pointer" />
                       </td>
-                      <td className="py-1.5 px-3 text-center" onClick={e => e.stopPropagation()}>
+                      <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
                         <TemperaturaButtons
                           leadId={lead.id}
                           value={lead.temperatura}
@@ -417,43 +499,39 @@ export default function LeadsListPage() {
                           }}
                         />
                       </td>
-                      <td className="py-1.5 px-3 text-(--text-muted) text-center text-sm font-black group-hover:text-(--gold) italic transition-colors">#{String(lead.id).padStart(4, '0')}</td>
-                      <td className="py-1.5 px-3">
-                        <span className={`px-2 py-0.5 rounded-full text-sm font-black border shadow-xs tracking-tight ${statusColor(lead.status)}`}>
-                          {lead.status}
-                        </span>
-                      </td>
-                      <td className="py-1.5 px-3">
-                        <span className="text-sm font-black text-(--gold) bg-(--gold-soft) px-2 py-0.5 rounded-lg border border-(--gold) tracking-tight">{lead.etapa || lead.etapaJornada || '—'}</span>
-                      </td>
-                      <td className="py-1.5 px-3">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-(--text-primary) text-base font-black group-hover:text-(--gold-hover) transition-colors tracking-tight truncate max-w-[160px]">{lead.nome} {lead.sobrenome || ''}</span>
+                      <td className="py-2 px-3 max-w-[220px]">
+                        <div className="flex flex-col leading-tight min-w-0">
+                          <span className="text-(--text-primary) text-sm font-semibold tracking-tight truncate group-hover:text-(--gold-hover) transition-colors">
+                            {lead.nome} {lead.sobrenome || ''}
+                          </span>
+                          <span className="text-[11px] text-(--text-faint) font-mono tabular-nums mt-0.5">
+                            #{String(lead.id).padStart(4, '0')}
+                          </span>
                         </div>
                       </td>
-                      <td className="py-1.5 px-3 text-(--text-secondary) text-sm font-bold">{formatPhone(lead.celular)}</td>
-                      <td className="py-1.5 px-3 text-(--text-muted) text-sm font-bold">{lead.cep}</td>
-                      <td className="py-1.5 px-3">
-                        <span className="text-sm font-black text-(--gold) bg-(--gold-soft) px-2 py-0.5 rounded-lg border border-(--gold-soft) tracking-tight truncate max-w-[100px] block">
-                          {lead.conta?.nome || '—'}
-                        </span>
+                      <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium tabular-nums">{formatPhone(lead.celular)}</td>
+                      <td className="py-2 px-3"><StatusInline status={lead.status} /></td>
+                      <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium">{lead.etapa || lead.etapaJornada || '—'}</td>
+                      <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium max-w-[140px] truncate">
+                        {lead.conta?.nome || '—'}
                       </td>
-                      <td className="py-1.5 px-3">
-                        <span className="text-(--text-muted) text-sm font-black bg-(--surface-1) px-2 py-0.5 rounded-lg border border-(--border-subtle) tracking-tight">{lead.preVendedor?.nome || '—'}</span>
-                      </td>
-                      <td className="py-1.5 px-3">
+                      <td className="py-2 px-3 text-(--text-muted) text-sm">{lead.preVendedor?.nome || '—'}</td>
+                      <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">{lead.cep || '—'}</td>
+                      <td className="py-2 px-3 text-sm">
                         {lead.origemExterna
-                          ? <span className="text-sm font-black text-(--gold) bg-(--gold-soft) px-2 py-0.5 rounded-full border border-(--gold)/30 tracking-tight">Externo</span>
-                          : <span className="text-sm font-black text-(--text-muted) bg-(--surface-1) px-2 py-0.5 rounded-full border border-(--border-subtle) tracking-tight">{lead.origemCanal || 'Manual'}</span>
+                          ? <span className="inline-flex items-center gap-1 text-(--gold) font-medium">
+                              <span className="w-1 h-1 rounded-full bg-(--gold)" aria-hidden /> Externo
+                            </span>
+                          : <span className="text-(--text-muted)">{lead.origemCanal || 'Manual'}</span>
                         }
                       </td>
-                      <td className="py-1.5 px-3 text-(--text-muted) text-sm font-black tracking-tight italic">
+                      <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">
                         {(lead.createdAt || lead.dataCadastro) ? new Date(lead.createdAt || lead.dataCadastro).toLocaleDateString('pt-BR') : '—'}
                       </td>
-                      <td className="py-1.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => router.push(`/crm/leads/${lead.id}`)} className="p-1 text-(--text-muted) hover:text-(--gold) transition-colors rounded-lg hover:bg-(--gold-soft)" title="Editar"><Edit size={13} /></button>
-                          <button onClick={() => handleDelete(lead.id, lead.nome)} className="p-1 text-(--text-muted) hover:text-(--danger) transition-colors rounded-lg hover:bg-(--danger-soft)" title="Remover"><Trash2 size={13} /></button>
+                      <td className="py-2 px-4 text-right">
+                        <div className="flex items-center justify-end gap-0.5">
+                          <button onClick={() => router.push(`/crm/leads/${lead.id}`)} className="p-1.5 text-(--text-muted) hover:text-(--gold) transition-colors rounded-lg hover:bg-(--gold-soft)" title="Editar"><Edit size={14} /></button>
+                          <button onClick={() => handleDelete(lead.id, lead.nome)} className="p-1.5 text-(--text-muted) hover:text-(--danger) transition-colors rounded-lg hover:bg-(--danger-soft)" title="Remover"><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>
@@ -488,27 +566,27 @@ export default function LeadsListPage() {
 
             return (
               <div className="flex items-center justify-between px-4 py-3 border-t border-(--border-subtle)">
-                <span className="text-sm text-(--text-muted) font-black tracking-tight italic">
+                <span className="text-sm text-(--text-muted) tabular-nums">
                   {startItem}–{endItem} de {pagination.total}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     disabled={current <= 1}
-                    onClick={() => fetchLeads(current - 1)}
-                    className="px-2.5 py-1.5 rounded-xl text-sm font-black text-(--text-secondary) border border-(--border) hover:bg-(--gold-soft) hover:text-(--gold) hover:border-(--gold-soft) transition-all disabled:opacity-30 disabled:pointer-events-none tracking-tight"
+                    onClick={() => handlePageChange(current - 1)}
+                    className="px-2.5 py-1.5 rounded-xl text-sm font-medium text-(--text-secondary) border border-(--border) hover:bg-(--gold-soft) hover:text-(--gold) hover:border-(--gold-soft) transition-all disabled:opacity-30 disabled:pointer-events-none"
                   >
                     Anterior
                   </button>
                   {pages.map((p, i) =>
                     p === '...' ? (
-                      <span key={`ellipsis-${i}`} className="px-1.5 text-(--text-muted) text-sm font-black select-none">...</span>
+                      <span key={`ellipsis-${i}`} className="px-1.5 text-(--text-muted) text-sm select-none">...</span>
                     ) : (
                       <button
                         key={p}
-                        onClick={() => fetchLeads(p)}
-                        className={`w-8 h-8 rounded-xl text-sm font-black transition-all ${
+                        onClick={() => handlePageChange(p)}
+                        className={`w-8 h-8 rounded-xl text-sm font-medium tabular-nums transition-all ${
                           p === current
-                            ? 'bg-(--gold) text-(--on-gold) shadow-lg border border-(--gold)'
+                            ? 'bg-(--gold) text-(--on-gold) shadow-md border border-(--gold)'
                             : 'text-(--text-secondary) border border-(--border) hover:bg-(--gold-soft) hover:text-(--gold) hover:border-(--gold-soft)'
                         }`}
                       >
@@ -518,8 +596,8 @@ export default function LeadsListPage() {
                   )}
                   <button
                     disabled={current >= total}
-                    onClick={() => fetchLeads(current + 1)}
-                    className="px-2.5 py-1.5 rounded-xl text-sm font-black text-(--text-secondary) border border-(--border) hover:bg-(--gold-soft) hover:text-(--gold) hover:border-(--gold-soft) transition-all disabled:opacity-30 disabled:pointer-events-none tracking-tight"
+                    onClick={() => handlePageChange(current + 1)}
+                    className="px-2.5 py-1.5 rounded-xl text-sm font-medium text-(--text-secondary) border border-(--border) hover:bg-(--gold-soft) hover:text-(--gold) hover:border-(--gold-soft) transition-all disabled:opacity-30 disabled:pointer-events-none"
                   >
                     Próxima
                   </button>
