@@ -38,12 +38,12 @@ export default function PremiumSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-(--surface-1) text-(--text-primary) h-9 px-4 rounded-2xl border transition-all font-bold text-base flex items-center justify-between outline-none
+        className={`w-full bg-(--surface-1) text-(--text-primary) h-9 px-4 rounded-2xl border transition-all font-bold text-base flex items-center justify-between gap-2 min-w-0 outline-none
           ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-(--gold) hover:bg-(--surface-2)'}
           ${isOpen && !disabled ? 'border-(--gold) ring-4 ring-(--gold-soft)' : 'border-(--border)'}
         `}
       >
-        <span className={`${!selectedOption ? 'text-(--text-faint)' : 'text-(--text-primary)'} whitespace-nowrap overflow-hidden text-ellipsis`}>
+        <span className={`min-w-0 flex-1 text-left truncate ${!selectedOption ? 'text-(--text-faint)' : 'text-(--text-primary)'}`}>
           {selectedOption ? selectedOption.nome : placeholder}
         </span>
         <ChevronDown
@@ -65,13 +65,13 @@ export default function PremiumSelect({
                   key={option.id}
                   type="button"
                   onClick={() => handleSelect(option.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl text-left text-base transition-all group
+                  className={`w-full flex items-center justify-between gap-2 min-w-0 p-3 rounded-xl text-left text-base transition-all group
                     ${String(option.id) === String(value)
                       ? 'bg-(--gold-soft) text-(--gold) font-black'
                       : 'text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary)'}
                   `}
                 >
-                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{option.nome}</span>
+                  <span className="min-w-0 flex-1 truncate">{option.nome}</span>
                   {String(option.id) === String(value) && (
                     <Check size={16} className="text-(--gold) shrink-0" />
                   )}
