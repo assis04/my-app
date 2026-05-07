@@ -194,10 +194,27 @@ export async function createLead(data, user = null, opts = {}) {
 }
 
 /**
- * Lista todos os Leads com filtros opcionais.
- * Ordenação padrão: dataCadastro DESC (mais recente primeiro).
+ * Whitelist de campos sortáveis. Manter restritivo:
+ *   - Cada campo deve ter index no DB (schema.prisma) OU ser pequeno o
+ *     suficiente pra full scan em volume realista após filtros.
+ *   - Nomes batem 1:1 com colunas Prisma (não traduzir).
  */
-export async function listLeads({ search, status, preVendedorId, page = 1, limit = 50 }, user) {
+const SORTABLE_FIELDS = Object.freeze([
+  'createdAt',
+  'nome',
+  'status',
+  'temperatura',
+]);
+
+/**
+ * Lista todos os Leads com filtros opcionais.
+ * Ordenação padrão: createdAt DESC (mais recente primeiro).
+ *
+ * @param {object} params
+ * @param {string} [params.sortBy]  campo a ordenar — whitelist em SORTABLE_FIELDS
+ * @param {'asc'|'desc'} [params.sortDir]  default 'desc'
+ */
+export async function listLeads({ search, status, preVendedorId, page = 1, limit = 50, sortBy, sortDir }, user) {
   const where = { deletedAt: null };
   enforceFilialScope(where, user);
 
@@ -218,10 +235,16 @@ export async function listLeads({ search, status, preVendedorId, page = 1, limit
   const take = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
   const skip = (pageNum - 1) * take;
 
+  // Resolução do orderBy com fallback silencioso para o default em caso de
+  // input inválido — evita 400 por filtro mal-formado e mantém UX consistente.
+  const safeField = SORTABLE_FIELDS.includes(sortBy) ? sortBy : 'createdAt';
+  const safeDir = sortDir === 'asc' ? 'asc' : 'desc';
+  const orderBy = { [safeField]: safeDir };
+
   const [data, total] = await Promise.all([
     prisma.lead.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       include: {
         preVendedor: { select: { id: true, nome: true } },
         conta: { select: { id: true, nome: true, sobrenome: true, celular: true, cep: true } },

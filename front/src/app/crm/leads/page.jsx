@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Search, Plus, RefreshCw, Edit, Trash2, ArrowRightLeft,
   X, Users, Download, Upload, Route,
-  Save, Briefcase, Loader2, AlertTriangle
+  Save, Briefcase, Loader2, AlertTriangle,
+  ArrowUp, ArrowDown, ArrowUpDown
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
@@ -223,6 +224,90 @@ function StatusTabs({ value, onChange }) {
   );
 }
 
+// ── Sort: parse/serialize do URL param `?sort=field:dir` ──────────────────
+// Formato compacto pra não poluir a URL com 2 keys (sort_by + sort_dir).
+// Whitelist de campos espelha SORTABLE_FIELDS no backend (leadCrmService.js).
+const SORTABLE = new Set(['createdAt', 'nome', 'status', 'temperatura']);
+
+function parseSort(value) {
+  if (!value) return null;
+  const [field, dir] = String(value).split(':');
+  if (!SORTABLE.has(field) || (dir !== 'asc' && dir !== 'desc')) return null;
+  return { field, dir };
+}
+
+// ── SortableHeader: th clicável com toggle 3-state (none → asc → desc → none) ─
+function SortableHeader({ field, currentSort, onSort, className = '', children }) {
+  const isActive = currentSort?.field === field;
+  const isAsc = isActive && currentSort.dir === 'asc';
+  const isDesc = isActive && currentSort.dir === 'desc';
+  return (
+    <th className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className="inline-flex items-center gap-1 group/sort hover:text-(--text-primary) transition-colors"
+      >
+        <span>{children}</span>
+        {isAsc && <ArrowUp size={11} className="text-(--gold)" />}
+        {isDesc && <ArrowDown size={11} className="text-(--gold)" />}
+        {!isActive && <ArrowUpDown size={11} className="opacity-0 group-hover/sort:opacity-50 transition-opacity" />}
+      </button>
+    </th>
+  );
+}
+
+// ── LeadsTableSkeleton: placeholder estrutural durante load ───────────────
+function Skel({ className = '' }) {
+  return <span className={`block bg-(--surface-3) animate-pulse rounded ${className}`} />;
+}
+
+function LeadsTableSkeleton({ rows = 6 }) {
+  return Array.from({ length: rows }).map((_, i) => (
+    <tr key={`skel-${i}`} className="border-b border-(--border-subtle)/50">
+      <td className="py-3 px-3"><Skel className="w-3.5 h-3.5" /></td>
+      <td className="py-3 px-3"><Skel className="w-4 h-4 rounded-full mx-auto" /></td>
+      <td className="py-3 px-3 sticky left-0 bg-(--surface-2) z-10">
+        <Skel className="h-3 w-28 mb-1.5" /><Skel className="h-2 w-10" />
+      </td>
+      <td className="py-3 px-3"><Skel className="h-3 w-24" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-20" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-20" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-24" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-20" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-16" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-14" /></td>
+      <td className="py-3 px-3"><Skel className="h-3 w-14" /></td>
+      <td className="py-3 px-4"><Skel className="h-3 w-10 ml-auto" /></td>
+    </tr>
+  ));
+}
+
+// ── EmptyState: copia depende de filtros ativos ───────────────────────────
+function EmptyState({ hasFilters, onClear }) {
+  if (hasFilters) {
+    return (
+      <tr><td colSpan={12} className="py-14 text-center">
+        <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-faint)">
+          <Search size={18} />
+        </div>
+        <p className="text-(--text-muted) text-sm font-medium mb-1">Nenhum lead corresponde aos filtros</p>
+        <button onClick={onClear} className="text-sm text-(--gold) hover:text-(--gold-hover) font-medium underline-offset-4 hover:underline">
+          Limpar filtros
+        </button>
+      </td></tr>
+    );
+  }
+  return (
+    <tr><td colSpan={12} className="py-14 text-center">
+      <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-faint)">
+        <Users size={18} />
+      </div>
+      <p className="text-(--text-muted) text-sm font-medium">Nenhum lead cadastrado ainda.</p>
+    </td></tr>
+  );
+}
+
 function StatusChip({ active, dot, onClick, children }) {
   return (
     <button
@@ -251,11 +336,13 @@ export default function LeadsListPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // URL é source of truth pros filtros (q + status + page).
+  // URL é source of truth pros filtros (q + status + page + sort).
   // Refresh-safe, shareable, back/forward funciona naturalmente.
   const urlSearch = searchParams.get('q') || '';
   const filterStatus = searchParams.get('status') || '';
   const urlPage = Number(searchParams.get('page') || 1);
+  const currentSort = parseSort(searchParams.get('sort'));
+  const hasFilters = Boolean(urlSearch || filterStatus);
 
   const [leads, setLeads] = useState([]);
   const [sellers, setSellers] = useState([]);
@@ -290,6 +377,13 @@ export default function LeadsListPage() {
     updateParams({ q: debouncedSearch || undefined, page: undefined });
   }, [debouncedSearch, urlSearch, updateParams]);
 
+  // URL → input: sincroniza search box com a URL em mudanças externas
+  // (back/forward do browser, click em "Limpar filtros"). Sem isso, a UI
+  // dessincronizava do estado real após navegação.
+  useEffect(() => {
+    setSearchTerm(urlSearch);
+  }, [urlSearch]);
+
   const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
@@ -298,6 +392,8 @@ export default function LeadsListPage() {
         status: filterStatus || undefined,
         page: urlPage,
         limit: 50,
+        sortBy: currentSort?.field,
+        sortDir: currentSort?.dir,
       });
       setLeads(result.data);
       setPagination({ page: result.page, totalPages: result.totalPages, total: result.total });
@@ -306,7 +402,7 @@ export default function LeadsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [urlSearch, filterStatus, urlPage]);
+  }, [urlSearch, filterStatus, urlPage, currentSort?.field, currentSort?.dir]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -330,6 +426,20 @@ export default function LeadsListPage() {
 
   const handlePageChange = (page) => {
     updateParams({ page: page > 1 ? page : undefined });
+  };
+
+  // Sort 3-state: not-active → asc → desc → not-active (volta ao default)
+  const handleSort = (field) => {
+    let next;
+    if (currentSort?.field !== field) next = `${field}:asc`;
+    else if (currentSort.dir === 'asc') next = `${field}:desc`;
+    else next = undefined;
+    updateParams({ sort: next, page: undefined });
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    updateParams({ q: undefined, status: undefined, page: undefined });
   };
 
   const toggleSelect = (id) => {
@@ -456,28 +566,31 @@ export default function LeadsListPage() {
                       <input type="checkbox" checked={selectedIds.length === leads.length && leads.length > 0} onChange={toggleSelectAll}
                         className="w-3.5 h-3.5 rounded accent-(--gold) cursor-pointer" />
                     </th>
-                    <th className="py-2.5 px-3 text-center w-[40px]">Temp</th>
-                    <th className="py-2.5 px-3">Nome</th>
+                    <SortableHeader field="temperatura" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3 text-center w-[40px]">
+                      Temp
+                    </SortableHeader>
+                    <SortableHeader field="nome" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3 sticky left-0 z-20 bg-(--surface-1)/95 backdrop-blur-sm">
+                      Nome
+                    </SortableHeader>
                     <th className="py-2.5 px-3">Telefone</th>
-                    <th className="py-2.5 px-3">Status</th>
+                    <SortableHeader field="status" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3">
+                      Status
+                    </SortableHeader>
                     <th className="py-2.5 px-3">Etapa</th>
                     <th className="py-2.5 px-3">Conta</th>
                     <th className="py-2.5 px-3">Pré-vendedor</th>
                     <th className="py-2.5 px-3">CEP</th>
                     <th className="py-2.5 px-3">Origem</th>
-                    <th className="py-2.5 px-3">Data</th>
+                    <SortableHeader field="createdAt" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3">
+                      Data
+                    </SortableHeader>
                     <th className="py-2.5 px-4 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-(--border-subtle)">
-                  {loading && leads.length === 0 && (
-                    <tr><td colSpan={12} className="py-12 text-center"><p className="text-(--text-muted) text-sm animate-pulse">Carregando...</p></td></tr>
-                  )}
+                  {loading && leads.length === 0 && <LeadsTableSkeleton rows={6} />}
                   {!loading && leads.length === 0 && (
-                    <tr><td colSpan={12} className="py-12 text-center">
-                      <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-2 border border-(--border-subtle) text-(--text-faint)"><Users size={20} /></div>
-                      <p className="text-(--text-muted) text-sm">Nenhum lead encontrado.</p>
-                    </td></tr>
+                    <EmptyState hasFilters={hasFilters} onClear={handleClearFilters} />
                   )}
                   {leads.map(lead => {
                     const tempLocked = requiresAdminToEdit(lead.status) && !hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE);
@@ -499,7 +612,7 @@ export default function LeadsListPage() {
                           }}
                         />
                       </td>
-                      <td className="py-2 px-3 max-w-[220px]">
+                      <td className="py-2 px-3 max-w-[220px] sticky left-0 z-10 bg-(--surface-2) group-hover:bg-(--surface-1) transition-colors">
                         <div className="flex flex-col leading-tight min-w-0">
                           <span className="text-(--text-primary) text-sm font-semibold tracking-tight truncate group-hover:text-(--gold-hover) transition-colors">
                             {lead.nome} {lead.sobrenome || ''}

@@ -41,13 +41,15 @@ export const getQueueHistory = async (branchId) => {
 
 // ─── Leads CRM (entidade Lead dedicada) ──────────────────────────────────
 
-export const getLeads = async ({ search, status, preVendedorId, page, limit } = {}) => {
+export const getLeads = async ({ search, status, preVendedorId, page, limit, sortBy, sortDir } = {}) => {
   const params = new URLSearchParams();
   if (search) params.append('search', search);
   if (status) params.append('status', status);
   if (preVendedorId) params.append('pre_vendedor_id', preVendedorId);
   if (page) params.append('page', page);
   if (limit) params.append('limit', limit);
+  if (sortBy) params.append('sort_by', sortBy);
+  if (sortDir) params.append('sort_dir', sortDir);
   return api(`/api/crm/leads?${params.toString()}`);
 };
 

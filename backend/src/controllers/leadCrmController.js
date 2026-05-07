@@ -44,13 +44,15 @@ export async function create(req, res, next) {
 
 export async function list(req, res, next) {
   try {
-    const { search, status, pre_vendedor_id, page, limit } = req.query;
+    const { search, status, pre_vendedor_id, page, limit, sort_by, sort_dir } = req.query;
     const result = await leadCrmService.listLeads({
       search,
       status,
       preVendedorId: pre_vendedor_id,
       page,
       limit,
+      sortBy: sort_by,
+      sortDir: sort_dir,
     }, req.user);
     return res.json(result);
   } catch (error) {
