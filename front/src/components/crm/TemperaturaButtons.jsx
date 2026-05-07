@@ -35,29 +35,35 @@ import { friendlyErrorMessage } from '@/lib/apiError';
  *  - onChange(updatedLead): callback APÓS sucesso, com o lead atualizado
  *  - disabled: boolean — bloqueia interação (ex: lead em status terminal sem permissão)
  */
+// Mapa cor→semântica:
+//   Sem contato     → cinza   (neutro, ainda não interagido)
+//   Pouco interesse → amarelo (gold, brand — interesse moderado)
+//   Muito interesse → verde   (success — prioridade positiva)
+//   Sem interesse   → vermelho (danger — terminal negativo)
+// Triggers usam fundo sólido pra máxima legibilidade no contexto da tabela.
 const OPTIONS = [
   {
     value: 'Sem contato',
     Icon: CircleDashed,
-    triggerActive: 'bg-(--surface-3) text-(--text-muted) border-(--border)',
+    triggerActive: 'bg-(--text-muted) text-(--bg-base) border-(--text-muted)',
     iconClass: 'text-(--text-muted)',
   },
   {
     value: 'Pouco interesse',
     Icon: ThermometerSun,
-    triggerActive: 'bg-(--gold-soft) text-(--gold) border-(--gold)/40',
+    triggerActive: 'bg-(--gold) text-(--on-gold) border-(--gold-hover)',
     iconClass: 'text-(--gold)',
   },
   {
     value: 'Muito interesse',
     Icon: Flame,
-    triggerActive: 'bg-(--gold) text-(--on-gold) border-(--gold-hover) shadow-[0_0_0_2px_rgba(233,182,1,0.25)]',
-    iconClass: 'text-(--on-gold)',
+    triggerActive: 'bg-(--success) text-(--bg-base) border-(--success)',
+    iconClass: 'text-(--success)',
   },
   {
     value: 'Sem interesse',
     Icon: Snowflake,
-    triggerActive: 'bg-(--danger-soft) text-(--danger) border-(--danger)/40',
+    triggerActive: 'bg-(--danger) text-(--bg-base) border-(--danger)',
     iconClass: 'text-(--danger)',
   },
 ];
