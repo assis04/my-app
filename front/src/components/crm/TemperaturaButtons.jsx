@@ -7,7 +7,6 @@ import {
   ThermometerSun,
   Flame,
   Snowflake,
-  ChevronDown,
   Loader2,
   Check,
 } from 'lucide-react';
@@ -17,8 +16,9 @@ import { friendlyErrorMessage } from '@/lib/apiError';
 /**
  * Dropdown compacto pra setar temperatura do Lead inline na listagem.
  *
- * Trigger pill (h-7) com ícone + label do estado atual; click abre popover
- * com as 4 opções. Renderizado via Portal pra escapar containing blocks
+ * Trigger circular 28px (icon-only com cor do estado atual) — preserva a
+ * densidade visual original dos 3 botões. Click abre popover via Portal
+ * com as 4 opções e labels completos. Portal escapa containing blocks
  * criados por ancestrais com `backdrop-filter`/`transform` (mesmo motivo
  * pelo qual ModalBase usa Portal).
  *
@@ -39,19 +39,19 @@ const OPTIONS = [
   {
     value: 'Sem contato',
     Icon: CircleDashed,
-    triggerActive: 'bg-(--surface-2) text-(--text-muted) border-(--border)',
+    triggerActive: 'bg-(--surface-3) text-(--text-muted) border-(--border)',
     iconClass: 'text-(--text-muted)',
   },
   {
     value: 'Pouco interesse',
     Icon: ThermometerSun,
-    triggerActive: 'bg-(--gold-soft) text-(--gold-hover) border-(--gold)/40',
+    triggerActive: 'bg-(--gold-soft) text-(--gold) border-(--gold)/40',
     iconClass: 'text-(--gold)',
   },
   {
     value: 'Muito interesse',
     Icon: Flame,
-    triggerActive: 'bg-(--gold) text-(--on-gold) border-(--gold-hover)',
+    triggerActive: 'bg-(--gold) text-(--on-gold) border-(--gold-hover) shadow-[0_0_0_2px_rgba(233,182,1,0.25)]',
     iconClass: 'text-(--on-gold)',
   },
   {
@@ -61,8 +61,6 @@ const OPTIONS = [
     iconClass: 'text-(--danger)',
   },
 ];
-
-const PLACEHOLDER_TRIGGER = 'bg-(--surface-1) text-(--text-faint) border-(--border-subtle) hover:border-(--text-muted) hover:text-(--text-muted)';
 
 function findOption(value) {
   return OPTIONS.find((o) => o.value === value) || null;
@@ -80,17 +78,19 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
   const displayValue = value || 'Sem contato';
   const current = findOption(displayValue);
 
-  // Calcula posição do popover relativa ao trigger (Portal → coordenadas viewport)
+  // Calcula posição do popover relativa ao trigger (Portal → coordenadas viewport).
+  // Trigger é round 28px; popover abre alinhado à esquerda do trigger pra baixo,
+  // com clamp pra não sair da viewport.
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const POPOVER_WIDTH = 200;
+    const POPOVER_WIDTH = 180;
     const VIEWPORT_PADDING = 8;
     const left = Math.min(
       Math.max(VIEWPORT_PADDING, rect.left),
       window.innerWidth - POPOVER_WIDTH - VIEWPORT_PADDING,
     );
-    setCoords({ top: rect.bottom + 4, left });
+    setCoords({ top: rect.bottom + 6, left });
   }, [open]);
 
   // Click fora / ESC fecham o popover
@@ -144,10 +144,6 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
     }
   };
 
-  const triggerClasses = current
-    ? current.triggerActive
-    : PLACEHOLDER_TRIGGER;
-
   const TriggerIcon = current?.Icon || CircleDashed;
 
   return (
@@ -165,18 +161,16 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           setOpen((v) => !v);
         }}
         className={`
-          inline-flex items-center gap-1.5 h-7 px-2 rounded-full border text-xs font-bold tracking-tight
+          inline-flex items-center justify-center w-7 h-7 rounded-full border
           transition-all disabled:opacity-50 disabled:cursor-not-allowed
           ${error ? 'ring-2 ring-(--danger)/40' : ''}
-          ${triggerClasses}
+          ${current.triggerActive}
         `}
       >
         {pending
           ? <Loader2 size={12} className="animate-spin" />
-          : <TriggerIcon size={12} />
+          : <TriggerIcon size={13} />
         }
-        <span className="truncate max-w-[88px]">{displayValue}</span>
-        <ChevronDown size={11} className="opacity-60" />
       </button>
 
       {open && coords && createPortal(
@@ -184,7 +178,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           ref={popoverRef}
           role="listbox"
           aria-label="Selecionar temperatura"
-          className="fixed z-50 w-[200px] rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl py-1"
+          className="fixed z-50 w-[180px] rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150 origin-top-left"
           style={{ top: coords.top, left: coords.left }}
           onClick={(e) => e.stopPropagation()}
         >

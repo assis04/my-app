@@ -54,7 +54,7 @@ export default function PremiumSelect({
 
       {isOpen && !disabled && (
         <div className="absolute z-50 w-full mt-2 bg-(--surface-2)/95 backdrop-blur-xl border border-(--border) rounded-3xl shadow-(--shadow-floating) overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
-          <div className="max-h-60 overflow-y-auto custom-scrollbar p-2">
+          <div className={`p-2 ${options.length > 5 ? 'max-h-60 overflow-y-auto custom-scrollbar' : ''}`}>
             {options.length === 0 ? (
               <div className="p-4 text-center text-(--text-muted) text-sm font-black tracking-tight">
                 Nenhuma opção disponível
