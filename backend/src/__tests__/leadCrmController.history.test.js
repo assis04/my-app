@@ -73,7 +73,7 @@ describe('leadCrmController.getLeadHistory', () => {
     const payload = {
       items: [
         { id: 3, eventType: 'status_changed', payload: { from: 'A', to: 'B' } },
-        { id: 2, eventType: 'temperatura_changed', payload: { from: null, to: 'Interessado' } },
+        { id: 2, eventType: 'temperatura_changed', payload: { from: null, to: 'Pouco interesse' } },
       ],
       nextCursor: 2,
     };

@@ -87,14 +87,18 @@ export const transitionStatusSchema = z.object({
 });
 
 // ─── Temperatura (Task #10) ──────────────────────────────────────────────
-// Plan §4.4. Restringe a string a um dos três valores canônicos do enum
+// Plan §4.4. Restringe a string a um dos quatro valores canônicos do enum
 // LeadTemperatura — validação redundante com o domain, mas garante rejeição
 // antes do service (melhor mensagem de erro e evita round-trip).
 
 export const temperaturaSchema = z.object({
-  temperatura: z.enum(['Muito interessado', 'Interessado', 'Sem interesse'], {
-    message: 'temperatura deve ser "Muito interessado", "Interessado" ou "Sem interesse".',
-  }),
+  temperatura: z.enum(
+    ['Sem contato', 'Pouco interesse', 'Muito interesse', 'Sem interesse'],
+    {
+      message:
+        'temperatura deve ser "Sem contato", "Pouco interesse", "Muito interesse" ou "Sem interesse".',
+    },
+  ),
 });
 
 // ─── Cancel (Task #11) ───────────────────────────────────────────────────

@@ -122,10 +122,10 @@ export const transitionLeadStatus = async (id, { status, motivo, contexto } = {}
 };
 
 /**
- * Atualiza temperatura (Muito interessado | Interessado | Sem interesse).
+ * Atualiza temperatura (Sem contato | Pouco interesse | Muito interesse | Sem interesse).
  * Backend retorna changed:false se valor não mudou (UI não precisa exibir toast).
  * @param {number|string} id
- * @param {'Muito interessado' | 'Interessado' | 'Sem interesse'} temperatura
+ * @param {'Sem contato' | 'Pouco interesse' | 'Muito interesse' | 'Sem interesse'} temperatura
  * @returns {Promise<{ lead, historyEvent, changed: boolean }>}
  */
 export const setLeadTemperatura = async (id, temperatura) => {

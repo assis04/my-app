@@ -6,10 +6,11 @@ import {
 } from '../domain/leadTemperatura.js';
 
 describe('LeadTemperatura enum', () => {
-  it('contém os 3 valores canônicos da spec §2', () => {
+  it('contém os 4 valores canônicos da spec §2', () => {
     expect(getAllTemperaturas()).toEqual([
-      'Muito interessado',
-      'Interessado',
+      'Sem contato',
+      'Pouco interesse',
+      'Muito interesse',
       'Sem interesse',
     ]);
   });
@@ -20,7 +21,7 @@ describe('LeadTemperatura enum', () => {
 });
 
 describe('isValidTemperatura()', () => {
-  it('aceita os 3 valores canônicos', () => {
+  it('aceita os 4 valores canônicos', () => {
     for (const t of getAllTemperaturas()) {
       expect(isValidTemperatura(t)).toBe(true);
     }
@@ -28,7 +29,9 @@ describe('isValidTemperatura()', () => {
 
   it('rejeita valores inválidos', () => {
     expect(isValidTemperatura('Quente')).toBe(false);
-    expect(isValidTemperatura('MUITO INTERESSADO')).toBe(false); // case-sensitive
+    expect(isValidTemperatura('MUITO INTERESSE')).toBe(false); // case-sensitive
+    expect(isValidTemperatura('Muito interessado')).toBe(false); // valor antigo (renomeado)
+    expect(isValidTemperatura('Interessado')).toBe(false); // valor antigo (renomeado)
     expect(isValidTemperatura('')).toBe(false);
     expect(isValidTemperatura(null)).toBe(false);
     expect(isValidTemperatura(undefined)).toBe(false);

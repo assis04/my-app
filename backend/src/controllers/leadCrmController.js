@@ -278,7 +278,7 @@ export async function reactivateLead(req, res, next) {
  * PUT /api/crm/leads/:id/temperatura — Task #10
  * Contrato: plan §4.4
  *
- * Body: { temperatura: "Muito interessado" | "Interessado" | "Sem interesse" }
+ * Body: { temperatura: "Sem contato" | "Pouco interesse" | "Muito interesse" | "Sem interesse" }
  * Response 200: { lead, historyEvent, changed }
  *   - changed=false quando o valor era igual ao atual (no-op)
  *   - historyEvent=null no mesmo caso
