@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import {
   Search, Plus, RefreshCw, Edit, Trash2, ArrowRightLeft,
   X, Users, Download, Upload, Route,
   Save, Briefcase, Loader2, AlertTriangle,
-  ArrowUp, ArrowDown, ArrowUpDown
+  ArrowUp, ArrowDown, ArrowUpDown,
+  MoreHorizontal, Phone, Copy, Check
 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import { getLeads, deleteLead, transferLeads, updateEtapaLote } from '@/services/crmApi';
@@ -284,27 +286,266 @@ function LeadsTableSkeleton({ rows = 6 }) {
 }
 
 // ── EmptyState: copia depende de filtros ativos ───────────────────────────
-function EmptyState({ hasFilters, onClear }) {
-  if (hasFilters) {
-    return (
-      <tr><td colSpan={12} className="py-14 text-center">
-        <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-faint)">
-          <Search size={18} />
-        </div>
-        <p className="text-(--text-muted) text-sm font-medium mb-1">Nenhum lead corresponde aos filtros</p>
+function EmptyContent({ hasFilters, onClear }) {
+  return (
+    <div className="py-14 text-center">
+      <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-faint)">
+        {hasFilters ? <Search size={18} /> : <Users size={18} />}
+      </div>
+      <p className="text-(--text-muted) text-sm font-medium mb-1">
+        {hasFilters ? 'Nenhum lead corresponde aos filtros' : 'Nenhum lead cadastrado ainda.'}
+      </p>
+      {hasFilters && (
         <button onClick={onClear} className="text-sm text-(--gold) hover:text-(--gold-hover) font-medium underline-offset-4 hover:underline">
           Limpar filtros
         </button>
-      </td></tr>
-    );
-  }
+      )}
+    </div>
+  );
+}
+
+function EmptyState({ hasFilters, onClear }) {
   return (
-    <tr><td colSpan={12} className="py-14 text-center">
-      <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-faint)">
-        <Users size={18} />
-      </div>
-      <p className="text-(--text-muted) text-sm font-medium">Nenhum lead cadastrado ainda.</p>
+    <tr><td colSpan={12}>
+      <EmptyContent hasFilters={hasFilters} onClear={onClear} />
     </td></tr>
+  );
+}
+
+// ── LeadCard: layout em card pra <md (substitui tabela em mobile) ─────────
+function LeadCard({ lead, selected, onToggleSelect, tempLocked, onTempChange, onEdit, onTransfer, onChangeEtapa, onCreateOpportunity, onDelete }) {
+  const router = useRouter();
+  return (
+    <div className="px-4 py-3.5 hover:bg-(--surface-1)/40 transition-colors">
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggleSelect}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-1 w-3.5 h-3.5 rounded accent-(--gold) cursor-pointer shrink-0"
+        />
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <TemperaturaButtons
+            leadId={lead.id}
+            value={lead.temperatura}
+            disabled={tempLocked || lead.status === 'Cancelado'}
+            onChange={onTempChange}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => router.push(`/crm/leads/${lead.id}`)}
+          className="flex-1 min-w-0 text-left"
+        >
+          <div className="flex items-baseline gap-2">
+            <span className="text-(--text-primary) text-sm font-semibold tracking-tight truncate">
+              {lead.nome} {lead.sobrenome || ''}
+            </span>
+            <span className="text-[10px] text-(--text-faint) font-mono tabular-nums shrink-0">
+              #{String(lead.id).padStart(4, '0')}
+            </span>
+          </div>
+          {lead.celular && (
+            <div className="text-sm text-(--text-secondary) tabular-nums font-medium mt-0.5">
+              {formatPhone(lead.celular)}
+            </div>
+          )}
+        </button>
+
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <RowActionsMenu
+            lead={lead}
+            onEdit={onEdit}
+            onCreateOpportunity={onCreateOpportunity}
+            onTransfer={onTransfer}
+            onChangeEtapa={onChangeEtapa}
+            onDelete={onDelete}
+          />
+        </div>
+      </div>
+
+      <div className="mt-2.5 ml-9 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
+        <StatusInline status={lead.status} />
+        {lead.etapa && (
+          <>
+            <span className="text-(--text-faint)">·</span>
+            <span className="text-(--text-secondary) font-medium">{lead.etapa}</span>
+          </>
+        )}
+      </div>
+
+      <div className="mt-1.5 ml-9 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-(--text-muted)">
+        {lead.preVendedor?.nome && <span>Pré: {lead.preVendedor.nome}</span>}
+        {lead.conta?.nome && <span className="truncate max-w-[140px]">Conta: {lead.conta.nome}</span>}
+        {(lead.createdAt || lead.dataCadastro) && (
+          <span className="ml-auto tabular-nums">
+            {new Date(lead.createdAt || lead.dataCadastro).toLocaleDateString('pt-BR')}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LeadsCardSkeleton({ rows = 4 }) {
+  return Array.from({ length: rows }).map((_, i) => (
+    <div key={`mobile-skel-${i}`} className="px-4 py-4 border-b border-(--border-subtle)/50">
+      <div className="flex items-start gap-3">
+        <Skel className="w-3.5 h-3.5 mt-1" />
+        <Skel className="w-4 h-4 rounded-full mt-0.5" />
+        <div className="flex-1">
+          <Skel className="h-3 w-32 mb-1.5" />
+          <Skel className="h-3 w-24" />
+        </div>
+      </div>
+      <div className="mt-3 ml-9 flex gap-2">
+        <Skel className="h-2.5 w-20" />
+        <Skel className="h-2.5 w-14" />
+      </div>
+    </div>
+  ));
+}
+
+// ── RowActionsMenu: dropdown de ações por lead ────────────────────────────
+// Trigger ⋯ + popover via Portal (mesmo padrão TemperaturaButtons pra escapar
+// containing block do header sticky). Agrupa ações pouco frequentes (criar
+// oportunidade, transferir individual, mudar etapa, copiar tel, ligar, excluir)
+// liberando peso visual do hover (apenas Editar fica inline).
+function RowActionsMenu({ lead, onEdit, onCreateOpportunity, onTransfer, onChangeEtapa, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const triggerRef = useRef(null);
+  const popoverRef = useRef(null);
+  const [coords, setCoords] = useState(null);
+
+  // Popover alinhado à direita do trigger (ações ficam na coluna mais à direita).
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const POPOVER_WIDTH = 220;
+    const VIEWPORT_PADDING = 8;
+    const left = Math.min(
+      Math.max(VIEWPORT_PADDING, rect.right - POPOVER_WIDTH),
+      window.innerWidth - POPOVER_WIDTH - VIEWPORT_PADDING,
+    );
+    setCoords({ top: rect.bottom + 6, left });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (
+        popoverRef.current && !popoverRef.current.contains(e.target) &&
+        triggerRef.current && !triggerRef.current.contains(e.target)
+      ) setOpen(false);
+    };
+    const handleKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [open]);
+
+  const handleCopyPhone = async () => {
+    if (!lead.celular) return;
+    try {
+      await navigator.clipboard.writeText(formatPhone(lead.celular));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // navigator.clipboard pode falhar em http (não-https) — silencioso é ok.
+    }
+  };
+
+  const close = () => setOpen(false);
+  const run = (fn) => () => { fn(); close(); };
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Mais ações"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className={`p-1.5 rounded-lg transition-colors ${
+          open ? 'text-(--gold) bg-(--gold-soft)' : 'text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-3)'
+        }`}
+      >
+        <MoreHorizontal size={14} />
+      </button>
+
+      {open && coords && createPortal(
+        <div
+          ref={popoverRef}
+          role="menu"
+          className="fixed z-50 w-[220px] rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150 origin-top-right"
+          style={{ top: coords.top, left: coords.left }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MenuItem icon={Briefcase} onClick={run(() => onCreateOpportunity(lead))}>
+            Criar oportunidade
+          </MenuItem>
+          <MenuItem icon={ArrowRightLeft} onClick={run(() => onTransfer(lead))}>
+            Transferir
+          </MenuItem>
+          <MenuItem icon={Route} onClick={run(() => onChangeEtapa(lead))}>
+            Mudar etapa
+          </MenuItem>
+
+          <div className="my-1 border-t border-(--border-subtle)" />
+
+          {lead.celular && (
+            <>
+              <MenuItem
+                icon={copied ? Check : Copy}
+                onClick={handleCopyPhone}
+                keepOpen
+              >
+                {copied ? 'Copiado!' : 'Copiar telefone'}
+              </MenuItem>
+              <a
+                role="menuitem"
+                href={`tel:${lead.celular.replace(/\D/g, '')}`}
+                onClick={close}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary) transition-colors"
+              >
+                <Phone size={14} className="shrink-0" />
+                Ligar
+              </a>
+              <div className="my-1 border-t border-(--border-subtle)" />
+            </>
+          )}
+
+          <MenuItem icon={Trash2} variant="danger" onClick={run(() => onDelete(lead))}>
+            Excluir lead
+          </MenuItem>
+        </div>,
+        document.body,
+      )}
+    </>
+  );
+}
+
+function MenuItem({ icon: Icon, onClick, children, variant, keepOpen }) {
+  const colorClass = variant === 'danger'
+    ? 'text-(--danger) hover:bg-(--danger-soft) hover:text-(--danger)'
+    : 'text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary)';
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onClick}
+      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium tracking-tight transition-colors text-left ${colorClass}`}
+    >
+      <Icon size={14} className="shrink-0" />
+      <span className="flex-1">{children}</span>
+    </button>
   );
 }
 
@@ -354,6 +595,8 @@ export default function LeadsListPage() {
   const [showNovoLead, setShowNovoLead] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showEtapa, setShowEtapa] = useState(false);
+  // null = ação em lote (usa selectedIds); array = ação single-row específica
+  const [actionTargetIds, setActionTargetIds] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const { confirm, confirmProps } = useConfirm();
 
@@ -451,10 +694,22 @@ export default function LeadsListPage() {
     else setSelectedIds(leads.map(l => l.id));
   };
 
+  const openBulkTransfer = () => { setActionTargetIds(null); setShowTransfer(true); };
+  const openBulkEtapa = () => { setActionTargetIds(null); setShowEtapa(true); };
+  const openRowTransfer = (lead) => { setActionTargetIds([lead.id]); setShowTransfer(true); };
+  const openRowEtapa = (lead) => { setActionTargetIds([lead.id]); setShowEtapa(true); };
+
+  const handleCreateOpportunity = (lead) => {
+    router.push(`/crm/oportunidade-de-negocio?leadId=${lead.id}`);
+  };
+
   const handleTransfer = async (preVendedorId) => {
+    const isSingle = actionTargetIds !== null;
+    const targets = isSingle ? actionTargetIds : selectedIds;
     try {
-      await transferLeads(selectedIds, preVendedorId);
-      setSelectedIds([]);
+      await transferLeads(targets, preVendedorId);
+      if (!isSingle) setSelectedIds([]);
+      setActionTargetIds(null);
       setShowTransfer(false);
       await fetchLeads();
     } catch (err) {
@@ -463,9 +718,12 @@ export default function LeadsListPage() {
   };
 
   const handleEtapa = async (etapa) => {
+    const isSingle = actionTargetIds !== null;
+    const targets = isSingle ? actionTargetIds : selectedIds;
     try {
-      await updateEtapaLote(selectedIds, etapa);
-      setSelectedIds([]);
+      await updateEtapaLote(targets, etapa);
+      if (!isSingle) setSelectedIds([]);
+      setActionTargetIds(null);
       setShowEtapa(false);
       await fetchLeads();
     } catch (err) {
@@ -545,10 +803,10 @@ export default function LeadsListPage() {
               {selectedIds.length > 0 && (
                 <>
                   <span className="text-sm font-semibold text-(--gold) ml-2">{selectedIds.length} selecionado{selectedIds.length > 1 ? 's' : ''}</span>
-                  <button onClick={() => setShowTransfer(true)} className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold)/40 hover:bg-(--gold-soft) hover:text-(--gold) transition-all shadow-xs">
+                  <button onClick={openBulkTransfer} className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold)/40 hover:bg-(--gold-soft) hover:text-(--gold) transition-all shadow-xs">
                     <ArrowRightLeft size={12} /> Transferir
                   </button>
-                  <button onClick={() => setShowEtapa(true)} className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold) hover:bg-(--gold-soft) hover:text-(--gold) transition-all shadow-xs">
+                  <button onClick={openBulkEtapa} className="flex items-center gap-1.5 px-3 h-9 rounded-2xl text-sm font-medium text-(--text-secondary) bg-(--surface-2) border border-(--border) hover:border-(--gold) hover:bg-(--gold-soft) hover:text-(--gold) transition-all shadow-xs">
                     <Route size={12} /> Definir Etapa
                   </button>
                 </>
@@ -556,9 +814,38 @@ export default function LeadsListPage() {
             </div>
           </div>
 
-          {/* Tabela */}
+          {/* Listagem: cards em mobile (<md), tabela em desktop (≥md) */}
           <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
-            <div className="overflow-x-auto">
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-(--border-subtle)">
+              {loading && leads.length === 0 && <LeadsCardSkeleton rows={4} />}
+              {!loading && leads.length === 0 && (
+                <EmptyContent hasFilters={hasFilters} onClear={handleClearFilters} />
+              )}
+              {leads.map((lead) => {
+                const tempLocked = requiresAdminToEdit(lead.status) && !hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE);
+                return (
+                  <LeadCard
+                    key={`card-${lead.id}`}
+                    lead={lead}
+                    selected={selectedIds.includes(lead.id)}
+                    onToggleSelect={() => toggleSelect(lead.id)}
+                    tempLocked={tempLocked}
+                    onTempChange={(updatedLead) => {
+                      setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, temperatura: updatedLead.temperatura } : l));
+                    }}
+                    onEdit={(l) => router.push(`/crm/leads/${l.id}`)}
+                    onCreateOpportunity={handleCreateOpportunity}
+                    onTransfer={openRowTransfer}
+                    onChangeEtapa={openRowEtapa}
+                    onDelete={(l) => handleDelete(l.id, l.nome)}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Desktop tabela */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
                 <thead className="bg-(--surface-1)/40 text-(--text-faint) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                   <tr>
@@ -641,10 +928,17 @@ export default function LeadsListPage() {
                       <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">
                         {(lead.createdAt || lead.dataCadastro) ? new Date(lead.createdAt || lead.dataCadastro).toLocaleDateString('pt-BR') : '—'}
                       </td>
-                      <td className="py-2 px-4 text-right">
+                      <td className="py-2 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-0.5">
                           <button onClick={() => router.push(`/crm/leads/${lead.id}`)} className="p-1.5 text-(--text-muted) hover:text-(--gold) transition-colors rounded-lg hover:bg-(--gold-soft)" title="Editar"><Edit size={14} /></button>
-                          <button onClick={() => handleDelete(lead.id, lead.nome)} className="p-1.5 text-(--text-muted) hover:text-(--danger) transition-colors rounded-lg hover:bg-(--danger-soft)" title="Remover"><Trash2 size={14} /></button>
+                          <RowActionsMenu
+                            lead={lead}
+                            onEdit={(l) => router.push(`/crm/leads/${l.id}`)}
+                            onCreateOpportunity={handleCreateOpportunity}
+                            onTransfer={openRowTransfer}
+                            onChangeEtapa={openRowEtapa}
+                            onDelete={(l) => handleDelete(l.id, l.nome)}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -730,8 +1024,8 @@ export default function LeadsListPage() {
       )}
 
       {showNovoLead && <NovoLeadModal sellers={sellers} user={user} onClose={() => setShowNovoLead(false)} onSaved={handleLeadSaved} />}
-      {showTransfer && <TransferModal sellers={sellers} onClose={() => setShowTransfer(false)} onConfirm={handleTransfer} />}
-      {showEtapa && <EtapaModal onClose={() => setShowEtapa(false)} onConfirm={handleEtapa} />}
+      {showTransfer && <TransferModal sellers={sellers} onClose={() => { setShowTransfer(false); setActionTargetIds(null); }} onConfirm={handleTransfer} />}
+      {showEtapa && <EtapaModal onClose={() => { setShowEtapa(false); setActionTargetIds(null); }} onConfirm={handleEtapa} />}
       <ConfirmDialog {...confirmProps} />
     </>
   );
