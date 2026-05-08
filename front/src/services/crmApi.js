@@ -188,8 +188,11 @@ export const getLeadHistory = async (id, { cursor, limit } = {}) => {
  */
 export const getOrcamentos = async (filters = {}) => {
   const params = new URLSearchParams();
+  // Normaliza camelCase do front pra snake_case do backend (mesmo padrão getLeads).
+  const KEY_MAP = { sortBy: 'sort_by', sortDir: 'sort_dir' };
   for (const [k, v] of Object.entries(filters)) {
-    if (v !== undefined && v !== null && v !== '') params.append(k, String(v));
+    if (v === undefined || v === null || v === '') continue;
+    params.append(KEY_MAP[k] || k, String(v));
   }
   const qs = params.toString();
   return api(`/api/crm/orcamentos${qs ? `?${qs}` : ''}`);

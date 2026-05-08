@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, RefreshCw, Users } from 'lucide-react';
+import { Search, RefreshCw, Users, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import PremiumSelect from '@/components/ui/PremiumSelect';
 import PeriodoFilter, { buildPeriodoQuery } from '@/components/crm/PeriodoFilter';
 import OrcamentoStatusBadge from '@/components/crm/OrcamentoStatusBadge';
@@ -73,6 +73,36 @@ function StatusChip({ active, dot, onClick, children }) {
   );
 }
 
+// ─── Sort: parse + SortableHeader (espelha implementação de Leads) ────────
+const SORTABLE = new Set(['createdAt', 'numero', 'status']);
+
+function parseSort(value) {
+  if (!value) return null;
+  const [field, dir] = String(value).split(':');
+  if (!SORTABLE.has(field) || (dir !== 'asc' && dir !== 'desc')) return null;
+  return { field, dir };
+}
+
+function SortableHeader({ field, currentSort, onSort, className = '', children }) {
+  const isActive = currentSort?.field === field;
+  const isAsc = isActive && currentSort.dir === 'asc';
+  const isDesc = isActive && currentSort.dir === 'desc';
+  return (
+    <th className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className="inline-flex items-center gap-1 group/sort hover:text-(--text-primary) transition-colors"
+      >
+        <span>{children}</span>
+        {isAsc && <ArrowUp size={11} className="text-(--gold)" />}
+        {isDesc && <ArrowDown size={11} className="text-(--gold)" />}
+        {!isActive && <ArrowUpDown size={11} className="opacity-0 group-hover/sort:opacity-50 transition-opacity" />}
+      </button>
+    </th>
+  );
+}
+
 // ─── Skeletons + EmptyState ──────────────────────────────────────────────
 function OrcamentosSkeleton({ rows = 6 }) {
   return Array.from({ length: rows }).map((_, i) => (
@@ -133,6 +163,7 @@ export default function OportunidadeDeNegocioPage() {
   const urlDataFim = searchParams.get('dataFim') || '';
 
   const periodoValue = { modo: urlPeriodoModo, dataInicio: urlDataInicio, dataFim: urlDataFim };
+  const currentSort = parseSort(searchParams.get('sort'));
   const hasFilters = Boolean(urlNome || urlTelefone || urlStatus || urlFilialId || urlUserId || urlPeriodoModo);
 
   const [orcamentos, setOrcamentos] = useState([]);
@@ -201,6 +232,8 @@ export default function OportunidadeDeNegocioPage() {
         filialId: urlFilialId || undefined,
         userId: urlUserId || undefined,
         ...periodoQuery,
+        sortBy: currentSort?.field,
+        sortDir: currentSort?.dir,
       };
 
       const result = await getOrcamentos(query);
@@ -212,11 +245,18 @@ export default function OportunidadeDeNegocioPage() {
       setLoading(false);
     }
     // periodoValue é objeto; dependo dos primitivos pra não recriar useCallback.
-  }, [urlNome, urlTelefone, urlStatus, urlFilialId, urlUserId, urlPeriodoModo, urlDataInicio, urlDataFim]);
+  }, [urlNome, urlTelefone, urlStatus, urlFilialId, urlUserId, urlPeriodoModo, urlDataInicio, urlDataFim, currentSort?.field, currentSort?.dir]);
 
   useEffect(() => { fetchOrcamentos(); }, [fetchOrcamentos]);
 
   const handleStatusChange = (status) => updateParams({ status: status || undefined });
+  const handleSort = (field) => {
+    let next;
+    if (currentSort?.field !== field) next = `${field}:asc`;
+    else if (currentSort.dir === 'asc') next = `${field}:desc`;
+    else next = undefined;
+    updateParams({ sort: next });
+  };
   const handleFilialChange = (e) => updateParams({ filialId: e.target.value || undefined, userId: undefined });
   const handleUserChange = (e) => updateParams({ userId: e.target.value || undefined });
   const handlePeriodoChange = (next) => {
@@ -321,13 +361,19 @@ export default function OportunidadeDeNegocioPage() {
           <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
             <thead className="bg-(--surface-1)/40 text-(--text-faint) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
               <tr>
-                <th className="py-2.5 px-3 w-[120px]">Número</th>
+                <SortableHeader field="numero" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3 w-[120px]">
+                  Número
+                </SortableHeader>
                 <th className="py-2.5 px-3">Lead</th>
                 <th className="py-2.5 px-3">Telefone</th>
                 <th className="py-2.5 px-3">Responsável</th>
                 <th className="py-2.5 px-3">Filial</th>
-                <th className="py-2.5 px-3">Data</th>
-                <th className="py-2.5 px-3">Status</th>
+                <SortableHeader field="createdAt" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3">
+                  Data
+                </SortableHeader>
+                <SortableHeader field="status" currentSort={currentSort} onSort={handleSort} className="py-2.5 px-3">
+                  Status
+                </SortableHeader>
               </tr>
             </thead>
             <tbody className="divide-y divide-(--border-subtle)">
