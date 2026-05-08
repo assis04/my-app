@@ -1,11 +1,13 @@
 ﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Building2, Plus, Edit, Trash2, Search, Loader2, RefreshCw, MapPin, Users, AlertTriangle } from 'lucide-react';
+import { Building2, Plus, Edit, Trash2, Search, Loader2, RefreshCw, MapPin, Users, AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import FilialModal from './components/FilialModal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useConfirm } from '@/hooks/useConfirm';
 import { usePermissions } from '@/hooks/usePermissions';
 import { ADMIN_ROLES, HR_ROLES } from '@/lib/roles';
 
@@ -22,6 +24,8 @@ export default function FiliaisPage() {
   const [search, setSearch] = useState('');
   const [modalData, setModalData] = useState(null); // null = fechado, {} = novo, filial = edição
   const [viewTeamData, setViewTeamData] = useState(null); // filial para ver equipe
+  const [errorMsg, setErrorMsg] = useState('');
+  const { confirm, confirmProps } = useConfirm();
 
   useEffect(() => {
     if (!authLoading && user && !ALLOWED_ROLES.includes(user.role)) {
@@ -53,18 +57,25 @@ export default function FiliaisPage() {
       const data = await api(`/filiais/${id}`);
       setViewTeamData(data);
     } catch (err) {
-      alert('Erro ao carregar equipe da filial.');
+      setErrorMsg('Erro ao carregar equipe da filial.');
     }
   };
 
-  const handleDelete = async (id, nome) => {
-    if (!confirm(`Tem certeza que deseja remover a filial "${nome}"?\n\nIsso só é possível se não houver usuários ou equipes vinculados.`)) return;
-    try {
-      await api(`/filiais/${id}`, { method: 'DELETE' });
-      await loadFiliais();
-    } catch (err) {
-      alert(typeof err === 'string' ? err : 'Erro ao remover filial. Pode haver usuários ou equipes vinculados.');
-    }
+  const handleDelete = (id, nome) => {
+    confirm({
+      title: 'Remover Filial',
+      message: `Tem certeza que deseja remover a filial "${nome}"? Isso só é possível se não houver usuários ou equipes vinculados.`,
+      confirmLabel: 'Remover',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await api(`/filiais/${id}`, { method: 'DELETE' });
+          await loadFiliais();
+        } catch (err) {
+          setErrorMsg(typeof err === 'string' ? err : 'Erro ao remover filial. Pode haver usuários ou equipes vinculados.');
+        }
+      },
+    });
   };
 
   if (authLoading || !user) return null;
@@ -296,6 +307,14 @@ export default function FiliaisPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      <ConfirmDialog {...confirmProps} />
+      {errorMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-(--danger-soft) border border-(--danger)/30 text-(--danger) px-4 py-3 rounded-2xl text-sm font-medium shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-2">
+          <AlertTriangle size={14} />
+          {errorMsg}
+          <button onClick={() => setErrorMsg('')} className="text-(--danger) hover:text-(--danger) ml-2"><X size={14} /></button>
         </div>
       )}
     </>

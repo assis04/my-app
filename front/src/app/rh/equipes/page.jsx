@@ -1,11 +1,13 @@
 ﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Users, Plus, Edit, Search, Trash2, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Users, Plus, Edit, Search, Trash2, Loader2, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import EquipeModal from './components/EquipeModal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useConfirm } from '@/hooks/useConfirm';
 import { PermissionGate } from '@/components/PermissionGate';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -18,7 +20,9 @@ export default function Equipes() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [modalData, setModalData] = useState(null); // null = fechado, {} = novo, equipe = edição
+  const [errorMsg, setErrorMsg] = useState('');
   const { can } = usePermissions();
+  const { confirm, confirmProps } = useConfirm();
 
   useEffect(() => {
     if (!authLoading && user && !can('rh:equipes:read')) {
@@ -45,24 +49,30 @@ export default function Equipes() {
     }
   }, [authLoading, user, loadEquipes, can]);
 
-  const handleDelete = async (id, nome) => {
-    if (!confirm(`Tem certeza que deseja remover a equipe "${nome}"?`)) return;
-    try {
-      await api(`/equipes/${id}`, { method: 'DELETE' });
-      await loadEquipes();
-    } catch {
-      alert('Erro ao remover equipe.');
-    }
+  const handleDelete = (id, nome) => {
+    confirm({
+      title: 'Remover Equipe',
+      message: `Tem certeza que deseja remover a equipe "${nome}"?`,
+      confirmLabel: 'Remover',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await api(`/equipes/${id}`, { method: 'DELETE' });
+          await loadEquipes();
+        } catch {
+          setErrorMsg('Erro ao remover equipe.');
+        }
+      },
+    });
   };
 
   const openEditModal = async (id) => {
     setLoading(true);
     try {
-      // Fetch full details of the team including members before opening the modal
       const data = await api(`/equipes/${id}`);
       setModalData(data);
     } catch (err) {
-      alert('Erro ao carregar detalhes da equipe para edição.');
+      setErrorMsg('Erro ao carregar detalhes da equipe para edição.');
     } finally {
       setLoading(false);
     }
@@ -203,6 +213,14 @@ export default function Equipes() {
           onClose={() => setModalData(null)}
           onRefresh={loadEquipes}
         />
+      )}
+      <ConfirmDialog {...confirmProps} />
+      {errorMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-(--danger-soft) border border-(--danger)/30 text-(--danger) px-4 py-3 rounded-2xl text-sm font-medium shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-2">
+          <AlertTriangle size={14} />
+          {errorMsg}
+          <button onClick={() => setErrorMsg('')} className="text-(--danger) hover:text-(--danger) ml-2"><X size={14} /></button>
+        </div>
       )}
     </>
   );
