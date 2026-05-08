@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Building2, Plus, Edit, Trash2, Search, Loader2, RefreshCw, MapPin, Users, AlertTriangle } from 'lucide-react';
@@ -156,14 +156,14 @@ export default function FiliaisPage() {
           ) : (
             <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle)">
               <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
-                <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) italic tracking-tight">
+                <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                   <tr>
-                    <th className="py-2 px-4 italic">Unidade</th>
-                    <th className="py-2 px-4 italic">Gerente</th>
-                    <th className="py-2 px-4 text-center italic">Usuários</th>
-                    <th className="py-2 px-4 text-center italic">Células</th>
-                    <th className="py-2 px-4 italic">Fundação</th>
-                    <th className="py-2 px-4 text-right italic">Ações</th>
+                    <th className="py-2 px-4">Unidade</th>
+                    <th className="py-2 px-4">Gerente</th>
+                    <th className="py-2 px-4 text-center">Usuários</th>
+                    <th className="py-2 px-4 text-center">Células</th>
+                    <th className="py-2 px-4">Fundação</th>
+                    <th className="py-2 px-4 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-(--border-subtle)">
@@ -189,7 +189,7 @@ export default function FiliaisPage() {
                             <span className="font-bold text-(--text-primary) group-hover:text-(--text-primary) transition-colors tracking-tight">{f.manager.nome}</span>
                           </div>
                         ) : (
-                          <span className="text-(--text-muted) font-bold text-xs italic tracking-tight">Vago</span>
+                          <span className="text-(--text-muted) font-bold text-xs ">Vago</span>
                         )}
                       </td>
                       <td className="py-2 px-4 text-center">

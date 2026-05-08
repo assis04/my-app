@@ -116,7 +116,7 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
               <label className="text-sm font-bold text-(--text-muted) ml-1">Identificação da Equipe *</label>
               <input
                 required type="text" placeholder="Ex: Comercial Sul"
-                className="w-full bg-(--surface-1) text-(--text-primary) p-3 rounded-2xl border border-(--border) outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/10 transition-all font-black placeholder:text-(--text-muted) text-base"
+                className="w-full bg-(--surface-1) text-(--text-primary) p-3 rounded-2xl border border-(--border) outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/10 transition-all font-medium placeholder:text-(--text-muted) text-base"
                 value={formData.nome}
                 onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
               />
@@ -210,11 +210,11 @@ export default function EquipeModal({ equipe = null, onClose, onRefresh }) {
                         </svg>
                       )}
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-(--surface-3) flex items-center justify-center text-xs text-(--text-secondary) font-black shrink-0 transition-transform group-hover:scale-110">
+                    <div className="w-8 h-8 rounded-lg bg-(--surface-3) flex items-center justify-center text-xs text-(--text-secondary) font-semibold shrink-0 transition-transform group-hover:scale-110">
                       {u.nome.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm text-(--text-primary) font-black truncate">{u.nome}</p>
+                      <p className="text-sm text-(--text-primary) font-semibold truncate">{u.nome}</p>
                       <p className="text-xs text-(--text-muted) font-bold truncate">{u.email}</p>
                     </div>
                   </label>

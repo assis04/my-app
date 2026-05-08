@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Edit, Search, Trash2, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
@@ -133,14 +133,14 @@ export default function Equipes() {
           ) : (
             <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle)">
               <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
-                <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) italic tracking-tight">
+                <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                   <tr>
-                    <th className="py-2 px-4 italic">Identificação</th>
-                    <th className="py-2 px-4 italic">Lider</th>
-                    <th className="py-2 px-4 text-center italic">Membros</th>
-                    <th className="py-2 px-4 italic">Filial</th>
-                    <th className="py-2 px-4 italic">Status</th>
-                    <th className="py-2 px-4 text-right italic">Controle</th>
+                    <th className="py-2 px-4">Identificação</th>
+                    <th className="py-2 px-4">Lider</th>
+                    <th className="py-2 px-4 text-center">Membros</th>
+                    <th className="py-2 px-4">Filial</th>
+                    <th className="py-2 px-4">Status</th>
+                    <th className="py-2 px-4 text-right">Controle</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-(--border-subtle)">
@@ -156,7 +156,7 @@ export default function Equipes() {
                             <span className="font-bold text-(--text-primary) tracking-tight">{equipe.lider.nome}</span>
                           </div>
                         ) : (
-                          <span className="text-(--text-muted) font-bold text-xs italic tracking-tight">Sem Líder</span>
+                          <span className="text-(--text-muted) font-bold text-xs tracking-tight">Sem Líder</span>
                         )}
                       </td>
                       <td className="py-2 px-4 text-center">

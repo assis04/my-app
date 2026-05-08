@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { CheckSquare, Plus, Loader2, Edit, Trash2, CheckCircle2 } from "lucide-react";
@@ -85,12 +85,12 @@ export default function Tarefas() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
-            <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) italic tracking-tight">
+            <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) ">
               <tr>
                 <th className="py-2 px-4 italic w-10">St.</th>
-                <th className="py-2 px-4 italic">Tarefa</th>
-                <th className="py-2 px-4 italic">Vencimento</th>
-                <th className="py-2 px-4 text-right italic">Ações</th>
+                <th className="py-2 px-4">Tarefa</th>
+                <th className="py-2 px-4">Vencimento</th>
+                <th className="py-2 px-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-(--border-subtle)">

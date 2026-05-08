@@ -81,7 +81,7 @@ export default function FilialModal({ filial = null, onClose, onRefresh }) {
               required
               type="text"
               placeholder="Ex: Matriz São Paulo"
-              className="w-full bg-(--surface-1) text-(--text-primary) p-3 rounded-2xl border border-(--border) outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/10 transition-all font-black placeholder:text-(--text-muted) text-base shadow-xs"
+              className="w-full bg-(--surface-1) text-(--text-primary) p-3 rounded-2xl border border-(--border) outline-none focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/10 transition-all font-medium placeholder:text-(--text-muted) text-base shadow-xs"
               value={formData.nome}
               onChange={e => setFormData(p => ({ ...p, nome: e.target.value }))}
             />

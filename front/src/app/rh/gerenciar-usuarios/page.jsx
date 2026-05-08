@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import {
@@ -102,20 +102,20 @@ export default function GerenciarUsuarios() {
                 <Loader2 size={32} className="animate-spin text-(--gold)" />
               </div>
             ) : usersList.length === 0 ? (
-              <div className="text-center py-20 text-(--text-muted) font-medium italic bg-(--surface-1)/10 text-xs">
+              <div className="text-center py-20 text-(--text-muted) font-medium bg-(--surface-1)/10 text-xs">
                 Não há colaboradores registrados.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
-                  <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) italic tracking-tight">
+                  <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                     <tr>
-                      <th className="py-2 px-4 italic">Colaborador</th>
-                      <th className="py-2 px-4 italic">E-mail de Acesso</th>
-                      <th className="py-2 px-4 italic">Perfil</th>
-                      <th className="py-2 px-4 text-center italic">Filial</th>
-                      <th className="py-2 px-4 italic">Status</th>
-                      <th className="py-2 px-4 text-right italic">Ações</th>
+                      <th className="py-2 px-4">Colaborador</th>
+                      <th className="py-2 px-4">E-mail de Acesso</th>
+                      <th className="py-2 px-4">Perfil</th>
+                      <th className="py-2 px-4 text-center">Filial</th>
+                      <th className="py-2 px-4">Status</th>
+                      <th className="py-2 px-4 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-(--border-subtle)">

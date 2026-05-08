@@ -1,11 +1,13 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Edit, Loader2, Trash2 } from 'lucide-react';
+import { Shield, Plus, Edit, Loader2, Trash2, AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import RoleModal from './components/RoleModal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useConfirm } from '@/hooks/useConfirm';
 import { PermissionGate } from '@/components/PermissionGate';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -14,7 +16,9 @@ export default function GerenciarPerfis() {
   const [modalData, setModalData] = useState(null); // null = fechado, {} = novo, { id, ... } = editar
   const [rolesList, setRolesList] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
   const { can, isAdmin } = usePermissions();
+  const { confirm, confirmProps } = useConfirm();
 
   const router = useRouter();
 
@@ -30,18 +34,25 @@ export default function GerenciarPerfis() {
     }
   };
 
-  const handleDelete = async (id, nome) => {
+  const handleDelete = (id, nome) => {
     if (nome === 'ADM') {
-      alert('Não é possível excluir o perfil ADM.');
+      setErrorMsg('Não é possível excluir o perfil ADM.');
       return;
     }
-    if (!confirm(`Tem certeza que deseja remover o perfil "${nome}"? Isso não será possível se ele tiver usuários atrelados.`)) return;
-    try {
-      await api(`/roles/${id}`, { method: 'DELETE' });
-      await fetchRoles();
-    } catch (error) {
-      alert(typeof error === 'string' ? error : 'Erro ao excluir perfil. Verifique se ele não possui usuários ativos.');
-    }
+    confirm({
+      title: 'Remover Perfil',
+      message: `Tem certeza que deseja remover o perfil "${nome}"? Isso não será possível se ele tiver usuários atrelados.`,
+      confirmLabel: 'Remover',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await api(`/roles/${id}`, { method: 'DELETE' });
+          await fetchRoles();
+        } catch (error) {
+          setErrorMsg(typeof error === 'string' ? error : 'Erro ao excluir perfil. Verifique se ele não possui usuários ativos.');
+        }
+      },
+    });
   };
 
 
@@ -90,12 +101,12 @@ export default function GerenciarPerfis() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
-                  <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-black text-xs border-b border-(--border-subtle) italic tracking-tight">
+                  <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                     <tr>
-                      <th className="py-2 px-4 w-16 italic">REF</th>
-                      <th className="py-2 px-4 italic">Identificador</th>
-                      <th className="py-2 px-4 italic">Descrição das Atribuições</th>
-                      <th className="py-2 px-4 text-right italic">Ações</th>
+                      <th className="py-2 px-4 w-16">REF</th>
+                      <th className="py-2 px-4">Identificador</th>
+                      <th className="py-2 px-4">Descrição das Atribuições</th>
+                      <th className="py-2 px-4 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-(--border-subtle)">
@@ -105,13 +116,13 @@ export default function GerenciarPerfis() {
                       </tr>
                     ) : rolesList.map((role) => (
                       <tr key={role.id} className="hover:bg-(--surface-1) transition-all group">
-                        <td className="py-2 px-4 font-black text-(--text-muted) text-xs tracking-tight italic">#{role.id}</td>
+                        <td className="py-2 px-4 font-black text-(--text-muted) text-xs tracking-tight">#{role.id}</td>
                         <td className="py-2 px-4">
                           <span className="text-xs font-black text-(--gold) bg-(--gold-soft)/50 px-3 py-1 rounded-lg border border-(--gold-soft) shadow-xs group-hover:bg-(--gold) group-hover:text-(--on-gold) transition-all tracking-tight">
                             {role.nome.toUpperCase()}
                           </span>
                         </td>
-                        <td className="py-2 px-4 font-bold text-(--text-secondary) italic max-w-xs truncate text-xs tracking-tight">
+                        <td className="py-2 px-4 font-bold text-(--text-secondary) max-w-xs truncate text-xs tracking-tight">
                           {role.descricao || 'Sem descrição formal.'}
                         </td>
                         <td className="py-2 px-4">
@@ -154,6 +165,14 @@ export default function GerenciarPerfis() {
           onClose={() => setModalData(null)}
           onRefresh={fetchRoles}
         />
+      )}
+      <ConfirmDialog {...confirmProps} />
+      {errorMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-(--danger-soft) border border-(--danger)/30 text-(--danger) px-4 py-3 rounded-2xl text-sm font-medium shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-2">
+          <AlertTriangle size={14} />
+          {errorMsg}
+          <button onClick={() => setErrorMsg('')} className="text-(--danger) hover:text-(--danger) ml-2"><X size={14} /></button>
+        </div>
       )}
     </>
   );

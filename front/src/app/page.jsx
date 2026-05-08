@@ -111,13 +111,13 @@ export default function Home() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Bar Charts Container */}
-          <div className="lg:col-span-2 glass-card rounded-3xl border border-(--border-subtle) flex flex-col md:flex-row shadow-floating overflow-hidden">
+          <div className="lg:col-span-2 bg-(--surface-2) rounded-2xl border border-(--border-subtle) flex flex-col md:flex-row overflow-hidden">
             <div className="flex-1 p-6 flex flex-col border-b md:border-b-0 md:border-r border-(--border-subtle)">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-sm font-black text-(--text-primary) flex items-center gap-2 tracking-tight">
+                <h2 className="text-sm font-semibold text-(--text-primary) flex items-center gap-2 tracking-tight">
                   <div className="w-2 h-2 rounded-full bg-(--gold)" /> Faturamento
                 </h2>
-                <button className="text-xs font-black text-(--gold) hover:bg-(--gold-soft) px-3 py-1 rounded-xl border border-(--gold-soft) transition-all active:scale-95 shadow-sm tracking-tight">Detalhes</button>
+                <button className="text-xs font-medium text-(--gold) hover:bg-(--gold-soft) px-3 py-1 rounded-xl border border-(--gold-soft) transition-all active:scale-95">Detalhes</button>
               </div>
               <div className="h-[220px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -143,8 +143,8 @@ export default function Home() {
 
             <div className="flex-1 p-6 flex flex-col bg-(--surface-1)/40">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-sm font-black text-(--text-primary) flex items-center gap-2 tracking-tight">
-                  <div className="w-2 h-2 rounded-full bg-(--success) shadow-sm" /> Leads
+                <h2 className="text-sm font-semibold text-(--text-primary) flex items-center gap-2 tracking-tight">
+                  <div className="w-2 h-2 rounded-full bg-(--success)" /> Leads
                 </h2>
                 <Settings size={12} className="text-(--text-muted)" />
               </div>
@@ -172,8 +172,8 @@ export default function Home() {
           </div>
 
           {/* Donut Chart Container */}
-          <div className="lg:col-span-1 glass-card p-6 rounded-3xl border border-(--border-subtle) flex flex-col shadow-floating">
-            <h2 className="text-sm font-black text-(--text-primary) mb-4 flex items-center gap-2 tracking-tight">
+          <div className="lg:col-span-1 bg-(--surface-2) p-6 rounded-2xl border border-(--border-subtle) flex flex-col">
+            <h2 className="text-sm font-semibold text-(--text-primary) mb-4 flex items-center gap-2 tracking-tight">
               <div className="w-2 h-2 rounded-full bg-(--gold)" /> Canais
             </h2>
             <div className="relative h-[220px] w-full flex items-center justify-center">

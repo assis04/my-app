@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -104,14 +104,14 @@ export default function OportunidadeDeNegocioPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto">
-      {/* Filtros */}
-      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-(--border-subtle) shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
+      {/* Filtros — sem glass-card (anti-overuse). Hierarquia via espaçamento. */}
+      <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-base font-black text-(--text-primary) flex items-center gap-2 tracking-tight">
+            <h2 className="text-base font-bold text-(--text-primary) flex items-center gap-2 tracking-tight">
               Oportunidades de Negócio
             </h2>
-            <p className="text-sm text-(--text-muted) font-bold mt-0.5">
+            <p className="text-sm text-(--text-muted) mt-0.5">
               Para criar: abra um Lead em /crm/leads e clique em &quot;Nova Oportunidade&quot;.
             </p>
           </div>
@@ -183,7 +183,7 @@ export default function OportunidadeDeNegocioPage() {
 
       {/* Summary */}
       <div className="flex justify-between items-center mb-4 px-2">
-        <div className="text-(--text-muted) text-sm font-black bg-(--surface-3)/50 px-3 py-1 rounded-full border border-(--border) tracking-tight shadow-xs italic">
+        <div className="text-(--text-muted) text-sm font-medium bg-(--surface-3)/50 px-3 py-1 rounded-full border border-(--border) tabular-nums shadow-xs">
           {!loading && <span>{orcamentos.length} Orçamentos</span>}
         </div>
       </div>
@@ -192,7 +192,7 @@ export default function OportunidadeDeNegocioPage() {
       <div className="w-full bg-(--surface-2) border border-(--border-subtle) rounded-2xl shadow-floating overflow-hidden mb-6">
         <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
           <div className="min-w-[1100px] w-full">
-            <div className="grid grid-cols-[120px_3fr_2fr_2fr_2fr_1.2fr_1.2fr] gap-3 py-3 bg-(--surface-1)/50 border-b border-(--border-subtle) text-(--text-secondary) font-black text-sm px-4 italic tracking-tight">
+            <div className="grid grid-cols-[120px_3fr_2fr_2fr_2fr_1.2fr_1.2fr] gap-3 py-3 bg-(--surface-1)/50 border-b border-(--border-subtle) text-(--text-faint) font-semibold text-[11px] uppercase tracking-wider px-4">
               <div>Número</div>
               <div>Lead</div>
               <div>Contato</div>

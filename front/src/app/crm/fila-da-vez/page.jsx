@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Plus, FolderOpen, X, FileUp, Edit, RefreshCw, Calendar } from 'lucide-react';
@@ -173,12 +173,12 @@ export default function CaptacaoFilaPage() {
   const RenderedQueue = useMemo(() => {
     return queue.map((agent, index) => (
       <div key={agent.id} className="flex flex-col sm:flex-row sm:items-center py-0.5 border-b border-(--border-subtle) last:border-0 gap-2 sm:gap-0 transition-all hover:bg-(--surface-1)/80 px-3 rounded-xl group">
-        <span className="w-8 text-(--text-muted) font-black text-base italic tracking-tight group-hover:text-(--gold) transition-colors">
+        <span className="w-8 text-(--text-muted) font-black text-base  group-hover:text-(--gold) transition-colors">
           {String(index + 1).padStart(2, '0')}
         </span>
         
         <div className="flex items-center gap-2 flex-1">
-          <span className="text-(--text-muted) whitespace-nowrap text-xs font-black tracking-tight italic">Atribuir:</span>
+          <span className="text-(--text-muted) whitespace-nowrap text-xs font-black tracking-tight">Atribuir:</span>
           <form onSubmit={(e) => submitDirectLead(agent.id, agent.nome, e)} className="w-full sm:w-auto flex items-center relative">
             <input 
               type="text" 
@@ -199,7 +199,7 @@ export default function CaptacaoFilaPage() {
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
               <span className="font-black text-base text-(--text-primary) group-hover:text-(--gold-hover) transition-colors leading-tight tracking-tight">{agent.nome}</span>
-              <span className="text-xs font-bold text-(--text-muted) leading-none mt-0 italic tracking-tight">Vendedor</span>
+              <span className="text-xs font-bold text-(--text-muted) leading-none mt-0 ">Vendedor</span>
             </div>
             {!agent.isAvailable ? (
               <span className="text-xs font-black text-(--danger) border border-(--danger)/30 bg-(--danger-soft) px-1.5 py-0.5 rounded-full shadow-xs">Ausente</span>
@@ -265,7 +265,7 @@ export default function CaptacaoFilaPage() {
                </div>
             )}
             {queue.length === 0 && !queueLoading && (
-               <div className="text-(--text-muted) py-4 text-center font-black text-xs italic">Vazio.</div>
+               <div className="text-(--text-muted) py-4 text-center font-black text-xs">Vazio.</div>
             )}
             
             <div className="space-y-0">
@@ -340,7 +340,7 @@ export default function CaptacaoFilaPage() {
             
             <div className="flex items-center gap-3 w-full xl:w-auto justify-end">
               <div className="flex-col items-end mr-1 hidden xl:flex leading-none">
-                <span className="text-xs text-(--text-muted) font-black tracking-tight italic leading-none">Unidade</span>
+                <span className="text-xs text-(--text-muted) font-medium tabular-nums leading-none">Unidade</span>
                 <span className="text-xs font-black text-(--gold) tracking-tight leading-none mt-0.5">
                   {branches.find(b => String(b.id) === String(selectedBranchId))?.nome || 'GLOBAL'}
                 </span>
@@ -411,7 +411,7 @@ export default function CaptacaoFilaPage() {
                       </td>
                       <td className="py-1.5 px-3">
                         <div className="flex flex-col leading-none">
-                          <span className="text-xs font-black text-(--gold) tracking-tight italic">{lead.canal || 'N/D'}</span>
+                          <span className="text-xs font-black text-(--gold) tracking-tight">{lead.canal || 'N/D'}</span>
                           <span className="text-xs font-bold text-(--text-muted) tracking-tight">{lead.origem || '—'}</span>
                         </div>
                       </td>
@@ -429,10 +429,10 @@ export default function CaptacaoFilaPage() {
                           <span className="text-(--text-faint) text-xs font-black">—</span>
                         )}
                       </td>
-                      <td className="py-1.5 px-3 text-(--text-muted) text-xs font-black tracking-tight italic">
+                      <td className="py-1.5 px-3 text-(--text-muted) text-xs font-black tracking-tight">
                         {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('pt-BR') : '—'}
                       </td>
-                      <td className="py-1.5 px-4 text-(--text-muted) text-xs font-black text-right italic tracking-tight">{timeAgo(lead.createdAt)}</td>
+                      <td className="py-1.5 px-4 text-(--text-muted) text-xs font-black text-right ">{timeAgo(lead.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
