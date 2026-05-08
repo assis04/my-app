@@ -774,9 +774,9 @@ export default function LeadsListPage() {
           </div>
         </div>
 
-        <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 shadow-floating mb-2 bg-(--surface-2)/40 backdrop-blur-xl">
+        <div className="mb-4">
           {/* Status Tabs — navegação primária */}
-          <div className="mb-3 pb-3 border-b border-(--border-subtle)">
+          <div className="mb-4 pb-3 border-b border-(--border-subtle)">
             <StatusTabs value={filterStatus} onChange={handleStatusChange} />
           </div>
 

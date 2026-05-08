@@ -58,7 +58,7 @@ export default function AlterarSenha() {
   if (loading || !user) return null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-(--surface-1) font-sans p-4 relative overflow-hidden">
+    <div className="flex min-h-dvh items-center justify-center bg-(--surface-1) font-sans p-4 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-(--gold-soft)/30 rounded-full blur-3xl -mr-64 -mt-64" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-(--gold-soft)/20 rounded-full blur-3xl -ml-64 -mb-64" />
 

@@ -165,10 +165,10 @@ export default function ContaPessoaPage() {
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="glass-card rounded-2xl p-4 mb-6 relative border border-(--border-subtle) shadow-floating bg-(--surface-2)/40 backdrop-blur-xl">
+      {/* Filtros — sem container glass-card (anti-overuse). Hierarquia via espaçamento. */}
+      <div className="mb-6">
         {/* Período (chips + custom range) */}
-        <div className="mb-3 pb-3 border-b border-(--border-subtle)">
+        <div className="mb-4 pb-3 border-b border-(--border-subtle)">
           <PeriodoFilter value={periodoValue} onChange={handlePeriodoChange} />
         </div>
 
@@ -246,12 +246,18 @@ export default function ContaPessoaPage() {
             </thead>
             <tbody className="divide-y divide-(--border-subtle)">
               {loading && accounts.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center">
-                    <div className="w-10 h-10 border-4 border-(--gold-soft) border-t-(--gold) rounded-full animate-spin mx-auto" />
-                    <p className="text-(--text-muted) text-sm animate-pulse mt-3">Sincronizando base...</p>
-                  </td>
-                </tr>
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={`acc-skel-${i}`} className="border-b border-(--border-subtle)/50">
+                    <td className="py-3 px-4 text-center"><span className="block bg-(--surface-3) animate-pulse rounded h-2.5 w-10 mx-auto" /></td>
+                    <td className="py-3 px-3"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-28" /></td>
+                    <td className="py-3 px-3"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-20" /></td>
+                    <td className="py-3 px-3"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-24" /></td>
+                    <td className="py-3 px-3"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-16" /></td>
+                    <td className="py-3 px-3 text-center"><span className="block bg-(--surface-3) animate-pulse rounded-full h-5 w-6 mx-auto" /></td>
+                    <td className="py-3 px-3"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-20" /></td>
+                    <td className="py-3 px-4"></td>
+                  </tr>
+                ))
               )}
               {!loading && accounts.length === 0 && (
                 <tr>
