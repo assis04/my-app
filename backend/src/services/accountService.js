@@ -52,6 +52,33 @@ function isAdm(user) {
 }
 
 /**
+ * Normaliza o limite de uma data pro filtro de período.
+ *
+ * Quando o frontend manda apenas a data (`YYYY-MM-DD`), o navegador
+ * interpreta como `T00:00:00.000Z` — o que faz `lte` excluir registros
+ * criados no próprio dia. Aqui forçamos:
+ *   - 'start' → início do dia em UTC (00:00:00.000)
+ *   - 'end'   → fim do dia em UTC (23:59:59.999)
+ *
+ * Quando o cliente já mandar ISO completo (com hora/offset), respeita.
+ *
+ * @param {string|Date|undefined|null} value
+ * @param {'start'|'end'} boundary
+ * @returns {Date|null}
+ */
+export function parseDateBoundary(value, boundary) {
+  if (value === undefined || value === null || value === '') return null;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return null;
+  // Se vier date-only, aplica fronteira do dia em UTC.
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    if (boundary === 'start') d.setUTCHours(0, 0, 0, 0);
+    else d.setUTCHours(23, 59, 59, 999);
+  }
+  return d;
+}
+
+/**
  * Listagem de contas com filtros — somente leitura.
  *
  * Filtros aceitos (todos opcionais, combinam com AND):
@@ -106,10 +133,12 @@ export async function listAccounts(filters = {}, user) {
     if (digits) where.celular = { contains: digits };
   }
 
-  if (dataInicio || dataFim) {
+  const startDate = parseDateBoundary(dataInicio, 'start');
+  const endDate = parseDateBoundary(dataFim, 'end');
+  if (startDate || endDate) {
     where.createdAt = {};
-    if (dataInicio) where.createdAt.gte = new Date(dataInicio);
-    if (dataFim) where.createdAt.lte = new Date(dataFim);
+    if (startDate) where.createdAt.gte = startDate;
+    if (endDate) where.createdAt.lte = endDate;
   }
 
   // Filtros que dependem de leads vinculados.

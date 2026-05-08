@@ -72,7 +72,7 @@ describe('listAccounts — filtros', () => {
     expect(getWhere().celular).toBeUndefined();
   });
 
-  it('dataInicio + dataFim: monta range em createdAt', async () => {
+  it('dataInicio + dataFim (ISO completo): respeita hora/offset enviados', async () => {
     const start = '2026-04-01T00:00:00Z';
     const end = '2026-04-30T23:59:59Z';
     await listAccounts({ dataInicio: start, dataFim: end }, ADM_USER);
@@ -80,6 +80,37 @@ describe('listAccounts — filtros', () => {
       gte: new Date(start),
       lte: new Date(end),
     });
+  });
+
+  it('dataInicio + dataFim (date-only YYYY-MM-DD): aplica fronteira do dia em UTC', async () => {
+    await listAccounts({ dataInicio: '2026-04-01', dataFim: '2026-04-30' }, ADM_USER);
+    const where = getWhere();
+    expect(where.createdAt.gte.toISOString()).toBe('2026-04-01T00:00:00.000Z');
+    expect(where.createdAt.lte.toISOString()).toBe('2026-04-30T23:59:59.999Z');
+  });
+
+  it('apenas dataInicio: monta só gte (sem upper bound)', async () => {
+    await listAccounts({ dataInicio: '2026-04-01' }, ADM_USER);
+    const where = getWhere();
+    expect(where.createdAt.gte.toISOString()).toBe('2026-04-01T00:00:00.000Z');
+    expect(where.createdAt.lte).toBeUndefined();
+  });
+
+  it('apenas dataFim: monta só lte (sem lower bound)', async () => {
+    await listAccounts({ dataFim: '2026-04-30' }, ADM_USER);
+    const where = getWhere();
+    expect(where.createdAt.gte).toBeUndefined();
+    expect(where.createdAt.lte.toISOString()).toBe('2026-04-30T23:59:59.999Z');
+  });
+
+  it('datas inválidas: ignora silenciosamente (sem createdAt no where)', async () => {
+    await listAccounts({ dataInicio: 'foo', dataFim: 'bar' }, ADM_USER);
+    expect(getWhere().createdAt).toBeUndefined();
+  });
+
+  it('strings vazias em data: ignoradas', async () => {
+    await listAccounts({ dataInicio: '', dataFim: '' }, ADM_USER);
+    expect(getWhere().createdAt).toBeUndefined();
   });
 
   it('status: filtra contas que tenham lead com esse status', async () => {

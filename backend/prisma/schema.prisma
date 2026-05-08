@@ -227,6 +227,9 @@ model Account {
 
   // Índice composto para a regra de identificação cruzada (nome + celular + cep)
   @@unique([celular, nome, cep], name: "account_identity")
+  // Index obrigatório pra range scan eficiente no filtro por período (listAccounts).
+  // Sem isso, o filtro dataInicio/dataFim cai em full table scan.
+  @@index([createdAt])
   @@map("accounts")
 }
 
