@@ -184,18 +184,20 @@ function EtapaModal({ onClose, onConfirm }) {
 }
 
 
-// ── StatusInline: dot + texto colorido (formato minimal, sem pill) ────────
-// Usado nas linhas da tabela. Mais leve visualmente que LeadStatusBadge,
-// preservando reconhecimento por cor via STATUS_COLORS.
-function StatusInline({ status }) {
+// ── StatusBar (Workshop): barra vertical 2px + label tracking-tight ───────
+// Substitui o dot-pill por uma linguagem mais "tooling": a barra colorida
+// sinaliza o status sem usar um circle decorativo. Inspirado em Linear/Cron.
+function StatusBar({ status }) {
   const palette = STATUS_COLORS[status];
   if (!palette) {
-    return <span className="text-sm text-(--text-muted)">{status || '—'}</span>;
+    return <span className="text-xs text-(--text-muted)">{status || '—'}</span>;
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm font-medium">
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${palette.dot}`} aria-hidden />
-      <span className={`${palette.text} truncate`}>{status}</span>
+    <span className="inline-flex items-center gap-2">
+      <span className={`h-3.5 w-[2px] shrink-0 ${palette.dot}`} aria-hidden />
+      <span className="text-xs font-medium text-(--text-secondary) tracking-tight truncate">
+        {status}
+      </span>
     </span>
   );
 }
@@ -367,7 +369,7 @@ function LeadCard({ lead, selected, onToggleSelect, tempLocked, onTempChange, on
       </div>
 
       <div className="mt-2.5 ml-9 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
-        <StatusInline status={lead.status} />
+        <StatusBar status={lead.status} />
         {lead.etapa && (
           <>
             <span className="text-(--text-faint)">·</span>
@@ -758,18 +760,24 @@ export default function LeadsListPage() {
   return (
     <>
       <div className="mb-4 max-w-[1800px] mx-auto">
-        {/* Header */}
-        <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-(--border-subtle) pb-3">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-(--text-primary) tracking-tight">Leads</h1>
-            <p className="text-sm text-(--text-muted) mt-0.5">{pagination.total} registro{pagination.total !== 1 ? 's' : ''}</p>
-          </div>
+        {/* Header — Workshop: title sans + count mono inline, sem subtitle */}
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-(--border-subtle) pb-4">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-(--text-primary) tracking-[-0.02em] flex items-baseline gap-3 min-w-0">
+            Leads
+            <span className="font-mono text-base text-(--text-faint) tabular-nums font-normal">
+              {pagination.total.toString().padStart(2, '0')}
+            </span>
+          </h1>
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={fetchLeads} className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-xl transition-all border border-transparent hover:border-(--gold-soft) shadow-sm active:scale-95" title="Atualizar">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <button onClick={fetchLeads} className="p-2 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-lg transition-colors border border-transparent hover:border-(--gold-soft) active:scale-95" title="Atualizar" style={{ transitionTimingFunction: 'var(--ease-spring)' }}>
+              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
             </button>
-            <button onClick={() => setShowNovoLead(true)} className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 py-2 rounded-2xl hover:shadow-2xl font-semibold shadow-lg transition-all text-sm active:scale-95 whitespace-nowrap tracking-tight">
-              Novo Lead <Plus size={14} />
+            <button
+              onClick={() => setShowNovoLead(true)}
+              className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 h-9 rounded-lg font-semibold transition-transform text-sm active:scale-[0.98] whitespace-nowrap tracking-tight"
+              style={{ boxShadow: 'var(--shadow-warm)', transitionTimingFunction: 'var(--ease-spring)' }}
+            >
+              <Plus size={14} /> Novo lead
             </button>
           </div>
         </div>
@@ -899,9 +907,10 @@ export default function LeadsListPage() {
                           }}
                         />
                       </td>
-                      <td className="py-2 px-3 max-w-[220px] sticky left-0 z-10 bg-(--surface-2) group-hover:bg-(--surface-1) transition-colors">
+                      <td className="py-2.5 px-3 max-w-[240px] sticky left-0 z-10 bg-(--surface-2) group-hover:bg-(--surface-1) transition-colors">
                         <div className="flex flex-col leading-tight min-w-0">
-                          <span className="text-(--text-primary) text-sm font-semibold tracking-tight truncate group-hover:text-(--gold-hover) transition-colors">
+                          {/* Workshop: nome UPPERCASE com tracking-tight — voice editorial */}
+                          <span className="text-(--text-primary) text-sm font-semibold tracking-[-0.01em] uppercase truncate group-hover:text-(--gold-hover) transition-colors">
                             {lead.nome} {lead.sobrenome || ''}
                           </span>
                           <span className="text-[11px] text-(--text-faint) font-mono tabular-nums mt-0.5">
@@ -909,27 +918,27 @@ export default function LeadsListPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium tabular-nums">{formatPhone(lead.celular)}</td>
-                      <td className="py-2 px-3"><StatusInline status={lead.status} /></td>
-                      <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium">{lead.etapa || lead.etapaJornada || '—'}</td>
-                      <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium max-w-[140px] truncate">
+                      <td className="py-2.5 px-3 font-mono text-(--text-secondary) text-sm tabular-nums">{formatPhone(lead.celular)}</td>
+                      <td className="py-2.5 px-3"><StatusBar status={lead.status} /></td>
+                      <td className="py-2.5 px-3 text-(--text-secondary) text-sm font-medium">{lead.etapa || lead.etapaJornada || '—'}</td>
+                      <td className="py-2.5 px-3 text-(--text-secondary) text-sm font-medium max-w-[140px] truncate">
                         {lead.conta?.nome || '—'}
                       </td>
-                      <td className="py-2 px-3 text-(--text-muted) text-sm">{lead.preVendedor?.nome || '—'}</td>
-                      <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">{lead.cep || '—'}</td>
-                      <td className="py-2 px-3 text-sm">
+                      <td className="py-2.5 px-3 text-(--text-muted) text-sm">{lead.preVendedor?.nome || '—'}</td>
+                      <td className="py-2.5 px-3 font-mono text-(--text-muted) text-xs tabular-nums">{lead.cep || '—'}</td>
+                      <td className="py-2.5 px-3 text-xs">
                         {lead.origemExterna
-                          ? <span className="inline-flex items-center gap-1 text-(--gold) font-medium">
-                              <span className="w-1 h-1 rounded-full bg-(--gold)" aria-hidden /> Externo
+                          ? <span className="inline-flex items-center gap-1 text-(--gold) font-medium tracking-tight">
+                              <span className="h-2 w-[2px] bg-(--gold)" aria-hidden /> Externo
                             </span>
                           : <span className="text-(--text-muted)">{lead.origemCanal || 'Manual'}</span>
                         }
                       </td>
-                      <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">
+                      <td className="py-2.5 px-3 font-mono text-(--text-muted) text-xs tabular-nums">
                         {(lead.createdAt || lead.dataCadastro) ? new Date(lead.createdAt || lead.dataCadastro).toLocaleDateString('pt-BR') : '—'}
                       </td>
-                      <td className="py-2 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-0.5">
+                      <td className="py-2.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => router.push(`/crm/leads/${lead.id}`)} className="p-1.5 text-(--text-muted) hover:text-(--gold) transition-colors rounded-lg hover:bg-(--gold-soft)" title="Editar"><Edit size={14} /></button>
                           <RowActionsMenu
                             lead={lead}

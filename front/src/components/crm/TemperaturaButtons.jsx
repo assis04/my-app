@@ -34,25 +34,27 @@ import { friendlyErrorMessage } from '@/lib/apiError';
 //   Muito interesse → verde   (success — prioridade positiva)
 //   Sem interesse   → vermelho (danger — terminal negativo)
 // Trigger é uma bolinha sólida (sem ícone) pra densidade máxima na listagem.
+// Workshop: dot concêntrico — anel externo + centro sólido.
+// Detalhe técnico-mecânico que vira identidade visual sem ser ornamento.
 const OPTIONS = [
   {
     value: 'Sem contato',
-    triggerColor: 'bg-(--text-muted) border-(--text-muted)',
+    ringColor: 'border-(--text-muted)',
     dotColor: 'bg-(--text-muted)',
   },
   {
     value: 'Pouco interesse',
-    triggerColor: 'bg-(--gold) border-(--gold-hover)',
+    ringColor: 'border-(--gold)',
     dotColor: 'bg-(--gold)',
   },
   {
     value: 'Muito interesse',
-    triggerColor: 'bg-(--success) border-(--success)',
+    ringColor: 'border-(--success)',
     dotColor: 'bg-(--success)',
   },
   {
     value: 'Sem interesse',
-    triggerColor: 'bg-(--danger) border-(--danger)',
+    ringColor: 'border-(--danger)',
     dotColor: 'bg-(--danger)',
   },
 ];
@@ -150,18 +152,22 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
         title={error || displayValue}
         disabled={disabled || pending}
         onClick={(e) => {
-          e.stopPropagation(); // row tem onClick de navegação
+          e.stopPropagation();
           setOpen((v) => !v);
         }}
         className={`
-          inline-block w-4 h-4 rounded-full border-2 align-middle
-          transition-all disabled:opacity-50 disabled:cursor-not-allowed
+          inline-flex items-center justify-center w-4 h-4 rounded-full border align-middle
+          transition-transform disabled:opacity-50 disabled:cursor-not-allowed
           hover:scale-110
           ${pending ? 'animate-pulse' : ''}
           ${error ? 'ring-2 ring-(--danger)/40' : ''}
-          ${current.triggerColor}
+          ${current.ringColor}
         `}
-      />
+        style={{ transitionTimingFunction: 'var(--ease-spring)' }}
+      >
+        {/* Dot concêntrico interno — sinaliza estado mesmo em condições de baixo contraste. */}
+        <span className={`w-1.5 h-1.5 rounded-full ${current.dotColor}`} aria-hidden />
+      </button>
 
       {open && coords && createPortal(
         <div

@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="pt" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="antialiased font-sans">
+      <body className="antialiased font-sans grain-overlay">
         <AuthProvider>
           <DashboardShell>
             {children}
