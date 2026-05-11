@@ -57,12 +57,12 @@ export default function LeadFormFields({
     <>
       {/* Seção 1: Identificação */}
       <div className="space-y-3">
-        <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1">
+        <h3 className="text-(--gold) font-semibold text-sm tracking-tight flex items-center gap-2 px-1">
           <UserCheck size={12} className="text-(--gold)" /> Identificação do Lead
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label htmlFor="lead-nome" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Nome *</label>
+            <label htmlFor="lead-nome" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Nome *</label>
             <input
               id="lead-nome"
               data-field="nome"
@@ -79,7 +79,7 @@ export default function LeadFormFields({
             <FieldError message={errors.nome} />
           </div>
           <div className="space-y-1">
-            <label htmlFor="lead-sobrenome" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Sobrenome</label>
+            <label htmlFor="lead-sobrenome" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Sobrenome</label>
             <input
               id="lead-sobrenome"
               type="text"
@@ -93,7 +93,7 @@ export default function LeadFormFields({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1">
-            <label htmlFor="lead-celular" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Celular *</label>
+            <label htmlFor="lead-celular" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Celular *</label>
             <input
               id="lead-celular"
               data-field="celular"
@@ -109,7 +109,7 @@ export default function LeadFormFields({
             <FieldError message={errors.celular} />
           </div>
           <div className="space-y-1">
-            <label htmlFor="lead-email" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">E-mail</label>
+            <label htmlFor="lead-email" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">E-mail</label>
             <input
               id="lead-email"
               data-field="email"
@@ -125,7 +125,7 @@ export default function LeadFormFields({
             <FieldError message={errors.email} />
           </div>
           <div className="space-y-1">
-            <label htmlFor="lead-cep" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">CEP *</label>
+            <label htmlFor="lead-cep" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">CEP *</label>
             <input
               id="lead-cep"
               data-field="cep"
@@ -146,12 +146,12 @@ export default function LeadFormFields({
 
       {/* Seção 2: Cônjuge */}
       <div className="space-y-3">
-        <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1">
+        <h3 className="text-(--gold) font-semibold text-sm tracking-tight flex items-center gap-2 px-1">
           <Heart size={12} className="text-(--gold)" /> Cônjuge (Opcional)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label htmlFor="lead-conjuge-nome" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Nome</label>
+            <label htmlFor="lead-conjuge-nome" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Nome</label>
             <input
               id="lead-conjuge-nome"
               type="text"
@@ -163,7 +163,7 @@ export default function LeadFormFields({
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor="lead-conjuge-sobrenome" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Sobrenome</label>
+            <label htmlFor="lead-conjuge-sobrenome" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Sobrenome</label>
             <input
               id="lead-conjuge-sobrenome"
               type="text"
@@ -177,7 +177,7 @@ export default function LeadFormFields({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1">
-            <label htmlFor="lead-conjuge-celular" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Celular</label>
+            <label htmlFor="lead-conjuge-celular" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Celular</label>
             <input
               id="lead-conjuge-celular"
               type="text"
@@ -189,7 +189,7 @@ export default function LeadFormFields({
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor="lead-conjuge-email" className="text-sm font-black text-(--text-muted) px-1 tracking-tight">E-mail</label>
+            <label htmlFor="lead-conjuge-email" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">E-mail</label>
             <input
               id="lead-conjuge-email"
               data-field="conjugeEmail"
@@ -210,16 +210,16 @@ export default function LeadFormFields({
 
       {/* Seção 3: Atribuição */}
       <div className="space-y-3">
-        <h3 className="text-(--gold) font-black text-sm tracking-tight flex items-center gap-2 px-1">
+        <h3 className="text-(--gold) font-semibold text-sm tracking-tight flex items-center gap-2 px-1">
           <Briefcase size={12} className="text-(--gold)" /> Atribuição
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Canal de Origem</label>
+            <label className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Canal de Origem</label>
             <PremiumSelect placeholder="Selecione..." options={CANAL_OPTIONS} value={form.origemCanal} onChange={e => onChange('origemCanal', e.target.value)} disabled={disabled} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-black text-(--text-muted) px-1 tracking-tight">Pré-vendedor</label>
+            <label className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Pré-vendedor</label>
             {isVendedor && !isAdm ? (
               <input type="text" readOnly value={userName || ''} className="premium-input h-9 px-4 text-base opacity-60 cursor-not-allowed" />
             ) : (

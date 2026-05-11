@@ -49,6 +49,11 @@
 
 /* 💎 Design Tokens */
 @theme {
+  /* Tipografia: Geist (sans) + Geist Mono — carregadas via next/font no layout.
+     Fallback robusto pra system fonts caso a Google Fonts não responda. */
+  --font-sans: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
   --color-bg-base:        #0A0908;
   --color-surface-1:      #15120F;
   --color-surface-2:      #1F1A15;

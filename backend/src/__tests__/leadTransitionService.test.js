@@ -499,16 +499,16 @@ describe('setTemperatura — validações de entrada', () => {
 
   it('rejeita leadId inválido', async () => {
     await expect(
-      setTemperatura({ leadId: 0, temperatura: 'Interessado', user: regularUser }),
+      setTemperatura({ leadId: 0, temperatura: 'Pouco interesse', user: regularUser }),
     ).rejects.toThrow(/leadId/);
     await expect(
-      setTemperatura({ leadId: 'abc', temperatura: 'Interessado', user: regularUser }),
+      setTemperatura({ leadId: 'abc', temperatura: 'Pouco interesse', user: regularUser }),
     ).rejects.toThrow(/leadId/);
   });
 
   it('rejeita quando user está ausente', async () => {
     await expect(
-      setTemperatura({ leadId: 10, temperatura: 'Interessado' }),
+      setTemperatura({ leadId: 10, temperatura: 'Pouco interesse' }),
     ).rejects.toThrow(/Usuário autenticado/);
   });
 
@@ -526,20 +526,20 @@ describe('setTemperatura — lookup e isolamento', () => {
   it('retorna 404 quando Lead não existe', async () => {
     mockPrisma.lead.findFirst.mockResolvedValue(null);
     await expect(
-      setTemperatura({ leadId: 99, temperatura: 'Interessado', user: regularUser }),
+      setTemperatura({ leadId: 99, temperatura: 'Pouco interesse', user: regularUser }),
     ).rejects.toThrow(/Lead não encontrado/);
   });
 
   it('bloqueia acesso cross-filial para não-ADM (403)', async () => {
     mockLeadLoad({ ...leadBase, filialId: 2 });
     await expect(
-      setTemperatura({ leadId: 10, temperatura: 'Interessado', user: regularUser }),
+      setTemperatura({ leadId: 10, temperatura: 'Pouco interesse', user: regularUser }),
     ).rejects.toThrow(/outra filial/);
   });
 
   it('adquire FOR UPDATE lock antes do findFirst', async () => {
     mockLeadLoad(leadBase);
-    await setTemperatura({ leadId: 10, temperatura: 'Interessado', user: regularUser });
+    await setTemperatura({ leadId: 10, temperatura: 'Pouco interesse', user: regularUser });
     const lockCall = mockPrisma.$executeRaw.mock.invocationCallOrder[0];
     const findCall = mockPrisma.lead.findFirst.mock.invocationCallOrder[0];
     expect(lockCall).toBeLessThan(findCall);
@@ -550,7 +550,7 @@ describe('setTemperatura — guard pós-venda', () => {
   it('bloqueia não-ADM ao tentar alterar temperatura em Lead Venda (403)', async () => {
     mockLeadLoad({ ...leadBase, status: LeadStatus.VENDA });
     await expect(
-      setTemperatura({ leadId: 10, temperatura: 'Interessado', user: regularUser }),
+      setTemperatura({ leadId: 10, temperatura: 'Pouco interesse', user: regularUser }),
     ).rejects.toThrow(/edit-after-sale/);
   });
 
@@ -558,7 +558,7 @@ describe('setTemperatura — guard pós-venda', () => {
     mockLeadLoad({ ...leadBase, status: LeadStatus.VENDA });
     const r = await setTemperatura({
       leadId: 10,
-      temperatura: 'Interessado',
+      temperatura: 'Pouco interesse',
       user: { ...admUser, permissions: ['*', 'crm:leads:edit-after-sale'] },
     });
     expect(r.changed).toBe(true);
@@ -571,16 +571,16 @@ describe('setTemperatura — happy path', () => {
 
     const r = await setTemperatura({
       leadId: 10,
-      temperatura: 'Muito interessado',
+      temperatura: 'Muito interesse',
       user: regularUser,
     });
 
     expect(r.changed).toBe(true);
-    expect(r.lead.temperatura).toBe('Muito interessado');
+    expect(r.lead.temperatura).toBe('Muito interesse');
     expect(mockPrisma.lead.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 10 },
-        data: { temperatura: 'Muito interessado' },
+        data: { temperatura: 'Muito interesse' },
       }),
     );
     const historyCall = mockPrisma.leadHistory.create.mock.calls[0][0].data;
@@ -588,26 +588,26 @@ describe('setTemperatura — happy path', () => {
       leadId: 10,
       authorUserId: 7,
       eventType: LeadEventType.TEMPERATURA_CHANGED,
-      payload: { from: null, to: 'Muito interessado' },
+      payload: { from: null, to: 'Muito interesse' },
     });
   });
 
   it('registra from/to corretamente quando já havia uma temperatura anterior', async () => {
-    mockLeadLoad({ ...leadBase, temperatura: 'Interessado' });
+    mockLeadLoad({ ...leadBase, temperatura: 'Pouco interesse' });
     await setTemperatura({
       leadId: 10,
       temperatura: 'Sem interesse',
       user: regularUser,
     });
     const historyCall = mockPrisma.leadHistory.create.mock.calls[0][0].data;
-    expect(historyCall.payload).toEqual({ from: 'Interessado', to: 'Sem interesse' });
+    expect(historyCall.payload).toEqual({ from: 'Pouco interesse', to: 'Sem interesse' });
   });
 
   it('é no-op quando temperatura nova é igual à atual (changed=false, sem history)', async () => {
-    mockLeadLoad({ ...leadBase, temperatura: 'Interessado' });
+    mockLeadLoad({ ...leadBase, temperatura: 'Pouco interesse' });
     const r = await setTemperatura({
       leadId: 10,
-      temperatura: 'Interessado',
+      temperatura: 'Pouco interesse',
       user: regularUser,
     });
     expect(r.changed).toBe(false);
@@ -620,7 +620,7 @@ describe('setTemperatura — happy path', () => {
     mockLeadLoad({ ...leadBase, temperatura: null });
     const r = await setTemperatura({
       leadId: 10,
-      temperatura: 'Interessado',
+      temperatura: 'Pouco interesse',
       user: regularUser,
     });
     expect(r).toHaveProperty('lead');
@@ -845,7 +845,7 @@ describe('reactivateLead — modo "novo"', () => {
     conjugeEmail: 'maria@test.com',
     canceladoEm: new Date('2026-04-01'),
     statusAntesCancelamento: LeadStatus.EM_ATENDIMENTO_LOJA,
-    temperatura: 'Muito interessado',
+    temperatura: 'Muito interesse',
   };
 
   it('cria novo Lead com identidade copiada e pipeline zerado', async () => {

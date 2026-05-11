@@ -44,13 +44,15 @@ export async function create(req, res, next) {
 
 export async function list(req, res, next) {
   try {
-    const { search, status, pre_vendedor_id, page, limit } = req.query;
+    const { search, status, pre_vendedor_id, page, limit, sort_by, sort_dir } = req.query;
     const result = await leadCrmService.listLeads({
       search,
       status,
       preVendedorId: pre_vendedor_id,
       page,
       limit,
+      sortBy: sort_by,
+      sortDir: sort_dir,
     }, req.user);
     return res.json(result);
   } catch (error) {
@@ -278,7 +280,7 @@ export async function reactivateLead(req, res, next) {
  * PUT /api/crm/leads/:id/temperatura — Task #10
  * Contrato: plan §4.4
  *
- * Body: { temperatura: "Muito interessado" | "Interessado" | "Sem interesse" }
+ * Body: { temperatura: "Sem contato" | "Pouco interesse" | "Muito interesse" | "Sem interesse" }
  * Response 200: { lead, historyEvent, changed }
  *   - changed=false quando o valor era igual ao atual (no-op)
  *   - historyEvent=null no mesmo caso

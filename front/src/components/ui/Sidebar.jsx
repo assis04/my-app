@@ -62,7 +62,7 @@ export function Sidebar() {
   const isFinanceiroActive = pathname.startsWith('/financeiro');
 
   return (
-    <aside aria-label="Navegação principal" className="w-64 bg-(--bg-base) flex flex-col justify-between py-6 shrink-0 h-screen sticky top-0 border-r border-(--border-subtle) z-40">
+    <aside aria-label="Navegação principal" className="w-64 bg-(--bg-base) flex flex-col justify-between py-6 shrink-0 h-dvh sticky top-0 border-r border-(--border-subtle) z-40">
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-6 mb-8 flex items-center justify-center">
           <img src="/Valcenter.svg" alt="Móveis Valcenter" className="h-10 w-auto" />

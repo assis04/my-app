@@ -8,9 +8,12 @@ import * as orcamentoService from '../services/orcamentoService.js';
 
 export async function list(req, res, next) {
   try {
-    const { nome, telefone, status, filialId, userId, dataInicio, dataFim, page, limit } = req.query;
+    const { nome, telefone, status, filialId, userId, dataInicio, dataFim, page, limit, sort_by, sort_dir } = req.query;
     const result = await orcamentoService.listOrcamentos(
-      { nome, telefone, status, filialId, userId, dataInicio, dataFim, page, limit },
+      {
+        nome, telefone, status, filialId, userId, dataInicio, dataFim, page, limit,
+        sortBy: sort_by, sortDir: sort_dir,
+      },
       req.user,
     );
     return res.json(result);

@@ -221,7 +221,7 @@ describe('leadCrmController.transitionStatus — controller', () => {
 describe('leadCrmController.setTemperatura — controller', () => {
   it('chama o serviço com params corretos e retorna 200 com o resultado', async () => {
     const serviceResult = {
-      lead: { id: 10, temperatura: 'Muito interessado', kanbanCard: {} },
+      lead: { id: 10, temperatura: 'Muito interesse', kanbanCard: {} },
       historyEvent: { id: 50, eventType: 'temperatura_changed' },
       changed: true,
     };
@@ -229,7 +229,7 @@ describe('leadCrmController.setTemperatura — controller', () => {
 
     const req = mockReq({
       params: { id: '10' },
-      body: { temperatura: 'Muito interessado' },
+      body: { temperatura: 'Muito interesse' },
     });
     const res = mockRes();
     const next = vi.fn();
@@ -239,7 +239,7 @@ describe('leadCrmController.setTemperatura — controller', () => {
     expect(next).not.toHaveBeenCalled();
     expect(mockSetTemperatura).toHaveBeenCalledWith({
       leadId: '10',
-      temperatura: 'Muito interessado',
+      temperatura: 'Muito interesse',
       user: req.user,
     });
     expect(res.json).toHaveBeenCalledWith(serviceResult);
@@ -253,7 +253,7 @@ describe('leadCrmController.setTemperatura — controller', () => {
     const res = mockRes();
     const next = vi.fn();
     await setTemperatura(
-      mockReq({ body: { temperatura: 'Interessado' } }),
+      mockReq({ body: { temperatura: 'Pouco interesse' } }),
       res,
       next,
     );

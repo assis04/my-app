@@ -41,13 +41,15 @@ export const getQueueHistory = async (branchId) => {
 
 // ─── Leads CRM (entidade Lead dedicada) ──────────────────────────────────
 
-export const getLeads = async ({ search, status, preVendedorId, page, limit } = {}) => {
+export const getLeads = async ({ search, status, preVendedorId, page, limit, sortBy, sortDir } = {}) => {
   const params = new URLSearchParams();
   if (search) params.append('search', search);
   if (status) params.append('status', status);
   if (preVendedorId) params.append('pre_vendedor_id', preVendedorId);
   if (page) params.append('page', page);
   if (limit) params.append('limit', limit);
+  if (sortBy) params.append('sort_by', sortBy);
+  if (sortDir) params.append('sort_dir', sortDir);
   return api(`/api/crm/leads?${params.toString()}`);
 };
 
@@ -122,10 +124,10 @@ export const transitionLeadStatus = async (id, { status, motivo, contexto } = {}
 };
 
 /**
- * Atualiza temperatura (Muito interessado | Interessado | Sem interesse).
+ * Atualiza temperatura (Sem contato | Pouco interesse | Muito interesse | Sem interesse).
  * Backend retorna changed:false se valor não mudou (UI não precisa exibir toast).
  * @param {number|string} id
- * @param {'Muito interessado' | 'Interessado' | 'Sem interesse'} temperatura
+ * @param {'Sem contato' | 'Pouco interesse' | 'Muito interesse' | 'Sem interesse'} temperatura
  * @returns {Promise<{ lead, historyEvent, changed: boolean }>}
  */
 export const setLeadTemperatura = async (id, temperatura) => {
@@ -186,8 +188,11 @@ export const getLeadHistory = async (id, { cursor, limit } = {}) => {
  */
 export const getOrcamentos = async (filters = {}) => {
   const params = new URLSearchParams();
+  // Normaliza camelCase do front pra snake_case do backend (mesmo padrão getLeads).
+  const KEY_MAP = { sortBy: 'sort_by', sortDir: 'sort_dir' };
   for (const [k, v] of Object.entries(filters)) {
-    if (v !== undefined && v !== null && v !== '') params.append(k, String(v));
+    if (v === undefined || v === null || v === '') continue;
+    params.append(KEY_MAP[k] || k, String(v));
   }
   const qs = params.toString();
   return api(`/api/crm/orcamentos${qs ? `?${qs}` : ''}`);

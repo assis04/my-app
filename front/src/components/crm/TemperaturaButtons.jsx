@@ -1,63 +1,126 @@
 'use client';
 
-import { useState } from 'react';
-import { Flame, ThermometerSun, Snowflake, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Check } from 'lucide-react';
 import { setLeadTemperatura } from '@/services/crmApi';
 import { friendlyErrorMessage } from '@/lib/apiError';
 
 /**
- * Versão compacta inline do picker de temperatura — pra uso em cada linha
- * da listagem de Leads, antes do ID. 3 botões circulares (~28px).
+ * Dropdown compacto pra setar temperatura do Lead inline na listagem.
  *
- * Diferente do TemperaturaPicker (chips horizontais com label visível,
- * usado em forms de detalhe), este é otimizado pra densidade de tabela:
- *  - sem labels visíveis (tooltip via title= e aria-label)
- *  - cor + ícone (Flame/Sun/Snowflake) — acessível pra daltonismo
- *  - state local de pending por linha (não bloqueia a tabela inteira)
- *  - idempotente no client (clicar no já-ativo é no-op, sem request)
+ * Trigger é uma bolinha sólida 16px com a cor do estado atual — densidade
+ * máxima, identifica o estado por cor pura. Click abre popover via Portal
+ * com as 4 opções e labels completos (dot colorida + texto). Portal escapa
+ * containing blocks criados por ancestrais com `backdrop-filter`/`transform`
+ * (mesmo motivo pelo qual ModalBase usa Portal).
  *
- * Valores de banco mantidos: 'Muito interessado' | 'Interessado' | 'Sem interesse'.
+ * Valores canônicos (espelham backend/src/domain/leadTemperatura.js):
+ *  - 'Sem contato'      (default, ainda não houve interação)
+ *  - 'Pouco interesse'  (morno)
+ *  - 'Muito interesse'  (quente, prioridade)
+ *  - 'Sem interesse'    (terminal negativo)
  *
  * Props:
- *  - leadId: number — id do lead pra disparar PUT /api/crm/leads/:id/temperatura
- *  - value: string|null — temperatura atual ('Muito interessado' | 'Interessado' | 'Sem interesse')
- *  - onChange(updatedLead): callback chamado APÓS sucesso com o lead atualizado
- *                          (para o caller manter sua source-of-truth sincronizada)
+ *  - leadId: number — alvo do PUT /api/crm/leads/:id/temperatura
+ *  - value: string|null — temperatura atual (null tratado como 'Sem contato' visual,
+ *           mas seleção sempre grava o valor explícito)
+ *  - onChange(updatedLead): callback APÓS sucesso, com o lead atualizado
  *  - disabled: boolean — bloqueia interação (ex: lead em status terminal sem permissão)
  */
+// Mapa cor→semântica:
+//   Sem contato     → cinza   (neutro, ainda não interagido)
+//   Pouco interesse → amarelo (gold, brand — interesse moderado)
+//   Muito interesse → verde   (success — prioridade positiva)
+//   Sem interesse   → vermelho (danger — terminal negativo)
+// Trigger é uma bolinha sólida (sem ícone) pra densidade máxima na listagem.
 const OPTIONS = [
   {
-    value: 'Muito interessado',
-    label: 'Lead aquecido',
-    Icon: Flame,
-    activeClasses: 'bg-(--danger) text-white border-(--danger) shadow-[0_0_0_2px_rgba(226,109,92,0.25)]',
-    idleClasses: 'bg-transparent text-(--danger)/60 border-(--border-subtle) hover:border-(--danger) hover:text-(--danger)',
+    value: 'Sem contato',
+    triggerColor: 'bg-(--text-muted) border-(--text-muted)',
+    dotColor: 'bg-(--text-muted)',
   },
   {
-    value: 'Interessado',
-    label: 'Pouco interesse',
-    Icon: ThermometerSun,
-    activeClasses: 'bg-(--gold) text-(--on-gold) border-(--gold) shadow-[0_0_0_2px_rgba(233,182,1,0.25)]',
-    idleClasses: 'bg-transparent text-(--gold)/60 border-(--border-subtle) hover:border-(--gold) hover:text-(--gold)',
+    value: 'Pouco interesse',
+    triggerColor: 'bg-(--gold) border-(--gold-hover)',
+    dotColor: 'bg-(--gold)',
+  },
+  {
+    value: 'Muito interesse',
+    triggerColor: 'bg-(--success) border-(--success)',
+    dotColor: 'bg-(--success)',
   },
   {
     value: 'Sem interesse',
-    label: 'Sem interesse',
-    Icon: Snowflake,
-    activeClasses: 'bg-(--surface-4) text-(--text-primary) border-(--border) shadow-[0_0_0_2px_rgba(74,64,54,0.4)]',
-    idleClasses: 'bg-transparent text-(--text-faint) border-(--border-subtle) hover:border-(--text-muted) hover:text-(--text-muted)',
+    triggerColor: 'bg-(--danger) border-(--danger)',
+    dotColor: 'bg-(--danger)',
   },
 ];
 
+function findOption(value) {
+  return OPTIONS.find((o) => o.value === value) || null;
+}
+
 export default function TemperaturaButtons({ leadId, value, onChange, disabled = false }) {
-  const [pending, setPending] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
+  const triggerRef = useRef(null);
+  const popoverRef = useRef(null);
+  const [coords, setCoords] = useState(null);
 
-  const handleClick = async (newValue) => {
+  // Trata null como "Sem contato" visualmente (durante transição/migração de dados)
+  const displayValue = value || 'Sem contato';
+  const current = findOption(displayValue);
+
+  // Calcula posição do popover relativa ao trigger (Portal → coordenadas viewport).
+  // Trigger é round 28px; popover abre alinhado à esquerda do trigger pra baixo,
+  // com clamp pra não sair da viewport.
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const POPOVER_WIDTH = 180;
+    const VIEWPORT_PADDING = 8;
+    const left = Math.min(
+      Math.max(VIEWPORT_PADDING, rect.left),
+      window.innerWidth - POPOVER_WIDTH - VIEWPORT_PADDING,
+    );
+    setCoords({ top: rect.bottom + 6, left });
+  }, [open]);
+
+  // Click fora / ESC fecham o popover
+  useEffect(() => {
+    if (!open) return;
+
+    const handleClick = (e) => {
+      if (
+        popoverRef.current && !popoverRef.current.contains(e.target) &&
+        triggerRef.current && !triggerRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [open]);
+
+  const handleSelect = async (newValue) => {
     if (disabled || pending) return;
-    if (newValue === value) return; // idempotente — não dispara request
 
-    setPending(newValue);
+    if (newValue === value) {
+      setOpen(false);
+      return;
+    }
+
+    setPending(true);
     setError(null);
 
     try {
@@ -65,56 +128,76 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
       if (result?.changed && result.lead) {
         onChange?.(result.lead);
       } else if (!result?.changed) {
-        // Backend disse "não mudou" — ainda assim repassa pro caller alinhar UI
         onChange?.({ ...result?.lead, temperatura: newValue });
       }
+      setOpen(false);
     } catch (err) {
       setError(friendlyErrorMessage(err) || 'Erro ao atualizar.');
-      // Erro some sozinho após 3s — sem persistência no DOM
       setTimeout(() => setError(null), 3000);
     } finally {
-      setPending(null);
+      setPending(false);
     }
   };
 
   return (
-    <div
-      className="inline-flex items-center gap-1"
-      role="radiogroup"
-      aria-label="Temperatura do lead"
-      title={error || undefined}
-    >
-      {OPTIONS.map(({ value: optValue, label, Icon, activeClasses, idleClasses }) => {
-        const isActive = value === optValue;
-        const isPending = pending === optValue;
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Temperatura: ${displayValue}`}
+        title={error || displayValue}
+        disabled={disabled || pending}
+        onClick={(e) => {
+          e.stopPropagation(); // row tem onClick de navegação
+          setOpen((v) => !v);
+        }}
+        className={`
+          inline-block w-4 h-4 rounded-full border-2 align-middle
+          transition-all disabled:opacity-50 disabled:cursor-not-allowed
+          hover:scale-110
+          ${pending ? 'animate-pulse' : ''}
+          ${error ? 'ring-2 ring-(--danger)/40' : ''}
+          ${current.triggerColor}
+        `}
+      />
 
-        return (
-          <button
-            key={optValue}
-            type="button"
-            role="radio"
-            aria-checked={isActive}
-            aria-label={label}
-            title={label}
-            disabled={disabled || pending !== null}
-            onClick={(e) => {
-              e.stopPropagation(); // crítico — row tem onClick navegação
-              handleClick(optValue);
-            }}
-            className={`
-              inline-flex items-center justify-center w-7 h-7 rounded-full border transition-all
-              disabled:opacity-50 disabled:cursor-not-allowed
-              ${error ? 'ring-2 ring-(--danger)/40' : ''}
-              ${isActive ? activeClasses : idleClasses}
-            `}
-          >
-            {isPending
-              ? <Loader2 size={12} className="animate-spin" />
-              : <Icon size={12} />
-            }
-          </button>
-        );
-      })}
-    </div>
+      {open && coords && createPortal(
+        <div
+          ref={popoverRef}
+          role="listbox"
+          aria-label="Selecionar temperatura"
+          className="fixed z-50 w-[180px] rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150 origin-top-left"
+          style={{ top: coords.top, left: coords.left }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {OPTIONS.map(({ value: optValue, dotColor }) => {
+            const isActive = displayValue === optValue;
+            return (
+              <button
+                key={optValue}
+                type="button"
+                role="option"
+                aria-selected={isActive}
+                disabled={pending}
+                onClick={() => handleSelect(optValue)}
+                className={`
+                  w-full flex items-center gap-2.5 px-3 py-2 text-sm font-bold tracking-tight
+                  transition-colors text-left
+                  ${isActive ? 'bg-(--surface-3) text-(--text-primary)' : 'text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary)'}
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                `}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
+                <span className="flex-1">{optValue}</span>
+                {isActive && <Check size={13} className="text-(--gold)" aria-hidden />}
+              </button>
+            );
+          })}
+        </div>,
+        document.body,
+      )}
+    </>
   );
 }

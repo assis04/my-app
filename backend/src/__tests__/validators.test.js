@@ -286,8 +286,8 @@ describe('transitionStatusSchema', () => {
 });
 
 describe('temperaturaSchema', () => {
-  it('aceita os 3 valores canônicos', () => {
-    for (const t of ['Muito interessado', 'Interessado', 'Sem interesse']) {
+  it('aceita os 4 valores canônicos', () => {
+    for (const t of ['Sem contato', 'Pouco interesse', 'Muito interesse', 'Sem interesse']) {
       const r = temperaturaSchema.safeParse({ temperatura: t });
       expect(r.success).toBe(true);
       expect(r.data.temperatura).toBe(t);
@@ -296,7 +296,10 @@ describe('temperaturaSchema', () => {
 
   it('rejeita valor fora do enum', () => {
     expect(temperaturaSchema.safeParse({ temperatura: 'Quente' }).success).toBe(false);
-    expect(temperaturaSchema.safeParse({ temperatura: 'muito interessado' }).success).toBe(false);
+    expect(temperaturaSchema.safeParse({ temperatura: 'muito interesse' }).success).toBe(false);
+    // valores antigos (renomeados em 2026-05-07) também são rejeitados
+    expect(temperaturaSchema.safeParse({ temperatura: 'Muito interessado' }).success).toBe(false);
+    expect(temperaturaSchema.safeParse({ temperatura: 'Interessado' }).success).toBe(false);
   });
 
   it('rejeita campo ausente', () => {

@@ -11,6 +11,7 @@ import filialRoutes from "./src/routes/filialRoutes.js";
 import equipeRoutes from "./src/routes/equipeRoutes.js";
 import crmRoutes from "./src/routes/crmRoutes.js";
 import taskRoutes from "./src/routes/taskRoutes.js";
+import docsRoutes from "./src/routes/docsRoutes.js";
 import { env } from "./src/config/env.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 import { initSocket } from './src/config/socket.js';
@@ -56,6 +57,7 @@ app.use('/filiais', filialRoutes);
 app.use('/equipes', equipeRoutes);
 app.use('/api/crm', crmRoutes); // Módulo de CRM (inclui fila da vez, leads, orçamentos)
 app.use('/api/tasks', taskRoutes); // Módulo de Tarefas
+app.use('/api', docsRoutes); // Documentação OpenAPI (admin-only): /api/docs e /api/docs.json
 
 // Tratamento Global de Erros (Middleware)
 app.use(errorHandler);

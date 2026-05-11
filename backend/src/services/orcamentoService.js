@@ -201,6 +201,14 @@ export async function getOrcamentoByLeadId(leadId, user) {
 // ─── List (refator do crmService.getAllOrcamentos) ─────────────────────────
 
 /**
+ * Whitelist de campos sortáveis. Cada campo precisa estar indexado no DB
+ * (ver schema.prisma — orcamentos tem index em status e createdAt).
+ * `numero` é único + não tem index dedicado, mas é texto curto e cardinalidade
+ * baixa em queries paginadas.
+ */
+const SORTABLE_FIELDS = Object.freeze(['createdAt', 'numero', 'status']);
+
+/**
  * Lista Orçamentos com filtros. Filtros aceitos:
  *   - nome (lead.nome contains, case-insensitive)
  *   - telefone (lead.celular contains)
@@ -209,6 +217,7 @@ export async function getOrcamentoByLeadId(leadId, user) {
  *   - userId (lead.vendedorId)
  *   - dataInicio / dataFim (orcamento.createdAt)
  *   - page, limit
+ *   - sortBy (whitelist em SORTABLE_FIELDS), sortDir ('asc' | 'desc')
  *
  * Scoping por filial: não-ADM só vê Orçamentos de leads da sua filial.
  */
@@ -223,6 +232,8 @@ export async function listOrcamentos(filters = {}, user) {
     dataFim,
     page = 1,
     limit = 50,
+    sortBy,
+    sortDir,
   } = filters;
 
   const pageInt = Math.max(1, parseInt(page, 10) || 1);
@@ -250,6 +261,12 @@ export async function listOrcamentos(filters = {}, user) {
     if (dataFim) where.createdAt.lte = new Date(dataFim);
   }
 
+  // Resolução do orderBy com fallback silencioso em input inválido — mesmo
+  // padrão de Leads (whitelist + default createdAt desc).
+  const safeField = SORTABLE_FIELDS.includes(sortBy) ? sortBy : 'createdAt';
+  const safeDir = sortDir === 'asc' ? 'asc' : 'desc';
+  const orderBy = { [safeField]: safeDir };
+
   const [data, total] = await prisma.$transaction([
     prisma.orcamento.findMany({
       where,
@@ -262,7 +279,7 @@ export async function listOrcamentos(filters = {}, user) {
         },
         criadoPor: { select: { id: true, nome: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       skip: (pageInt - 1) * limitInt,
       take: limitInt,
     }),

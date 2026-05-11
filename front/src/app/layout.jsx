@@ -1,9 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DashboardShell } from '@/components/ui/DashboardShell';
+
+// Geist: tipografia geométrica neutra do time da Vercel — única, sóbria,
+// elimina o "AI slop" do default Inter/Helvetica. Geist Mono pra tabular-nums
+// em métricas, IDs, telefones (já consumido via classes utilitárias do Tailwind).
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
 
 export default function RootLayout({ children }) {
   // Auditoria de a11y em runtime — só em desenvolvimento. axe-core abre console
@@ -21,8 +28,8 @@ export default function RootLayout({ children }) {
   }, []);
 
   return (
-    <html lang="pt">
-      <body className="antialiased">
+    <html lang="pt" className={`${geist.variable} ${geistMono.variable}`}>
+      <body className="antialiased font-sans">
         <AuthProvider>
           <DashboardShell>
             {children}

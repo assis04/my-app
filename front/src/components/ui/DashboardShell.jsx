@@ -22,7 +22,7 @@ export function DashboardShell({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-(--bg-base) text-(--text-primary) font-sans relative page-transition">
+    <div className="flex h-dvh bg-(--bg-base) text-(--text-primary) font-sans relative page-transition">
       <button
         className="md:hidden absolute top-4 left-4 z-50 bg-(--surface-2) p-2 rounded-xl border border-(--border) text-(--text-muted) shadow-(--shadow-premium) transition-all hover:bg-(--surface-3) hover:text-(--text-primary)"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

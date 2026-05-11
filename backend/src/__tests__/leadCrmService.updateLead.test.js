@@ -74,7 +74,7 @@ describe('updateLead — Guard 1: mutação de status/etapa via PUT genérico', 
 describe('updateLead — Guard 2: campos gerenciados por endpoints dedicados', () => {
   it('rejeita temperatura (tem endpoint /temperatura dedicado)', async () => {
     await expect(
-      updateLead(10, { temperatura: 'Muito interessado' }, regularUser),
+      updateLead(10, { temperatura: 'Muito interesse' }, regularUser),
     ).rejects.toThrow(/temperatura.*endpoint dedicado/);
   });
 
