@@ -149,20 +149,22 @@ export default function ContaPessoaPage() {
 
   return (
     <div className="mb-4 max-w-[1600px] mx-auto">
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-(--border-subtle) pb-3">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold text-(--text-primary) tracking-tight">Conta / Pessoa</h1>
-          <p className="text-sm text-(--text-muted) mt-0.5">Contas criadas automaticamente pelo fluxo de Leads</p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={fetchAccounts}
-            className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-xl transition-all border border-transparent hover:border-(--gold-soft) shadow-sm active:scale-95"
-            title="Sincronizar"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          </button>
-        </div>
+      {/* Header — identidade Workshop: title sans + count mono inline */}
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-(--border-subtle) pb-4">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-(--text-primary) tracking-[-0.02em] flex items-baseline gap-3 min-w-0">
+          Contas
+          <span className="font-mono text-base text-(--text-faint) tabular-nums font-normal">
+            {pagination.total.toString().padStart(2, '0')}
+          </span>
+        </h1>
+        <button
+          onClick={fetchAccounts}
+          className="p-2 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-lg transition-colors border border-transparent hover:border-(--gold-soft) active:scale-95"
+          title="Sincronizar"
+          style={{ transitionTimingFunction: 'var(--ease-spring)' }}
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+        </button>
       </div>
 
       {/* Filtros — sem container glass-card (anti-overuse). Hierarquia via espaçamento. */}
@@ -276,23 +278,23 @@ export default function ContaPessoaPage() {
                   className="hover:bg-(--surface-1)/60 transition-colors group cursor-pointer"
                   onClick={() => router.push(`/crm/conta-pessoa/${acc.id}`)}
                 >
-                  <td className="py-2 px-4 text-(--text-faint) text-center text-xs font-mono tabular-nums group-hover:text-(--gold) transition-colors">#{String(acc.id).padStart(4, '0')}</td>
-                  <td className="py-2 px-3">
-                    <span className="text-(--text-primary) text-sm font-semibold tracking-tight group-hover:text-(--gold-hover) transition-colors">{acc.nome}</span>
+                  <td className="py-2.5 px-4 text-(--text-faint) text-center text-xs font-mono tabular-nums group-hover:text-(--gold) transition-colors">#{String(acc.id).padStart(4, '0')}</td>
+                  <td className="py-2.5 px-3">
+                    <span className="text-(--text-primary) text-sm font-semibold tracking-[-0.01em] uppercase group-hover:text-(--gold-hover) transition-colors">{acc.nome}</span>
                   </td>
-                  <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium">{acc.sobrenome}</td>
-                  <td className="py-2 px-3 text-(--text-secondary) text-sm tabular-nums">{acc.celular}</td>
-                  <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">{acc.cep}</td>
+                  <td className="py-2.5 px-3 text-(--text-secondary) text-sm font-medium uppercase tracking-[-0.01em]">{acc.sobrenome}</td>
+                  <td className="py-2.5 px-3 font-mono text-(--text-secondary) text-sm tabular-nums">{acc.celular}</td>
+                  <td className="py-2.5 px-3 font-mono text-(--text-muted) text-xs tabular-nums">{acc.cep}</td>
                   <td className="py-2 px-3 text-center">
                     <span className="inline-flex items-center justify-center bg-(--gold-soft) text-(--gold) text-xs font-semibold border border-(--gold)/30 px-2 py-0.5 rounded-full min-w-[24px] tabular-nums">
                       {acc._count?.leads ?? 0}
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">
+                  <td className="py-2.5 px-3 font-mono text-(--text-muted) text-xs tabular-nums">
                     {acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('pt-BR') : '—'}
                   </td>
-                  <td className="py-2 px-4 text-center">
-                    <ChevronRight size={14} className="text-(--text-muted) group-hover:text-(--gold) mx-auto transition-colors" />
+                  <td className="py-2.5 px-4 text-center">
+                    <ChevronRight size={14} className="text-(--text-faint) group-hover:text-(--gold) mx-auto transition-colors" />
                   </td>
                 </tr>
               ))}

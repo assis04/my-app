@@ -103,22 +103,22 @@ export default function Tarefas() {
             ) : (
               taskList.map((task) => (
                 <tr key={task.id} className="hover:bg-(--surface-1)/60 transition-colors group">
-                  <td className="py-2 px-4 w-10">
-                    <button onClick={() => toggleTaskStatus(task.id, task.status)} className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${task.status === 'CONCLUIDA' ? 'bg-(--success) border-(--success) text-white' : 'bg-(--surface-2) border-(--border) text-transparent hover:border-(--success)'}`}>
+                  <td className="py-2.5 px-4 w-10">
+                    <button onClick={() => toggleTaskStatus(task.id, task.status)} className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${task.status === 'CONCLUIDA' ? 'bg-(--success) border-(--success) text-white' : 'bg-(--surface-2) border-(--border) text-transparent hover:border-(--success)'}`}>
                       <CheckCircle2 size={14} />
                     </button>
                   </td>
-                  <td className="py-2 px-4">
-                    <div className={`font-semibold tracking-tight ${task.status === 'CONCLUIDA' ? 'line-through text-(--text-muted)' : 'text-(--text-primary)'} text-sm`}>
+                  <td className="py-2.5 px-4">
+                    <div className={`font-semibold tracking-[-0.01em] ${task.status === 'CONCLUIDA' ? 'line-through text-(--text-muted)' : 'text-(--text-primary)'} text-sm`}>
                       {task.titulo}
                     </div>
                     {task.assignedToEquipe && (
-                      <div className="text-xs text-(--gold) font-medium mt-0.5 inline-flex items-center gap-1">
-                        <span className="w-1 h-1 rounded-full bg-(--gold)" /> {task.assignedToEquipe.nome}
+                      <div className="text-[11px] text-(--gold) font-medium mt-0.5 inline-flex items-center gap-1.5 uppercase tracking-wider">
+                        <span className="h-2 w-[2px] bg-(--gold)" aria-hidden /> {task.assignedToEquipe.nome}
                       </div>
                     )}
                   </td>
-                  <td className="py-2 px-4 text-(--text-secondary) text-sm tabular-nums">
+                  <td className="py-2.5 px-4 font-mono text-(--text-muted) text-xs tabular-nums">
                     {task.dataVencimento ? new Date(task.dataVencimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '—'}
                   </td>
                   <td className="py-2 px-4 text-right">
@@ -142,16 +142,19 @@ export default function Tarefas() {
 
   return (
     <>
-      <header className="flex justify-between items-center mb-6 pb-3 border-b border-(--border-subtle)">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-(--text-primary) tracking-tight">Tarefas</h1>
-          <p className="text-sm text-(--text-muted) mt-0.5">Gestão pessoal e de equipes</p>
-        </div>
+      <header className="flex flex-wrap justify-between items-center gap-3 mb-6 pb-4 border-b border-(--border-subtle)">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-(--text-primary) tracking-[-0.02em] flex items-baseline gap-3 min-w-0">
+          Tarefas
+          <span className="font-mono text-base text-(--text-faint) tabular-nums font-normal">
+            {tasks.length.toString().padStart(2, '0')}
+          </span>
+        </h1>
         <button
           onClick={() => setModalData({})}
-          className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 py-2 rounded-2xl hover:shadow-2xl font-semibold shadow-lg transition-all text-sm active:scale-95 whitespace-nowrap tracking-tight"
+          className="flex items-center gap-2 bg-(--gold) text-(--on-gold) px-4 h-9 rounded-lg font-semibold transition-transform text-sm active:scale-[0.98] whitespace-nowrap tracking-tight"
+          style={{ boxShadow: 'var(--shadow-warm)', transitionTimingFunction: 'var(--ease-spring)' }}
         >
-          Nova Tarefa <Plus size={14} />
+          <Plus size={14} /> Nova tarefa
         </button>
       </header>
 

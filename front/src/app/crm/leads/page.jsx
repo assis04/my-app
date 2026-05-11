@@ -22,6 +22,7 @@ import { requiresAdminToEdit, STATUS_COLORS, STATUS_ORDER } from '@/lib/leadStat
 import { CRM_PERMISSIONS, hasPermission } from '@/lib/permissions';
 import LeadFormFields from '@/components/crm/LeadFormFields';
 import TemperaturaButtons from '@/components/crm/TemperaturaButtons';
+import StatusBar from '@/components/crm/StatusBar';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 
@@ -184,22 +185,10 @@ function EtapaModal({ onClose, onConfirm }) {
 }
 
 
-// ── StatusBar (Workshop): barra vertical 2px + label tracking-tight ───────
-// Substitui o dot-pill por uma linguagem mais "tooling": a barra colorida
-// sinaliza o status sem usar um circle decorativo. Inspirado em Linear/Cron.
-function StatusBar({ status }) {
-  const palette = STATUS_COLORS[status];
-  if (!palette) {
-    return <span className="text-xs text-(--text-muted)">{status || '—'}</span>;
-  }
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span className={`h-3.5 w-[2px] shrink-0 ${palette.dot}`} aria-hidden />
-      <span className="text-xs font-medium text-(--text-secondary) tracking-tight truncate">
-        {status}
-      </span>
-    </span>
-  );
+// StatusBar (identidade Workshop) extraído em @/components/crm/StatusBar.
+// Wrapper local resolve a palette do Lead pra simplificar callsites.
+function LeadStatusBar({ status }) {
+  return <StatusBar palette={STATUS_COLORS[status]} label={status} />;
 }
 
 // ── StatusTabs: navegação primária via chips segmented ────────────────────
@@ -369,7 +358,7 @@ function LeadCard({ lead, selected, onToggleSelect, tempLocked, onTempChange, on
       </div>
 
       <div className="mt-2.5 ml-9 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
-        <StatusBar status={lead.status} />
+        <LeadStatusBar status={lead.status} />
         {lead.etapa && (
           <>
             <span className="text-(--text-faint)">·</span>
@@ -919,7 +908,7 @@ export default function LeadsListPage() {
                         </div>
                       </td>
                       <td className="py-2.5 px-3 font-mono text-(--text-secondary) text-sm tabular-nums">{formatPhone(lead.celular)}</td>
-                      <td className="py-2.5 px-3"><StatusBar status={lead.status} /></td>
+                      <td className="py-2.5 px-3"><LeadStatusBar status={lead.status} /></td>
                       <td className="py-2.5 px-3 text-(--text-secondary) text-sm font-medium">{lead.etapa || lead.etapaJornada || '—'}</td>
                       <td className="py-2.5 px-3 text-(--text-secondary) text-sm font-medium max-w-[140px] truncate">
                         {lead.conta?.nome || '—'}

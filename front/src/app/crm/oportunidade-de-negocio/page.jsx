@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Search, RefreshCw, Users, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import PremiumSelect from '@/components/ui/PremiumSelect';
 import PeriodoFilter, { buildPeriodoQuery } from '@/components/crm/PeriodoFilter';
-import OrcamentoStatusBadge from '@/components/crm/OrcamentoStatusBadge';
+import StatusBar from '@/components/crm/StatusBar';
 import { getOrcamentos } from '@/services/crmApi';
 import { STATUS_ORDER, STATUS_COLORS } from '@/lib/orcamentoStatus';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -24,18 +24,9 @@ import { useDebounce } from '@/hooks/useDebounce';
  * Specs: specs/crm-non.md
  */
 
-// ─── StatusInline: dot + texto colorido (formato minimal, sem pill) ───────
-function StatusInline({ status }) {
-  const palette = STATUS_COLORS[status];
-  if (!palette) {
-    return <span className="text-sm text-(--text-muted)">{status || '—'}</span>;
-  }
-  return (
-    <span className="inline-flex items-center gap-1.5 text-sm font-medium">
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${palette.dot}`} aria-hidden />
-      <span className={`${palette.text} truncate`}>{status}</span>
-    </span>
-  );
+// StatusBar (identidade Workshop) — wrapper local com palette do Orçamento.
+function OrcamentoStatusBar({ status }) {
+  return <StatusBar palette={STATUS_COLORS[status]} label={status} />;
 }
 
 // ─── StatusTabs: chips segmented pra navegação primária ───────────────────
@@ -282,20 +273,21 @@ export default function OportunidadeDeNegocioPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-(--border-subtle) pb-3">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold text-(--text-primary) tracking-tight">Oportunidade de Negócio</h1>
-          <p className="text-sm text-(--text-muted) mt-0.5">
-            Para criar: abra um Lead e clique em &quot;Nova Oportunidade&quot;.
-          </p>
-        </div>
+      {/* Header — identidade Workshop */}
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-(--border-subtle) pb-4">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-(--text-primary) tracking-[-0.02em] flex items-baseline gap-3 min-w-0">
+          Orçamentos
+          <span className="font-mono text-base text-(--text-faint) tabular-nums font-normal">
+            {orcamentos.length.toString().padStart(2, '0')}
+          </span>
+        </h1>
         <button
           onClick={fetchOrcamentos}
-          className="p-1.5 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-xl transition-all border border-transparent hover:border-(--gold-soft) shadow-sm active:scale-95"
+          className="p-2 text-(--text-muted) hover:text-(--gold) hover:bg-(--gold-soft) rounded-lg transition-colors border border-transparent hover:border-(--gold-soft) active:scale-95"
           title="Sincronizar"
+          style={{ transitionTimingFunction: 'var(--ease-spring)' }}
         >
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
@@ -389,30 +381,30 @@ export default function OportunidadeDeNegocioPage() {
                     onClick={() => router.push(`/crm/oportunidade-de-negocio/${orc.id}`)}
                     className="hover:bg-(--surface-1)/60 transition-colors group cursor-pointer"
                   >
-                    <td className="py-2 px-3">
+                    <td className="py-2.5 px-3">
                       <span className="font-mono tabular-nums text-(--gold) text-sm font-semibold" title={orc.numero}>
                         {orc.numero}
                       </span>
                     </td>
-                    <td className="py-2 px-3 max-w-[220px]">
-                      <span className="text-(--text-primary) text-sm font-semibold tracking-tight truncate group-hover:text-(--gold-hover) transition-colors" title={lead.nome}>
+                    <td className="py-2.5 px-3 max-w-[220px]">
+                      <span className="text-(--text-primary) text-sm font-semibold tracking-[-0.01em] uppercase truncate group-hover:text-(--gold-hover) transition-colors" title={lead.nome}>
                         {lead.nome || '—'}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-(--text-secondary) text-sm font-medium tabular-nums">
+                    <td className="py-2.5 px-3 font-mono text-(--text-secondary) text-sm tabular-nums">
                       {lead.celular || '—'}
                     </td>
-                    <td className="py-2 px-3 text-(--text-muted) text-sm" title={lead.vendedor?.nome}>
+                    <td className="py-2.5 px-3 text-(--text-muted) text-sm" title={lead.vendedor?.nome}>
                       {lead.vendedor?.nome || '—'}
                     </td>
-                    <td className="py-2 px-3 text-(--text-secondary) text-sm" title={lead.filial?.nome}>
+                    <td className="py-2.5 px-3 text-(--text-secondary) text-sm" title={lead.filial?.nome}>
                       {lead.filial?.nome || '—'}
                     </td>
-                    <td className="py-2 px-3 text-(--text-muted) text-sm tabular-nums">
+                    <td className="py-2.5 px-3 font-mono text-(--text-muted) text-xs tabular-nums">
                       {orc.createdAt ? new Date(orc.createdAt).toLocaleDateString('pt-BR') : '—'}
                     </td>
-                    <td className="py-2 px-3">
-                      <StatusInline status={orc.status} />
+                    <td className="py-2.5 px-3">
+                      <OrcamentoStatusBar status={orc.status} />
                     </td>
                   </tr>
                 );
