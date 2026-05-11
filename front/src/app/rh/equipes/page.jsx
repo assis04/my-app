@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Users, Plus, Edit, Search, Trash2, Loader2, RefreshCw, AlertTriangle, X } from 'lucide-react';
+import { Users, Plus, Edit, Search, Trash2, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
@@ -104,57 +104,66 @@ export default function Equipes() {
           </div>
         </header>
 
-        <div className="glass-card border border-(--border-subtle) rounded-3xl p-4 md:p-6 shadow-floating mb-6">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-            <h2 className="text-base font-black text-(--text-primary) flex items-center gap-3">
-              <div className="w-8 h-8 bg-(--gold-soft) rounded-xl flex items-center justify-center border border-(--gold-soft) shadow-sm">
-                <Users size={18} className="text-(--gold)" />
-              </div>
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+            <h2 className="text-base font-semibold text-(--text-primary) flex items-center gap-2 tracking-tight">
+              <Users size={16} className="text-(--gold)" />
               Equipes
             </h2>
             <div className="relative w-full lg:w-72 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-(--text-muted) group-focus-within:text-(--gold) transition-colors" size={16} />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) group-focus-within:text-(--gold) transition-colors" size={14} />
               <input
                 type="text"
                 placeholder="Filtrar por nome ou líder..."
-                className="w-full bg-(--surface-1) text-sm text-(--text-primary) pl-11 pr-4 py-2.5 rounded-2xl border border-(--border) focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/10 outline-none transition-all font-bold placeholder:text-(--text-muted) placeholder:font-medium"
+                className="w-full bg-(--surface-2) text-sm text-(--text-primary) pl-10 pr-4 h-9 rounded-2xl border border-(--border) focus:border-(--gold) focus:ring-4 focus:ring-(--gold)/5 outline-none transition-all font-medium placeholder:text-(--text-muted) shadow-xs"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Estados de loading / erro / vazio */}
-          {loading && !modalData ? (
-            <div className="flex justify-center items-center py-20 bg-(--surface-1)/10 rounded-2xl border border-dashed border-(--border-subtle)">
-              <Loader2 size={32} className="animate-spin text-(--gold)" />
+          {error && (
+            <div className="mb-4 text-center py-4 bg-(--danger-soft) rounded-2xl border border-(--danger)/30 text-(--danger) font-medium flex items-center justify-center gap-2 text-sm">
+              <AlertTriangle size={14} /> {error}
             </div>
-          ) : error ? (
-            <div className="text-center py-16 bg-(--danger-soft) rounded-2xl border border-(--danger)/30 text-(--danger) font-bold flex items-center justify-center gap-3 text-sm">
-              <AlertTriangle size={18} /> {error}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-20 bg-(--surface-1)/10 rounded-2xl border border-dashed border-(--border-subtle) group">
-              <Users size={40} className="mx-auto text-(--text-faint) mb-4 group-hover:text-(--gold-soft) transition-colors" />
-              <p className="text-(--text-muted) font-bold text-xs">
-                {search ? 'Nenhum resultado encontrado.' : 'Nenhuma equipe estruturada.'}
-              </p>
-            </div>
-          ) : (
-            <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle)">
+          )}
+
+          <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
+            <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap text-(--text-secondary) border-collapse">
-                <thead className="bg-(--surface-1)/80 text-(--text-secondary) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
+                <thead className="bg-(--surface-1)/40 text-(--text-faint) font-semibold text-[11px] uppercase tracking-wider border-b border-(--border-subtle)">
                   <tr>
-                    <th className="py-2 px-4">Identificação</th>
-                    <th className="py-2 px-4">Lider</th>
-                    <th className="py-2 px-4 text-center">Membros</th>
-                    <th className="py-2 px-4">Filial</th>
-                    <th className="py-2 px-4">Status</th>
-                    <th className="py-2 px-4 text-right">Controle</th>
+                    <th className="py-2.5 px-4">Identificação</th>
+                    <th className="py-2.5 px-4">Líder</th>
+                    <th className="py-2.5 px-4 text-center">Membros</th>
+                    <th className="py-2.5 px-4">Filial</th>
+                    <th className="py-2.5 px-4">Status</th>
+                    <th className="py-2.5 px-4 text-right">Controle</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-(--border-subtle)">
-                  {filtered.map((equipe) => (
+                  {loading && !modalData ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={`eqp-skel-${i}`} className="border-b border-(--border-subtle)/50">
+                        <td className="py-3 px-4"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-32" /></td>
+                        <td className="py-3 px-4"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-28" /></td>
+                        <td className="py-3 px-4"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-20 mx-auto" /></td>
+                        <td className="py-3 px-4"><span className="block bg-(--surface-3) animate-pulse rounded h-3 w-24" /></td>
+                        <td className="py-3 px-4"><span className="block bg-(--surface-3) animate-pulse rounded-full h-4 w-14" /></td>
+                        <td className="py-3 px-4"></td>
+                      </tr>
+                    ))
+                  ) : filtered.length === 0 ? (
+                    <tr><td colSpan={6} className="py-14 text-center">
+                      <div className="w-10 h-10 bg-(--surface-1) rounded-2xl flex items-center justify-center mx-auto mb-3 border border-(--border-subtle) text-(--text-faint)">
+                        <Users size={18} />
+                      </div>
+                      <p className="text-(--text-muted) text-sm font-medium">
+                        {search ? 'Nenhum resultado encontrado.' : 'Nenhuma equipe estruturada.'}
+                      </p>
+                    </td></tr>
+                  ) : (
+                    filtered.map((equipe) => (
                     <tr key={equipe.id} className="hover:bg-(--surface-1) transition-all group">
                       <td className="py-2 px-4 font-black text-(--text-primary) group-hover:text-(--gold-hover) transition-colors tracking-tight">{equipe.nome}</td>
                       <td className="py-2 px-4">
@@ -201,11 +210,12 @@ export default function Equipes() {
                         </PermissionGate>
                       </td>
                     </tr>
-                  ))}
+                  ))
+                  )}
                 </tbody>
               </table>
             </div>
-          )}
+          </div>
         </div>
       {modalData !== null && (
         <EquipeModal
