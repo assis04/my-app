@@ -831,8 +831,8 @@ export default function LeadsListPage() {
           </div>
 
           {/* Listagem + preview pane (split view em ≥lg quando ?selected=ID) */}
-          <div className={selectedId ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start' : ''}>
-          <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
+          <div className={selectedId ? 'lg:flex lg:gap-4 lg:items-start' : ''}>
+          <div className={`w-full min-w-0 overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2) ${selectedId ? 'lg:flex-1' : ''}`}>
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-(--border-subtle)">
               {loading && leads.length === 0 && <LeadsCardSkeleton rows={4} />}
@@ -1039,7 +1039,7 @@ export default function LeadsListPage() {
         </div>
         {/* Preview lateral (split view) — só desktop ≥lg */}
         {selectedId && (
-          <div className="hidden lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
+          <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
             <LeadPreviewPane leadId={selectedId} onClose={handleClosePreview} />
           </div>
         )}
