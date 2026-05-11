@@ -178,7 +178,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           style={{ top: coords.top, left: coords.left }}
           onClick={(e) => e.stopPropagation()}
         >
-          {OPTIONS.map(({ value: optValue, dotColor }) => {
+          {OPTIONS.map(({ value: optValue, ringColor, dotColor }) => {
             const isActive = displayValue === optValue;
             return (
               <button
@@ -189,15 +189,18 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
                 disabled={pending}
                 onClick={() => handleSelect(optValue)}
                 className={`
-                  w-full flex items-center gap-2.5 px-3 py-2 text-sm font-bold tracking-tight
+                  w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium tracking-tight
                   transition-colors text-left
                   ${isActive ? 'bg-(--surface-3) text-(--text-primary)' : 'text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary)'}
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
               >
-                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
-                <span className="flex-1">{optValue}</span>
-                {isActive && <Check size={13} className="text-(--gold)" aria-hidden />}
+                {/* Anel concêntrico — consistente com o trigger principal */}
+                <span className={`inline-flex items-center justify-center w-[14px] h-[14px] shrink-0 rounded-full border-2 box-border ${ringColor}`} aria-hidden>
+                  <span className={`w-[5px] h-[5px] rounded-full ${dotColor}`} />
+                </span>
+                <span className="flex-1 min-w-0 truncate">{optValue}</span>
+                {isActive && <Check size={13} className="text-(--gold) shrink-0" aria-hidden />}
               </button>
             );
           })}
