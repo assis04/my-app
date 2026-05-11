@@ -23,6 +23,7 @@ import { CRM_PERMISSIONS, hasPermission } from '@/lib/permissions';
 import LeadFormFields from '@/components/crm/LeadFormFields';
 import TemperaturaButtons from '@/components/crm/TemperaturaButtons';
 import StatusBar from '@/components/crm/StatusBar';
+import LeadPreviewPane from './components/LeadPreviewPane';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 
@@ -575,6 +576,9 @@ export default function LeadsListPage() {
   const urlPage = Number(searchParams.get('page') || 1);
   const currentSort = parseSort(searchParams.get('sort'));
   const hasFilters = Boolean(urlSearch || filterStatus);
+  // Split view: ?selected=ID abre preview lateral à direita (desktop ≥lg).
+  // Em viewport <lg cai pra navegação tradicional via router.push.
+  const selectedId = searchParams.get('selected') || '';
 
   const [leads, setLeads] = useState([]);
   const [sellers, setSellers] = useState([]);
@@ -656,6 +660,21 @@ export default function LeadsListPage() {
 
   const handleStatusChange = (status) => {
     updateParams({ status: status || undefined, page: undefined });
+  };
+
+  // Click numa row: desktop (≥lg) abre preview lateral via ?selected=ID;
+  // mobile (<lg) navega pro detalhe completo (sem espaço pra split view).
+  const handleRowClick = (lead) => {
+    const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+    if (isDesktop) {
+      updateParams({ selected: String(lead.id) });
+    } else {
+      router.push(`/crm/leads/${lead.id}`);
+    }
+  };
+
+  const handleClosePreview = () => {
+    updateParams({ selected: undefined });
   };
 
   const handlePageChange = (page) => {
@@ -811,7 +830,8 @@ export default function LeadsListPage() {
             </div>
           </div>
 
-          {/* Listagem: cards em mobile (<md), tabela em desktop (≥md) */}
+          {/* Listagem + preview pane (split view em ≥lg quando ?selected=ID) */}
+          <div className={selectedId ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start' : ''}>
           <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-(--border-subtle)">
@@ -879,7 +899,13 @@ export default function LeadsListPage() {
                   {leads.map(lead => {
                     const tempLocked = requiresAdminToEdit(lead.status) && !hasPermission(user, CRM_PERMISSIONS.EDIT_AFTER_SALE);
                     return (
-                    <tr key={lead.id} className="hover:bg-(--surface-1)/60 transition-colors group">
+                    <tr
+                      key={lead.id}
+                      onClick={() => handleRowClick(lead)}
+                      className={`hover:bg-(--surface-1)/60 transition-colors group cursor-pointer ${
+                        String(lead.id) === selectedId ? 'bg-(--surface-1)/80' : ''
+                      }`}
+                    >
                       <td className="py-2 px-3">
                         <input type="checkbox" checked={selectedIds.includes(lead.id)} onChange={() => toggleSelect(lead.id)}
                           className="w-3.5 h-3.5 rounded accent-(--gold) cursor-pointer" />
@@ -1010,6 +1036,13 @@ export default function LeadsListPage() {
               </div>
             );
           })()}
+        </div>
+        {/* Preview lateral (split view) — só desktop ≥lg */}
+        {selectedId && (
+          <div className="hidden lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
+            <LeadPreviewPane leadId={selectedId} onClose={handleClosePreview} />
+          </div>
+        )}
         </div>
       </div>
 
