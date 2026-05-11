@@ -156,9 +156,9 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           setOpen((v) => !v);
         }}
         className={`
-          inline-flex items-center justify-center w-4 h-4 rounded-full border align-middle
-          transition-transform disabled:opacity-50 disabled:cursor-not-allowed
-          hover:scale-110
+          inline-flex items-center justify-center w-[18px] h-[18px] shrink-0 rounded-full border-2 align-middle box-border
+          transition-shadow disabled:opacity-50 disabled:cursor-not-allowed
+          hover:ring-2 hover:ring-(--gold)/30
           ${pending ? 'animate-pulse' : ''}
           ${error ? 'ring-2 ring-(--danger)/40' : ''}
           ${current.ringColor}
@@ -166,7 +166,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
         style={{ transitionTimingFunction: 'var(--ease-spring)' }}
       >
         {/* Dot concêntrico interno — sinaliza estado mesmo em condições de baixo contraste. */}
-        <span className={`w-1.5 h-1.5 rounded-full ${current.dotColor}`} aria-hidden />
+        <span className={`w-[7px] h-[7px] rounded-full ${current.dotColor}`} aria-hidden />
       </button>
 
       {open && coords && createPortal(
