@@ -475,7 +475,7 @@ function RowActionsMenu({ lead, onEdit, onCreateOpportunity, onTransfer, onChang
         <div
           ref={popoverRef}
           role="menu"
-          className="fixed z-50 w-[220px] rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150 origin-top-right"
+          className="fixed z-50 w-[220px] overflow-hidden rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl p-1 animate-in fade-in zoom-in-95 duration-150 origin-top-right"
           style={{ top: coords.top, left: coords.left }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -504,7 +504,7 @@ function RowActionsMenu({ lead, onEdit, onCreateOpportunity, onTransfer, onChang
                 role="menuitem"
                 href={`tel:${lead.celular.replace(/\D/g, '')}`}
                 onClick={close}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary) transition-colors"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary) transition-colors"
               >
                 <Phone size={14} className="shrink-0" />
                 Ligar
@@ -532,7 +532,7 @@ function MenuItem({ icon: Icon, onClick, children, variant, keepOpen }) {
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium tracking-tight transition-colors text-left ${colorClass}`}
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium tracking-tight transition-colors text-left ${colorClass}`}
     >
       <Icon size={14} className="shrink-0" />
       <span className="flex-1">{children}</span>
