@@ -305,18 +305,16 @@ function EmptyState({ hasFilters, onClear }) {
 
 // ── LeadCard: layout em card pra <md (substitui tabela em mobile) ─────────
 function LeadCard({ lead, selected, onToggleSelect, tempLocked, onTempChange, onEdit, onTransfer, onChangeEtapa, onCreateOpportunity, onDelete }) {
-  const router = useRouter();
   return (
-    <div className="px-4 py-3.5 hover:bg-(--surface-1)/40 transition-colors">
+    <div className="px-4 py-3.5 hover:bg-(--surface-1)/30 transition-colors">
       <div className="flex items-start gap-3">
         <input
           type="checkbox"
           checked={selected}
           onChange={onToggleSelect}
-          onClick={(e) => e.stopPropagation()}
           className="mt-1 w-3.5 h-3.5 rounded accent-(--gold) cursor-pointer shrink-0"
         />
-        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+        <div className="shrink-0">
           <TemperaturaButtons
             leadId={lead.id}
             value={lead.temperatura}
@@ -325,11 +323,8 @@ function LeadCard({ lead, selected, onToggleSelect, tempLocked, onTempChange, on
           />
         </div>
 
-        <button
-          type="button"
-          onClick={() => router.push(`/crm/leads/${lead.id}`)}
-          className="flex-1 min-w-0 text-left"
-        >
+        {/* Bloco de identidade — não-clicável. Navegação só pelo RowActionsMenu (Editar). */}
+        <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
             <span className="text-(--text-primary) text-sm font-semibold tracking-tight truncate">
               {lead.nome} {lead.sobrenome || ''}
@@ -343,9 +338,17 @@ function LeadCard({ lead, selected, onToggleSelect, tempLocked, onTempChange, on
               {formatPhone(lead.celular)}
             </div>
           )}
-        </button>
+        </div>
 
-        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+        <div className="shrink-0 flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => onEdit(lead)}
+            className="p-1.5 text-(--text-muted) hover:text-(--gold) transition-colors rounded-lg hover:bg-(--gold-soft)"
+            title="Editar"
+          >
+            <Edit size={14} />
+          </button>
           <RowActionsMenu
             lead={lead}
             onEdit={onEdit}
@@ -881,8 +884,7 @@ export default function LeadsListPage() {
                     return (
                     <tr
                       key={lead.id}
-                      onClick={() => router.push(`/crm/leads/${lead.id}`)}
-                      className="hover:bg-(--surface-1)/60 transition-colors group cursor-pointer"
+                      className="hover:bg-(--surface-1)/30 transition-colors group"
                     >
                       <td className="py-2 px-3">
                         <input type="checkbox" checked={selectedIds.includes(lead.id)} onChange={() => toggleSelect(lead.id)}
