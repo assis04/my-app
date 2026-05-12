@@ -23,7 +23,6 @@ import { CRM_PERMISSIONS, hasPermission } from '@/lib/permissions';
 import LeadFormFields from '@/components/crm/LeadFormFields';
 import TemperaturaButtons from '@/components/crm/TemperaturaButtons';
 import StatusBar from '@/components/crm/StatusBar';
-import LeadPreviewPane from './components/LeadPreviewPane';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 
@@ -576,9 +575,6 @@ export default function LeadsListPage() {
   const urlPage = Number(searchParams.get('page') || 1);
   const currentSort = parseSort(searchParams.get('sort'));
   const hasFilters = Boolean(urlSearch || filterStatus);
-  // Split view: ?selected=ID abre preview lateral à direita (desktop ≥lg).
-  // Em viewport <lg cai pra navegação tradicional via router.push.
-  const selectedId = searchParams.get('selected') || '';
 
   const [leads, setLeads] = useState([]);
   const [sellers, setSellers] = useState([]);
@@ -660,22 +656,6 @@ export default function LeadsListPage() {
 
   const handleStatusChange = (status) => {
     updateParams({ status: status || undefined, page: undefined });
-  };
-
-  // Click numa row: ≥900px abre preview lateral via ?selected=ID;
-  // viewport menor navega pro detalhe completo (sem espaço pra split view).
-  // Breakpoint sincronizado com .lead-split em globals.css.
-  const handleRowClick = (lead) => {
-    const isWide = typeof window !== 'undefined' && window.matchMedia('(min-width: 900px)').matches;
-    if (isWide) {
-      updateParams({ selected: String(lead.id) });
-    } else {
-      router.push(`/crm/leads/${lead.id}`);
-    }
-  };
-
-  const handleClosePreview = () => {
-    updateParams({ selected: undefined });
   };
 
   const handlePageChange = (page) => {
@@ -831,10 +811,8 @@ export default function LeadsListPage() {
             </div>
           </div>
 
-          {/* Listagem + preview pane (split view via classe CSS global .lead-split).
-              data-active="true" ativa o layout flex horizontal em ≥lg. */}
-          <div className="lead-split" data-active={selectedId ? 'true' : 'false'}>
-          <div className="lead-split-main overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
+          {/* Listagem */}
+          <div className="w-full overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-(--border-subtle)">
               {loading && leads.length === 0 && <LeadsCardSkeleton rows={4} />}
@@ -903,10 +881,8 @@ export default function LeadsListPage() {
                     return (
                     <tr
                       key={lead.id}
-                      onClick={() => handleRowClick(lead)}
-                      className={`hover:bg-(--surface-1)/60 transition-colors group cursor-pointer ${
-                        String(lead.id) === selectedId ? 'bg-(--surface-1)/80' : ''
-                      }`}
+                      onClick={() => router.push(`/crm/leads/${lead.id}`)}
+                      className="hover:bg-(--surface-1)/60 transition-colors group cursor-pointer"
                     >
                       <td className="py-2 px-3">
                         <input type="checkbox" checked={selectedIds.includes(lead.id)} onChange={() => toggleSelect(lead.id)}
@@ -1038,14 +1014,6 @@ export default function LeadsListPage() {
               </div>
             );
           })()}
-        </div>
-        {/* Preview lateral — width/sticky/hidden controlados pela classe
-            CSS global .lead-split-aside (media query @media min-width 1024px). */}
-        {selectedId && (
-          <div className="lead-split-aside hidden lg:block">
-            <LeadPreviewPane leadId={selectedId} onClose={handleClosePreview} />
-          </div>
-        )}
         </div>
       </div>
 

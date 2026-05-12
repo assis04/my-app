@@ -92,40 +92,6 @@
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Split-view layout pra Lead list + preview lateral.
-   !important defensivo pra ganhar sobre qualquer utility Tailwind eventualmente
-   aplicada inline (w-full, flex-col, etc) nos descendentes. */
-.lead-split {
-  display: block;
-  width: 100%;
-}
-.lead-split > .lead-split-main {
-  width: 100%;
-}
-/* Breakpoint 900px (mais permissivo que lg=1024) — split funciona em
-   laptops apertados e mesmo com DevTools docked na lateral. */
-@media (min-width: 900px) {
-  .lead-split[data-active="true"] {
-    display: flex !important;
-    gap: 1rem !important;
-    align-items: flex-start !important;
-    flex-direction: row !important;
-  }
-  .lead-split[data-active="true"] > .lead-split-main {
-    flex: 1 1 0% !important;
-    min-width: 0 !important;
-    width: auto !important;
-  }
-  .lead-split[data-active="true"] > .lead-split-aside {
-    display: block !important;
-    width: 380px !important;
-    flex-shrink: 0 !important;
-    position: sticky !important;
-    top: 1rem !important;
-    max-height: calc(100vh - 2rem);
-  }
-}
-
 /* Grain overlay global — textura sutil que conecta com brand Valcenter (madeira/material).
    pointer-events-none + z-50 + 4% opacity = visual depth sem custo de interação. */
 .grain-overlay::before {
