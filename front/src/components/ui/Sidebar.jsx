@@ -123,6 +123,7 @@ export function Sidebar() {
                   <SubLink href="/rh/controle-de-ponto" label="Controle de Ponto" pathname={pathname} />
                   <SubLink href="/rh/metas" label="Metas" pathname={pathname} />
                   <SubLink href="/rh/comissoes" label="Comissões" pathname={pathname} />
+                  <SubLink href="/rh/api-keys" label="Chaves de API" pathname={pathname} />
                 </SubMenu>
               )}
             </div>

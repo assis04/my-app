@@ -12,6 +12,8 @@ import equipeRoutes from "./src/routes/equipeRoutes.js";
 import crmRoutes from "./src/routes/crmRoutes.js";
 import taskRoutes from "./src/routes/taskRoutes.js";
 import docsRoutes from "./src/routes/docsRoutes.js";
+import publicRoutes from "./src/routes/publicRoutes.js";
+import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 import { env } from "./src/config/env.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 import { initSocket } from './src/config/socket.js';
@@ -58,6 +60,8 @@ app.use('/equipes', equipeRoutes);
 app.use('/api/crm', crmRoutes); // Módulo de CRM (inclui fila da vez, leads, orçamentos)
 app.use('/api/tasks', taskRoutes); // Módulo de Tarefas
 app.use('/api', docsRoutes); // Documentação OpenAPI (admin-only): /api/docs e /api/docs.json
+app.use('/api/public', publicRoutes); // Intake externo (landing pages) via X-Api-Key
+app.use('/api/admin/api-keys', apiKeyRoutes); // Gestão de API keys (admin-only)
 
 // Tratamento Global de Erros (Middleware)
 app.use(errorHandler);
