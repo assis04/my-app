@@ -92,6 +92,36 @@
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Split-view layout pra Lead list + preview lateral.
+   Definido em CSS global porque arbitrary values em ternaries dinâmicos do
+   Tailwind v4 não estavam sendo detectados consistentemente. */
+.lead-split {
+  display: block;
+  width: 100%;
+}
+.lead-split > .lead-split-main {
+  width: 100%;
+}
+@media (min-width: 1024px) {
+  .lead-split[data-active="true"] {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .lead-split[data-active="true"] > .lead-split-main {
+    flex: 1 1 0%;
+    min-width: 0;
+    width: auto;
+  }
+  .lead-split[data-active="true"] > .lead-split-aside {
+    width: 380px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
 /* Grain overlay global — textura sutil que conecta com brand Valcenter (madeira/material).
    pointer-events-none + z-50 + 4% opacity = visual depth sem custo de interação. */
 .grain-overlay::before {

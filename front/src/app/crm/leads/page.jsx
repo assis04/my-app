@@ -830,15 +830,10 @@ export default function LeadsListPage() {
             </div>
           </div>
 
-          {/* Listagem + preview pane (split view em ≥lg quando ?selected=ID).
-              Inline style em vez de Tailwind arbitrary value pra eliminar
-              dependência do compilation pass — algumas combinações de classes
-              dynamic não estavam sendo detectadas pelo content scanner v4. */}
-          <div style={selectedId ? { display: 'flex', gap: '1rem', alignItems: 'flex-start' } : undefined}>
-          <div
-            className="overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)"
-            style={selectedId ? { flex: '1 1 0%', minWidth: 0 } : { width: '100%' }}
-          >
+          {/* Listagem + preview pane (split view via classe CSS global .lead-split).
+              data-active="true" ativa o layout flex horizontal em ≥lg. */}
+          <div className="lead-split" data-active={selectedId ? 'true' : 'false'}>
+          <div className="lead-split-main overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)">
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-(--border-subtle)">
               {loading && leads.length === 0 && <LeadsCardSkeleton rows={4} />}
@@ -1043,13 +1038,10 @@ export default function LeadsListPage() {
             );
           })()}
         </div>
-        {/* Preview lateral (split view) — só desktop ≥lg.
-            Width fixo via inline style; sticky via classes; hidden mobile. */}
+        {/* Preview lateral — width/sticky/hidden controlados pela classe
+            CSS global .lead-split-aside (media query @media min-width 1024px). */}
         {selectedId && (
-          <div
-            className="hidden lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]"
-            style={{ width: 380, flexShrink: 0 }}
-          >
+          <div className="lead-split-aside hidden lg:block">
             <LeadPreviewPane leadId={selectedId} onClose={handleClosePreview} />
           </div>
         )}
