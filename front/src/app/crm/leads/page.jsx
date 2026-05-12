@@ -832,7 +832,7 @@ export default function LeadsListPage() {
 
           {/* Listagem + preview pane (split view em ≥lg quando ?selected=ID) */}
           <div className={selectedId ? 'lg:flex lg:gap-4 lg:items-start' : ''}>
-          <div className={`w-full min-w-0 overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2) ${selectedId ? 'lg:flex-1' : ''}`}>
+          <div className={`w-full min-w-0 overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2) ${selectedId ? 'lg:w-auto lg:flex-1' : ''}`}>
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-(--border-subtle)">
               {loading && leads.length === 0 && <LeadsCardSkeleton rows={4} />}
