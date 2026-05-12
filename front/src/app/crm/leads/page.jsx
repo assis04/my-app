@@ -830,9 +830,15 @@ export default function LeadsListPage() {
             </div>
           </div>
 
-          {/* Listagem + preview pane (split view em ≥lg quando ?selected=ID) */}
-          <div className={selectedId ? 'lg:flex lg:gap-4 lg:items-start' : ''}>
-          <div className={`w-full min-w-0 overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2) ${selectedId ? 'lg:w-auto lg:flex-1' : ''}`}>
+          {/* Listagem + preview pane (split view em ≥lg quando ?selected=ID).
+              Inline style em vez de Tailwind arbitrary value pra eliminar
+              dependência do compilation pass — algumas combinações de classes
+              dynamic não estavam sendo detectadas pelo content scanner v4. */}
+          <div style={selectedId ? { display: 'flex', gap: '1rem', alignItems: 'flex-start' } : undefined}>
+          <div
+            className="overflow-hidden rounded-2xl border border-(--border-subtle) bg-(--surface-2)"
+            style={selectedId ? { flex: '1 1 0%', minWidth: 0 } : { width: '100%' }}
+          >
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-(--border-subtle)">
               {loading && leads.length === 0 && <LeadsCardSkeleton rows={4} />}
@@ -1037,9 +1043,13 @@ export default function LeadsListPage() {
             );
           })()}
         </div>
-        {/* Preview lateral (split view) — só desktop ≥lg */}
+        {/* Preview lateral (split view) — só desktop ≥lg.
+            Width fixo via inline style; sticky via classes; hidden mobile. */}
         {selectedId && (
-          <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
+          <div
+            className="hidden lg:block lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]"
+            style={{ width: 380, flexShrink: 0 }}
+          >
             <LeadPreviewPane leadId={selectedId} onClose={handleClosePreview} />
           </div>
         )}
