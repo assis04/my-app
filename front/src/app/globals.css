@@ -93,8 +93,8 @@
 }
 
 /* Split-view layout pra Lead list + preview lateral.
-   Definido em CSS global porque arbitrary values em ternaries dinâmicos do
-   Tailwind v4 não estavam sendo detectados consistentemente. */
+   !important defensivo pra ganhar sobre qualquer utility Tailwind eventualmente
+   aplicada inline (w-full, flex-col, etc) nos descendentes. */
 .lead-split {
   display: block;
   width: 100%;
@@ -104,20 +104,22 @@
 }
 @media (min-width: 1024px) {
   .lead-split[data-active="true"] {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
+    display: flex !important;
+    gap: 1rem !important;
+    align-items: flex-start !important;
+    flex-direction: row !important;
   }
   .lead-split[data-active="true"] > .lead-split-main {
-    flex: 1 1 0%;
-    min-width: 0;
-    width: auto;
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    width: auto !important;
   }
   .lead-split[data-active="true"] > .lead-split-aside {
-    width: 380px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 1rem;
+    display: block !important;
+    width: 380px !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 1rem !important;
     max-height: calc(100vh - 2rem);
   }
 }
