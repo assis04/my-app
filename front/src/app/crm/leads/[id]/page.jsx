@@ -22,7 +22,9 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { useLeadActions } from '@/hooks/useLeadActions';
 
 import LeadHeader from './components/LeadHeader';
-import LeadAside from './components/LeadAside';
+import LeadContaCard from './components/LeadContaCard';
+import LeadOrcamentoCard from './components/LeadOrcamentoCard';
+import LeadHistorySection from './components/LeadHistorySection';
 import DirtyBar from './components/DirtyBar';
 import LeadDetailSkeleton from './components/LeadDetailSkeleton';
 
@@ -319,37 +321,37 @@ export default function EditLeadPage() {
         </div>
       )}
 
-      {/* Layout principal: 8/4 em xl, stacked abaixo */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <main className="xl:col-span-8">
-          <div className="bg-(--surface-2) border border-(--border-subtle) rounded-3xl p-6 shadow-floating space-y-6">
-            <LeadFormFields
-              form={form}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              errors={errors}
-              sellers={sellers}
-              isVendedor={isVendedor}
-              isAdm={isAdm}
-              userName={user?.nome}
-              disabled={formDisabled}
-            />
-          </div>
-        </main>
+      {/* ZONA 1 — Campos editáveis (peso visual máximo) */}
+      <section className="bg-(--surface-2) border border-(--border-subtle) rounded-3xl p-6 space-y-6">
+        <LeadFormFields
+          form={form}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          errors={errors}
+          sellers={sellers}
+          isVendedor={isVendedor}
+          isAdm={isAdm}
+          userName={user?.nome}
+          disabled={formDisabled}
+        />
+      </section>
 
-        <div className="xl:col-span-4">
-          <LeadAside
-            conta={conta}
-            orcamento={orcamento}
-            history={history}
-            leadId={leadId}
-            isTerminalSale={isTerminalSale}
-            isCancelado={isCancelado}
-            creatingOrcamento={creatingOrcamento}
-            onCreateOrcamento={handleCreateOrcamento}
-          />
-        </div>
-      </div>
+      {/* ZONA 2 — Relações em 2-col paritárias (Conta + Orçamento) */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <LeadContaCard conta={conta} />
+        <LeadOrcamentoCard
+          orcamento={orcamento}
+          isTerminalSale={isTerminalSale}
+          isCancelado={isCancelado}
+          creatingOrcamento={creatingOrcamento}
+          onCreateOrcamento={handleCreateOrcamento}
+        />
+      </section>
+
+      {/* ZONA 3 — Histórico full-width na base */}
+      <section className="mt-6">
+        <LeadHistorySection leadId={leadId} history={history} />
+      </section>
 
       <DirtyBar
         isDirty={isDirty && !formDisabled}
