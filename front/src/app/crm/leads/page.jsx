@@ -662,11 +662,12 @@ export default function LeadsListPage() {
     updateParams({ status: status || undefined, page: undefined });
   };
 
-  // Click numa row: desktop (≥lg) abre preview lateral via ?selected=ID;
-  // mobile (<lg) navega pro detalhe completo (sem espaço pra split view).
+  // Click numa row: ≥900px abre preview lateral via ?selected=ID;
+  // viewport menor navega pro detalhe completo (sem espaço pra split view).
+  // Breakpoint sincronizado com .lead-split em globals.css.
   const handleRowClick = (lead) => {
-    const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
-    if (isDesktop) {
+    const isWide = typeof window !== 'undefined' && window.matchMedia('(min-width: 900px)').matches;
+    if (isWide) {
       updateParams({ selected: String(lead.id) });
     } else {
       router.push(`/crm/leads/${lead.id}`);
