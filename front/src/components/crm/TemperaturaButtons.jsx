@@ -34,29 +34,12 @@ import { friendlyErrorMessage } from '@/lib/apiError';
 //   Muito interesse → verde   (success — prioridade positiva)
 //   Sem interesse   → vermelho (danger — terminal negativo)
 // Trigger é uma bolinha sólida (sem ícone) pra densidade máxima na listagem.
-// Workshop: dot concêntrico — anel externo + centro sólido.
-// Detalhe técnico-mecânico que vira identidade visual sem ser ornamento.
+// Dot sólido por canal — leitura imediata, alta densidade.
 const OPTIONS = [
-  {
-    value: 'Sem contato',
-    ringColor: 'border-(--text-muted)',
-    dotColor: 'bg-(--text-muted)',
-  },
-  {
-    value: 'Pouco interesse',
-    ringColor: 'border-(--gold)',
-    dotColor: 'bg-(--gold)',
-  },
-  {
-    value: 'Muito interesse',
-    ringColor: 'border-(--success)',
-    dotColor: 'bg-(--success)',
-  },
-  {
-    value: 'Sem interesse',
-    ringColor: 'border-(--danger)',
-    dotColor: 'bg-(--danger)',
-  },
+  { value: 'Sem contato',    dotColor: 'bg-(--text-muted)' },
+  { value: 'Pouco interesse', dotColor: 'bg-(--gold)' },
+  { value: 'Muito interesse', dotColor: 'bg-(--success)' },
+  { value: 'Sem interesse',  dotColor: 'bg-(--danger)' },
 ];
 
 function findOption(value) {
@@ -156,18 +139,15 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           setOpen((v) => !v);
         }}
         className={`
-          inline-flex items-center justify-center w-[18px] h-[18px] shrink-0 rounded-full border-2 align-middle box-border
+          inline-block w-3.5 h-3.5 shrink-0 rounded-full align-middle
           transition-shadow disabled:opacity-50 disabled:cursor-not-allowed
           hover:ring-2 hover:ring-(--gold)/30
           ${pending ? 'animate-pulse' : ''}
           ${error ? 'ring-2 ring-(--danger)/40' : ''}
-          ${current.ringColor}
+          ${current.dotColor}
         `}
         style={{ transitionTimingFunction: 'var(--ease-spring)' }}
-      >
-        {/* Dot concêntrico interno — sinaliza estado mesmo em condições de baixo contraste. */}
-        <span className={`w-[7px] h-[7px] rounded-full ${current.dotColor}`} aria-hidden />
-      </button>
+      />
 
       {open && coords && createPortal(
         <div
@@ -178,7 +158,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           style={{ top: coords.top, left: coords.left }}
           onClick={(e) => e.stopPropagation()}
         >
-          {OPTIONS.map(({ value: optValue, ringColor, dotColor }) => {
+          {OPTIONS.map(({ value: optValue, dotColor }) => {
             const isActive = displayValue === optValue;
             return (
               <button
@@ -195,10 +175,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
               >
-                {/* Anel concêntrico — consistente com o trigger principal */}
-                <span className={`inline-flex items-center justify-center w-[14px] h-[14px] shrink-0 rounded-full border-2 box-border ${ringColor}`} aria-hidden>
-                  <span className={`w-[5px] h-[5px] rounded-full ${dotColor}`} />
-                </span>
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
                 <span className="flex-1 min-w-0 truncate">{optValue}</span>
                 {isActive && <Check size={13} className="text-(--gold) shrink-0" aria-hidden />}
               </button>
