@@ -10,6 +10,8 @@ export const createLeadSchema = z.object({
   conjugeCelular: z.string().max(20).optional().default(''),
   conjugeEmail: z.string().email('E-mail do cônjuge inválido.').optional().or(z.literal('')).default(''),
   origemCanal: z.string().max(50).optional().default(''),
+  investimento: z.string().max(120).optional().default(''),
+  ambientes: z.string().max(2000).optional().default(''),
   preVendedorId: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
     z.number().int().positive().nullable()

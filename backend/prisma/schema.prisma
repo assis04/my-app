@@ -160,6 +160,14 @@ model Lead {
   origemCanal   String? @map("origem_canal")
   origemExterna Boolean @default(false) @map("origem_externa")
 
+  // === Qualificação (capturada no intake externo via landing page) ===
+  // Faixa de orçamento declarada pelo lead (ex: "R$ 30.000 a R$ 50.000").
+  // String pra flexibilidade — pode ser dropdown ou input livre na landing.
+  investimento String?
+  // Descrição livre dos ambientes que o lead quer orçar
+  // (ex: "Cozinha, Sala, Dormitório do casal").
+  ambientes    String?
+
   // === Cônjuge ===
   conjugeNome      String? @map("conjuge_nome")
   conjugeSobrenome String? @map("conjuge_sobrenome")

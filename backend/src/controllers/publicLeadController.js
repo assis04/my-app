@@ -33,8 +33,11 @@ export async function create(req, res, next) {
         sobrenome: req.body.sobrenome || '',
         celular: req.body.celular,
         email: req.body.email || null,
-        cep: req.body.cep,
+        cep: req.body.cep || null,
         origemCanal: req.body.origemCanal || '',
+        // Qualificação inicial declarada no form da landing
+        investimento: req.body.investimento || null,
+        ambientes: req.body.ambientes || null,
         origemExterna: true,
         fonte: source,
         filialId: apiKey.filialId, // pode ser null — lead fica "Não Definido"

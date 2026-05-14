@@ -47,6 +47,8 @@ export const INITIAL_LEAD_FORM = {
   conjugeCelular: '',
   conjugeEmail: '',
   origemCanal: '',
+  investimento: '',
+  ambientes: '',
   preVendedorId: '',
 };
 

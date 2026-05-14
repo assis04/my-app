@@ -44,6 +44,8 @@ function buildFormFromLead(lead) {
     conjugeCelular: lead.conjugeCelular ? formatPhone(lead.conjugeCelular) : '',
     conjugeEmail: lead.conjugeEmail || '',
     origemCanal: lead.origemCanal || '',
+    investimento: lead.investimento || '',
+    ambientes: lead.ambientes || '',
     preVendedorId: lead.preVendedorId ? String(lead.preVendedorId) : '',
   };
 }
