@@ -107,18 +107,19 @@ export function Sidebar() {
               {isRhActive && (
                 <SubMenu>
                   <PermissionGate permission="rh:equipes:read">
-                    <SubLink href="/rh/equipes" label="Equipes" pathname={pathname} />
+                    <SubLink href="/rh/equipes" label="Equipe" pathname={pathname} />
                   </PermissionGate>
                   <PermissionGate permission="rh:filiais:read">
                     <SubLink href="/rh/filiais" label="Filiais" pathname={pathname} />
                   </PermissionGate>
-                  <SubLink href="/rh/colaboradores" label="Colaboradores" pathname={pathname} />
+                  <SubLink href="/rh/colaboradores" label="Colaborador" pathname={pathname} />
                   <PermissionGate permission="rh:usuarios:read">
-                    <SubLink href="/rh/gerenciar-usuarios" label="Usuários" pathname={pathname} />
+                    <SubLink href="/rh/gerenciar-usuarios" label="Usuário" pathname={pathname} />
                   </PermissionGate>
-                  <SubLink href="/rh/cargos-funcoes" label="Cargos e Funções" pathname={pathname} />
+                  <SubLink href="/rh/status-usuario" label="Status do Usuário" pathname={pathname} />
+                  <SubLink href="/rh/cargos-funcoes" label="Cargos / Funções" pathname={pathname} />
                   <PermissionGate permission="rh:perfis:read">
-                    <SubLink href="/rh/gerenciar-perfis" label="Perfis de Acesso" pathname={pathname} />
+                    <SubLink href="/rh/gerenciar-perfis" label="Perfil de Acesso" pathname={pathname} />
                   </PermissionGate>
                   <SubLink href="/rh/controle-de-ponto" label="Controle de Ponto" pathname={pathname} />
                   <SubLink href="/rh/metas" label="Metas" pathname={pathname} />
