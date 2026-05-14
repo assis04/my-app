@@ -137,6 +137,9 @@ export async function createLead(data, user = null, opts = {}) {
         parceria: data.parceria ?? null,
         origemCanal: data.origemCanal ?? null,
         origemExterna,
+        // Qualificação inicial (do form da landing, opcional)
+        investimento: data.investimento ?? null,
+        ambientes: data.ambientes ?? null,
         // Cônjuge
         conjugeNome: data.conjugeNome ?? null,
         conjugeSobrenome: data.conjugeSobrenome ?? null,
@@ -362,6 +365,8 @@ export async function updateLead(id, data, user) {
       conjugeCelular: data.conjugeCelular,
       conjugeEmail: data.conjugeEmail,
       origemCanal: data.origemCanal,
+      investimento: data.investimento,
+      ambientes: data.ambientes,
       preVendedorId: data.preVendedorId !== undefined
         ? (data.preVendedorId ? parseInt(data.preVendedorId, 10) : null)
         : undefined,

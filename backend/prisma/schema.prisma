@@ -62,6 +62,9 @@ model User {
   // Orçamentos criados por este usuário
   orcamentosCriados Orcamento[] @relation("OrcamentoCreator")
 
+  // API keys que este usuário gerou (intake externo)
+  apiKeysCreated ApiKey[] @relation("ApiKeyCreator")
+
   @@map("users")
 }
 
@@ -73,6 +76,7 @@ model Filial {
   leads       Lead[]
   equipes     Equipe[]
   salesQueues SalesQueue[]
+  apiKeys     ApiKey[]
 
   // Manager of the branch
   managerId Int?  @map("manager_id")
@@ -155,6 +159,14 @@ model Lead {
   parceria      String?
   origemCanal   String? @map("origem_canal")
   origemExterna Boolean @default(false) @map("origem_externa")
+
+  // === Qualificação (capturada no intake externo via landing page) ===
+  // Faixa de orçamento declarada pelo lead (ex: "R$ 30.000 a R$ 50.000").
+  // String pra flexibilidade — pode ser dropdown ou input livre na landing.
+  investimento String?
+  // Descrição livre dos ambientes que o lead quer orçar
+  // (ex: "Cozinha, Sala, Dormitório do casal").
+  ambientes    String?
 
   // === Cônjuge ===
   conjugeNome      String? @map("conjuge_nome")
@@ -355,4 +367,42 @@ model Task {
   @@index([assignedToEquipeId])
   @@index([status])
   @@map("tasks")
+}
+
+// ApiKey — chaves para autenticação de origens externas (landing pages, integrações).
+// A chave plain-text é mostrada UMA ÚNICA VEZ no momento da criação; só o hash bcrypt
+// é persistido. `prefix` é o início público da chave (ex: vlc_live_abc12345) — usado
+// pra display + lookup rápido (busca pelo prefix antes de comparar hash).
+//
+// Fluxo de validação: middleware recebe header X-Api-Key → extrai prefix → busca
+// ApiKey active+não-revogada pelo prefix → bcrypt.compare(plain, hash) → ok ou 401.
+//
+// Spec: specs/api-public.md
+model ApiKey {
+  id     Int    @id @default(autoincrement())
+  name   String // descritivo humano (ex: "Landing Construtoras", "Form Indicação")
+  prefix String @unique // primeiros chars público (ex: vlc_live_abc12345)
+  hash   String // bcrypt hash do secret completo
+
+  // Escopo opcional: se setado, leads recebidos por essa key são atribuídos
+  // à filial. Se null, leads ficam sem filial (será resolvida depois).
+  filialId Int?    @map("filial_id")
+  filial   Filial? @relation(fields: [filialId], references: [id])
+
+  // Identificador de origem (free-form, vai pro LeadHistory.payload.source)
+  source String?
+
+  active     Boolean   @default(true)
+  revokedAt  DateTime? @map("revoked_at")
+  expiresAt  DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  createdById Int  @map("created_by_id")
+  createdBy   User @relation("ApiKeyCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([active, prefix])
+  @@map("api_keys")
 }

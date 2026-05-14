@@ -34,27 +34,12 @@ import { friendlyErrorMessage } from '@/lib/apiError';
 //   Muito interesse → verde   (success — prioridade positiva)
 //   Sem interesse   → vermelho (danger — terminal negativo)
 // Trigger é uma bolinha sólida (sem ícone) pra densidade máxima na listagem.
+// Dot sólido por canal — leitura imediata, alta densidade.
 const OPTIONS = [
-  {
-    value: 'Sem contato',
-    triggerColor: 'bg-(--text-muted) border-(--text-muted)',
-    dotColor: 'bg-(--text-muted)',
-  },
-  {
-    value: 'Pouco interesse',
-    triggerColor: 'bg-(--gold) border-(--gold-hover)',
-    dotColor: 'bg-(--gold)',
-  },
-  {
-    value: 'Muito interesse',
-    triggerColor: 'bg-(--success) border-(--success)',
-    dotColor: 'bg-(--success)',
-  },
-  {
-    value: 'Sem interesse',
-    triggerColor: 'bg-(--danger) border-(--danger)',
-    dotColor: 'bg-(--danger)',
-  },
+  { value: 'Sem contato',    dotColor: 'bg-(--text-muted)' },
+  { value: 'Pouco interesse', dotColor: 'bg-(--gold)' },
+  { value: 'Muito interesse', dotColor: 'bg-(--success)' },
+  { value: 'Sem interesse',  dotColor: 'bg-(--danger)' },
 ];
 
 function findOption(value) {
@@ -150,17 +135,18 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
         title={error || displayValue}
         disabled={disabled || pending}
         onClick={(e) => {
-          e.stopPropagation(); // row tem onClick de navegação
+          e.stopPropagation();
           setOpen((v) => !v);
         }}
         className={`
-          inline-block w-4 h-4 rounded-full border-2 align-middle
-          transition-all disabled:opacity-50 disabled:cursor-not-allowed
-          hover:scale-110
+          inline-block w-3.5 h-3.5 shrink-0 rounded-full align-middle
+          transition-shadow disabled:opacity-50 disabled:cursor-not-allowed
+          hover:ring-2 hover:ring-(--gold)/30
           ${pending ? 'animate-pulse' : ''}
           ${error ? 'ring-2 ring-(--danger)/40' : ''}
-          ${current.triggerColor}
+          ${current.dotColor}
         `}
+        style={{ transitionTimingFunction: 'var(--ease-spring)' }}
       />
 
       {open && coords && createPortal(
@@ -168,7 +154,7 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
           ref={popoverRef}
           role="listbox"
           aria-label="Selecionar temperatura"
-          className="fixed z-50 w-[180px] rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150 origin-top-left"
+          className="fixed z-50 w-[180px] overflow-hidden rounded-xl border border-(--border) bg-(--surface-2) shadow-2xl p-1 animate-in fade-in zoom-in-95 duration-150 origin-top-left"
           style={{ top: coords.top, left: coords.left }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -183,15 +169,15 @@ export default function TemperaturaButtons({ leadId, value, onChange, disabled =
                 disabled={pending}
                 onClick={() => handleSelect(optValue)}
                 className={`
-                  w-full flex items-center gap-2.5 px-3 py-2 text-sm font-bold tracking-tight
+                  w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium tracking-tight
                   transition-colors text-left
                   ${isActive ? 'bg-(--surface-3) text-(--text-primary)' : 'text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary)'}
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
               >
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
-                <span className="flex-1">{optValue}</span>
-                {isActive && <Check size={13} className="text-(--gold)" aria-hidden />}
+                <span className="flex-1 min-w-0 truncate">{optValue}</span>
+                {isActive && <Check size={13} className="text-(--gold) shrink-0" aria-hidden />}
               </button>
             );
           })}

@@ -86,6 +86,23 @@
 
   --shadow-premium:  0 10px 40px -10px rgba(0, 0, 0, 0.7);
   --shadow-floating: 0 32px 72px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(74, 64, 54, 0.6);
+
+  /* Workshop tokens (piloto — só Leads) */
+  --shadow-warm: 0 24px 60px -16px rgba(120, 90, 30, 0.32);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Grain overlay global — textura sutil que conecta com brand Valcenter (madeira/material).
+   pointer-events-none + z-50 + 4% opacity = visual depth sem custo de interação. */
+.grain-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('/textures/grain.svg');
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 50;
+  mix-blend-mode: overlay;
 }
 
 html, body {

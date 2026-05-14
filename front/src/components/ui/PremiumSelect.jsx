@@ -38,25 +38,25 @@ export default function PremiumSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-(--surface-1) text-(--text-primary) h-9 px-4 rounded-2xl border transition-all font-bold text-base flex items-center justify-between gap-2 min-w-0 outline-none
-          ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-(--gold) hover:bg-(--surface-2)'}
-          ${isOpen && !disabled ? 'border-(--gold) ring-4 ring-(--gold-soft)' : 'border-(--border)'}
+        className={`w-full bg-(--surface-1) text-(--text-primary) h-9 px-3 rounded-lg border transition-colors font-medium text-sm flex items-center justify-between gap-2 min-w-0 outline-none
+          ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-(--gold)/40 hover:bg-(--surface-2)'}
+          ${isOpen && !disabled ? 'border-(--gold) ring-2 ring-(--gold-soft)' : 'border-(--border)'}
         `}
       >
         <span className={`min-w-0 flex-1 text-left truncate ${!selectedOption ? 'text-(--text-faint)' : 'text-(--text-primary)'}`}>
           {selectedOption ? selectedOption.nome : placeholder}
         </span>
         <ChevronDown
-          size={18}
-          className={`text-(--text-muted) shrink-0 transition-transform duration-300 ${isOpen && !disabled ? 'rotate-180 text-(--gold)' : ''}`}
+          size={14}
+          className={`text-(--text-muted) shrink-0 transition-transform duration-200 ${isOpen && !disabled ? 'rotate-180 text-(--gold)' : ''}`}
         />
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-2 bg-(--surface-2)/95 backdrop-blur-xl border border-(--border) rounded-3xl shadow-(--shadow-floating) overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
-          <div className={`p-2 ${options.length > 5 ? 'max-h-60 overflow-y-auto custom-scrollbar' : ''}`}>
+        <div className="absolute z-50 w-full mt-1.5 bg-(--surface-2) border border-(--border) rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 origin-top">
+          <div className={`p-1 ${options.length > 5 ? 'max-h-60 overflow-y-auto custom-scrollbar' : ''}`}>
             {options.length === 0 ? (
-              <div className="p-4 text-center text-(--text-muted) text-sm font-black tracking-tight">
+              <div className="px-3 py-2.5 text-center text-(--text-muted) text-sm font-medium">
                 Nenhuma opção disponível
               </div>
             ) : (
@@ -65,15 +65,15 @@ export default function PremiumSelect({
                   key={option.id}
                   type="button"
                   onClick={() => handleSelect(option.id)}
-                  className={`w-full flex items-center justify-between gap-2 min-w-0 p-3 rounded-xl text-left text-base transition-all group
+                  className={`w-full flex items-center justify-between gap-2 min-w-0 px-2.5 py-2 rounded-lg text-left text-sm transition-colors
                     ${String(option.id) === String(value)
-                      ? 'bg-(--gold-soft) text-(--gold) font-black'
-                      : 'text-(--text-secondary) hover:bg-(--surface-3) hover:text-(--text-primary)'}
+                      ? 'bg-(--surface-3) text-(--text-primary) font-medium'
+                      : 'text-(--text-secondary) font-medium hover:bg-(--surface-3) hover:text-(--text-primary)'}
                   `}
                 >
                   <span className="min-w-0 flex-1 truncate">{option.nome}</span>
                   {String(option.id) === String(value) && (
-                    <Check size={16} className="text-(--gold) shrink-0" />
+                    <Check size={14} className="text-(--gold) shrink-0" />
                   )}
                 </button>
               ))

@@ -12,6 +12,7 @@ import { OpenAPIRegistry, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-ope
 import { registerLeadPaths } from './paths/leads.js';
 import { registerAccountPaths } from './paths/accounts.js';
 import { registerOrcamentoPaths } from './paths/orcamentos.js';
+import { registerPublicLeadPaths } from './paths/publicLeads.js';
 
 import { env } from '../config/env.js';
 
@@ -35,6 +36,7 @@ function buildSpec() {
   registerLeadPaths(registry);
   registerAccountPaths(registry);
   registerOrcamentoPaths(registry);
+  registerPublicLeadPaths(registry);
 
   const generator = new OpenApiGeneratorV31(registry.definitions);
   return generator.generateDocument({
@@ -58,6 +60,7 @@ function buildSpec() {
       { name: 'Leads', description: 'CRUD e transições de leads do CRM' },
       { name: 'Accounts', description: 'Contas/Pessoas — agregadores de leads' },
       { name: 'Orçamentos', description: 'Orçamentos (N.O.N.) vinculados ao lead' },
+      { name: 'Public Intake', description: 'Endpoints públicos para origens externas (landing pages) — autenticados por X-Api-Key' },
     ],
   });
 }

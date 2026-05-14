@@ -1,4 +1,4 @@
-import { UserCheck, Heart, Briefcase, AlertCircle } from 'lucide-react';
+import { UserCheck, Heart, Briefcase, AlertCircle, Home, DollarSign } from 'lucide-react';
 import { formatPhone } from '@/lib/utils';
 import PremiumSelect from '@/components/ui/PremiumSelect';
 import { CANAL_OPTIONS } from '@/lib/leadConstants';
@@ -208,7 +208,44 @@ export default function LeadFormFields({
         </div>
       </div>
 
-      {/* Seção 3: Atribuição */}
+      {/* Seção 3: Qualificação (capturada no intake da landing ou editada aqui) */}
+      <div className="space-y-3">
+        <h3 className="text-(--gold) font-semibold text-sm tracking-tight flex items-center gap-2 px-1">
+          <Home size={12} className="text-(--gold)" /> Qualificação
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label htmlFor="lead-investimento" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight inline-flex items-center gap-1">
+              <DollarSign size={11} className="text-(--text-faint)" /> Investimento
+            </label>
+            <input
+              id="lead-investimento"
+              type="text"
+              placeholder="Ex: R$ 30.000 a R$ 50.000"
+              value={form.investimento || ''}
+              onChange={e => onChange('investimento', e.target.value)}
+              onBlur={onBlur ? () => onBlur('investimento') : undefined}
+              disabled={disabled}
+              className="premium-input h-9 px-4 text-base"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="lead-ambientes" className="text-sm font-medium text-(--text-muted) px-1 tracking-tight">Ambientes</label>
+            <input
+              id="lead-ambientes"
+              type="text"
+              placeholder="Ex: Cozinha, Sala, Dormitório"
+              value={form.ambientes || ''}
+              onChange={e => onChange('ambientes', e.target.value)}
+              onBlur={onBlur ? () => onBlur('ambientes') : undefined}
+              disabled={disabled}
+              className="premium-input h-9 px-4 text-base"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Seção 4: Atribuição */}
       <div className="space-y-3">
         <h3 className="text-(--gold) font-semibold text-sm tracking-tight flex items-center gap-2 px-1">
           <Briefcase size={12} className="text-(--gold)" /> Atribuição
