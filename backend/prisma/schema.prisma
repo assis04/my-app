@@ -392,6 +392,12 @@ model ApiKey {
   // Identificador de origem (free-form, vai pro LeadHistory.payload.source)
   source String?
 
+  // URLs autorizadas a usar essa chave. Array vazio = sem restrição (chave
+  // funciona de qualquer origem). Match feito em apiKeyMiddleware contra
+  // os headers Origin (scheme://host) e Referer (path-level). Defesa em
+  // profundidade contra leak de chave de landing page pública.
+  allowedOrigins String[] @default([]) @map("allowed_origins")
+
   active     Boolean   @default(true)
   revokedAt  DateTime? @map("revoked_at")
   expiresAt  DateTime? @map("expires_at")

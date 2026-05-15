@@ -15,6 +15,7 @@ export const listApiKeys = async () => api('/api/admin/api-keys');
  * @param {number|null} [payload.filialId]
  * @param {string|null} [payload.source]
  * @param {string|null} [payload.expiresAt] — ISO datetime
+ * @param {string[]} [payload.allowedOrigins] — URLs autorizadas a usar a chave
  */
 export const createApiKey = async (payload) =>
   api('/api/admin/api-keys', { body: payload });

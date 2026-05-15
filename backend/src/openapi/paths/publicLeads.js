@@ -53,6 +53,10 @@ export function registerPublicLeadPaths(registry) {
         description: 'API key ausente ou inválida',
         content: { 'application/json': { schema: ErrorResponse } },
       },
+      403: {
+        description: 'Origem (Origin/Referer) não autorizada para a chave',
+        content: { 'application/json': { schema: ErrorResponse } },
+      },
       429: {
         description: 'Rate limit excedido',
         content: { 'application/json': { schema: ErrorResponse } },

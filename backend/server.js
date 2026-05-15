@@ -24,17 +24,25 @@ app.set('trust proxy', 1);
 
 // Middlewares de Segurança
 app.use(helmet());
-// CORS: aceita origens do .env (CORS_ORIGIN, separadas por vírgula)
+// CORS: aceita origens do .env (CORS_ORIGIN, separadas por vírgula).
+// Rotas /api/public/* recebem CORS permissivo (sem credentials) porque
+// autenticam via header X-Api-Key e a restrição por origem é aplicada
+// no apiKeyMiddleware contra a allowlist da própria chave — não dá pra
+// resolver no preflight (X-Api-Key não é enviado em OPTIONS).
 const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Requests sem origin (ex: curl, mobile apps) — permitir
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error('Bloqueado pelo CORS'));
-  },
-  credentials: true
+app.use(cors((req, callback) => {
+  if (req.path.startsWith('/api/public/')) {
+    return callback(null, { origin: true, credentials: false });
+  }
+  return callback(null, {
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error('Bloqueado pelo CORS'));
+    },
+    credentials: true,
+  });
 }));
 
 app.use(express.json());

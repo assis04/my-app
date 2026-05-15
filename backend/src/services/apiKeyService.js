@@ -35,7 +35,10 @@ const KEY_SECRET_BYTES = 24; // 48 chars hex após o prefix
  *
  * @returns {Promise<{ id, prefix, plainKey, ...metadados }>}
  */
-export async function createApiKey({ name, filialId, source, expiresAt }, user) {
+export async function createApiKey(
+  { name, filialId, source, expiresAt, allowedOrigins },
+  user,
+) {
   if (!name || name.trim().length < 3) {
     throw new AppError('Nome da chave é obrigatório (mín. 3 caracteres).', 400);
   }
@@ -57,6 +60,9 @@ export async function createApiKey({ name, filialId, source, expiresAt }, user) 
       filialId: filialId ? parseInt(filialId, 10) : null,
       source: source?.trim() || null,
       expiresAt: expiresAt ? new Date(expiresAt) : null,
+      allowedOrigins: Array.isArray(allowedOrigins)
+        ? allowedOrigins.map((u) => u.trim()).filter(Boolean)
+        : [],
       createdById: user.id,
     },
     select: publicSelect(),
@@ -143,6 +149,7 @@ function publicSelect() {
     name: true,
     prefix: true,
     source: true,
+    allowedOrigins: true,
     active: true,
     revokedAt: true,
     expiresAt: true,

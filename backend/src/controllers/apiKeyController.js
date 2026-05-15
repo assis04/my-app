@@ -17,9 +17,9 @@ export async function list(req, res, next) {
 
 export async function create(req, res, next) {
   try {
-    const { name, filialId, source, expiresAt } = req.body;
+    const { name, filialId, source, expiresAt, allowedOrigins } = req.body;
     const result = await apiKeyService.createApiKey(
-      { name, filialId, source, expiresAt },
+      { name, filialId, source, expiresAt, allowedOrigins },
       req.user,
     );
     // 201 inclui plainKey — caller deve mostrar ao admin e descartar.

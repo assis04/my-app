@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   KeyRound, Plus, Copy, Check, AlertTriangle, X,
-  Building2, RefreshCw, Eye, EyeOff,
+  Building2, RefreshCw, Eye, EyeOff, Globe,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
@@ -151,6 +151,20 @@ export default function ApiKeysPage() {
                     {key.source && (
                       <div className="text-[11px] font-mono text-(--text-faint) mt-0.5">{key.source}</div>
                     )}
+                    {Array.isArray(key.allowedOrigins) && key.allowedOrigins.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {key.allowedOrigins.map((url) => (
+                          <span
+                            key={url}
+                            className="inline-flex items-center gap-1 text-[10px] font-mono text-(--text-muted) bg-(--surface-1) border border-(--border-subtle) rounded px-1.5 py-0.5 max-w-[260px] truncate"
+                            title={url}
+                          >
+                            <Globe size={9} className="shrink-0 text-(--text-faint)" />
+                            <span className="truncate">{url.replace(/^https?:\/\//, '')}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td className="py-2.5 px-4 font-mono text-xs text-(--text-secondary) tabular-nums">{key.prefix}…</td>
                   <td className="py-2.5 px-4 text-(--text-secondary) text-sm">
@@ -251,6 +265,7 @@ function CreateKeyModal({ onClose, onCreated }) {
   const [name, setName] = useState('');
   const [source, setSource] = useState('');
   const [filialId, setFilialId] = useState('');
+  const [allowedOriginsRaw, setAllowedOriginsRaw] = useState('');
   const [filiais, setFiliais] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -267,6 +282,22 @@ function CreateKeyModal({ onClose, onCreated }) {
       setError('Nome deve ter pelo menos 3 caracteres.');
       return;
     }
+
+    const urls = allowedOriginsRaw
+      .split(/[\n,]+/)
+      .map((u) => u.trim())
+      .filter(Boolean);
+
+    for (const u of urls) {
+      try {
+        const parsed = new URL(u);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error();
+      } catch {
+        setError(`URL inválida: "${u}". Use http:// ou https://.`);
+        return;
+      }
+    }
+
     setError('');
     setSubmitting(true);
     try {
@@ -274,6 +305,7 @@ function CreateKeyModal({ onClose, onCreated }) {
         name: name.trim(),
         source: source.trim() || null,
         filialId: filialId || null,
+        allowedOrigins: urls,
       });
       onCreated(result);
     } catch (err) {
@@ -335,6 +367,23 @@ function CreateKeyModal({ onClose, onCreated }) {
             ))}
           </select>
           <p className="text-xs text-(--text-faint)">Se setada, leads recebidos por essa chave ficam atribuídos a esta filial.</p>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[11px] uppercase tracking-wider text-(--text-faint) font-mono font-semibold">
+            URLs autorizadas
+          </label>
+          <textarea
+            value={allowedOriginsRaw}
+            onChange={(e) => setAllowedOriginsRaw(e.target.value)}
+            placeholder={'https://valcenter.com.br/lojas/guarulhos\nhttps://valcenter.com.br/lojas/mogi-das-cruzes'}
+            rows={3}
+            className="w-full bg-(--surface-1) text-(--text-primary) text-sm font-medium px-3 py-2 rounded-lg border border-(--border) focus:border-(--gold) focus:ring-2 focus:ring-(--gold-soft) outline-none font-mono resize-y"
+          />
+          <p className="text-xs text-(--text-faint)">
+            Uma URL por linha (ou separadas por vírgula). Vazio = sem restrição. Match
+            por <span className="font-mono">Origin</span> (domínio) e <span className="font-mono">Referer</span> (path).
+          </p>
         </div>
 
         {error && (
